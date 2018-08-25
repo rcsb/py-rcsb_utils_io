@@ -48,7 +48,7 @@ setup(
     },
     #
     install_requires=['future', 'mmcif; python_version >= "0.18"'],
-    packages=find_packages(exclude=['rcsb.utils.tests-io', 'rcsb.utils.tests-*', 'tests.*']),
+    packages=find_packages(exclude=['rcsb.mock-data', 'rcsb.utils.tests-io', 'rcsb.utils.tests-*', 'tests.*']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],

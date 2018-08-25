@@ -1,4 +1,4 @@
 # RCSB_UTILS_IO HISTORY
 
-22-Aug-2018  - Split off from py-rcsb_db
+25-Aug-2018  - Split off from py-rcsb_db
 
