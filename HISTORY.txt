@@ -1,4 +1,5 @@
 # RCSB_UTILS_IO HISTORY
 
 25-Aug-2018  - Split off from py-rcsb_db
+26-Aug-2018. - Tweak testing configuration
 
