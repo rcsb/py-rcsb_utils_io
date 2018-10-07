@@ -10,6 +10,8 @@
 #   4-Jun-2018  jdw overhaul api - provide two public methods.
 #   4-Jun-2018  jdw add format for dictionaries which require special parsing
 #  15-Jun-2018  jdw add textDump (pretty printer) serialization method -
+#  28-Sep-2018  jdw add helper class for serializing python date/datetime types
+#   8-Oct-2018  jdw add convenience function to test for file existence
 #
 ##
 
@@ -18,8 +20,10 @@ __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
+import datetime
 import json
 import logging
+import os
 import pickle
 import pprint
 
@@ -32,6 +36,20 @@ except Exception:
 
 
 logger = logging.getLogger(__name__)
+
+
+class JsonTypeEncoder(json.JSONEncoder):
+    """ Helper class to handle serializing date and time objects
+    """
+
+    def default(self, o):
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()
+
+        if isinstance(o, datetime.date):
+            return o.isoformat()
+
+        return json.JSONEncoder.default(self, o)
 
 
 class IoUtil(object):
@@ -100,6 +118,12 @@ class IoUtil(object):
 
         return ret
 
+    def exists(self, filePath, mode=os.R_OK):
+        try:
+            return os.access(filePath, os.R_OK)
+        except Exception:
+            return False
+
     def __textDump(self, filePath, myObj, **kwargs):
         try:
             indent = kwargs.get('indent', 1)
@@ -133,10 +157,13 @@ class IoUtil(object):
         return myDefault
 
     def __serializeJson(self, filePath, myObj, **kwargs):
+        """ Internal method to serialize the input object as JSON.  An encoding
+            helper class is included to handle selected python data types (e.g., datetime)
+        """
         indent = kwargs.get('indent', 0)
         try:
             with open(filePath, "w") as outfile:
-                json.dump(myObj, outfile, indent=indent)
+                json.dump(myObj, outfile, indent=indent, cls=JsonTypeEncoder)
             return True
         except Exception as e:
             logger.error("Unable to serialize %r  %r" % (filePath, str(e)))
