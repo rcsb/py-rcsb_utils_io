@@ -2,6 +2,8 @@
 
 25-Aug-2018  - Split off from py-rcsb_db
 26-Aug-2018  - V0.11 Tweak testing configuration
-06-Oct-2018  - V0.12 Add convenience methods to IoUtils()
+ 6-Oct-2018  - V0.12 Add convenience methods to IoUtils()
+12-Oct-2018  - V0.12 Change default encoding for list files to utf-8
+
 
 

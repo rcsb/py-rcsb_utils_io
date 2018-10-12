@@ -12,6 +12,7 @@
 #  15-Jun-2018  jdw add textDump (pretty printer) serialization method -
 #  28-Sep-2018  jdw add helper class for serializing python date/datetime types
 #   8-Oct-2018  jdw add convenience function to test for file existence
+#  11-Oct-2018  jdw make encoding utf-8 for lists
 #
 ##
 
@@ -180,7 +181,7 @@ class IoUtil(object):
 
     def __serializeList(self, filePath, aList, **kwargs):
         try:
-            with open(filePath, 'w') as ofh:
+            with open(filePath, 'w', encoding="utf-8") as ofh:
                 for pth in aList:
                     ofh.write("%s\n" % pth)
             return True
@@ -191,7 +192,7 @@ class IoUtil(object):
     def __deserializeList(self, filePath, **kwargs):
         aList = []
         try:
-            with open(filePath, 'r') as ifh:
+            with open(filePath, 'r', encoding="utf-8") as ifh:
                 for line in ifh:
                     pth = str(line[:-1])
                     if len(pth) and not pth.startswith("#"):
