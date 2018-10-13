@@ -3,7 +3,10 @@
 25-Aug-2018  - Split off from py-rcsb_db
 26-Aug-2018  - V0.11 Tweak testing configuration
  6-Oct-2018  - V0.12 Add convenience methods to IoUtils()
-12-Oct-2018  - V0.12 Change default encoding for list files to utf-8
+10-Oct-2018  - V0.12 Change default encoding for list files to utf-8
+12-Oct-2018  - V0.13 Adjustments for Py27 encoding compatibility
+13-Oct-2018  - V0.14 Simplify list serialization to avoid Py2-3 encodiing differences
+13-Oct-2018  - V0.15 Overhaul Py2-3 encoding for lists.
 
 
 

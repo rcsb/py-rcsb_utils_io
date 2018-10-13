@@ -57,6 +57,9 @@ class IoUtilTests(unittest.TestCase):
         self.__pathSaveTextFile = os.path.join(HERE, 'test-output', 'rcsb_extend_provenance_info.txt')
         #
         #
+        self.__pathInsilicoFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_EXCHANGE_SANDBOX', 'status', 'theoretical_model.tsv')
+        self.__pathSaveInsilicoFile = os.path.join(HERE, 'test-output', 'saved-theoretical_model.tsv')
+        #
 
         self.__ioU = IoUtil()
         self.__startTime = time.time()
@@ -186,6 +189,22 @@ class IoUtilTests(unittest.TestCase):
             logger.exception("Failing with %s" % str(e))
             self.fail()
 
+    def testReadWriteListWithEncodingFile(self):
+        """ Test the case read list text file with non-ascii encoding
+        """
+        try:
+            cL = self.__ioU.deserialize(self.__pathInsilicoFile, format="list")
+            logger.debug("Insilico List length %d" % len(cL))
+            #
+            self.assertGreaterEqual(len(cL), 1450)
+            #
+            ok = self.__ioU.serialize(self.__pathSaveInsilicoFile, cL, format="list")
+            self.assertTrue(ok)
+            #
+        except Exception as e:
+            logger.exception("Failing with %s" % str(e))
+            self.fail()
+
 
 def utilReadSuite():
     suiteSelect = unittest.TestSuite()
@@ -201,8 +220,9 @@ def utilReadWriteSuite():
     suiteSelect.addTest(IoUtilTests("testReadWriteDictionaryFiles"))
     suiteSelect.addTest(IoUtilTests("testReadWriteCifFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteJsonFile"))
-    suiteSelect.addTest(IoUtilTests("testReadWriteListFile"))
     suiteSelect.addTest(IoUtilTests("testReadWritePickleFile"))
+    suiteSelect.addTest(IoUtilTests("testReadWriteListFile"))
+    suiteSelect.addTest(IoUtilTests("testReadWriteListWithEncodingFile"))
     return suiteSelect
 
 
@@ -211,6 +231,7 @@ if __name__ == '__main__':
     if True:
         mySuite = utilReadSuite()
         unittest.TextTestRunner(verbosity=2).run(mySuite)
-
+    #
+    if True:
         mySuite = utilReadWriteSuite()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

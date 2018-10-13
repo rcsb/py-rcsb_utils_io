@@ -13,6 +13,7 @@
 #  28-Sep-2018  jdw add helper class for serializing python date/datetime types
 #   8-Oct-2018  jdw add convenience function to test for file existence
 #  11-Oct-2018  jdw make encoding utf-8 for lists
+#  13-Oct-2018  jdw add Py27 support for explicit encoding using io.open.
 #
 ##
 
@@ -22,11 +23,13 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
 import datetime
+import io
 import json
 import logging
 import os
 import pickle
 import pprint
+import sys
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -80,7 +83,7 @@ class IoUtil(object):
         elif fmt in ['pickle']:
             ret = self.__serializePickle(filePath, myObj, **kwargs)
         elif fmt in ['list']:
-            ret = self.__serializeList(filePath, myObj, **kwargs)
+            ret = self.__serializeList(filePath, myObj, enforceAscii=True, **kwargs)
         elif fmt in ['mmcif-dict']:
             ret = self.__serializeMmCifDict(filePath, myObj, **kwargs)
         elif fmt in ['text-dump']:
@@ -111,7 +114,7 @@ class IoUtil(object):
         elif fmt in ['pickle']:
             ret = self.__deserializePickle(filePath, **kwargs)
         elif fmt in ['list']:
-            ret = self.__deserializeList(filePath, **kwargs)
+            ret = self.__deserializeList(filePath, enforceAscii=True, **kwargs)
         elif fmt in ['mmcif-dict']:
             ret = self.__deserializeMmCifDict(filePath, **kwargs)
         else:
@@ -179,30 +182,6 @@ class IoUtil(object):
             logger.warning("Unable to deserialize %r %r " % (filePath, str(e)))
         return myDefault
 
-    def __serializeList(self, filePath, aList, **kwargs):
-        try:
-            with open(filePath, 'w', encoding="utf-8") as ofh:
-                for pth in aList:
-                    ofh.write("%s\n" % pth)
-            return True
-        except Exception as e:
-            logger.error("Unable to serialize %r %r" % (filePath, str(e)))
-        return False
-
-    def __deserializeList(self, filePath, **kwargs):
-        aList = []
-        try:
-            with open(filePath, 'r', encoding="utf-8") as ifh:
-                for line in ifh:
-                    pth = str(line[:-1])
-                    if len(pth) and not pth.startswith("#"):
-                        aList.append(pth)
-        except Exception as e:
-            logger.error("Unable to deserialize %r %s" % (filePath, str(e)))
-        #
-        logger.debug("Reading list length %d" % len(aList))
-        return aList
-
     def __deserializeMmCif(self, filePath, **kwargs):
         """
         """
@@ -266,3 +245,72 @@ class IoUtil(object):
         except Exception as e:
             logger.error("Failing for %s with %s" % (filePath, str(e)))
         return ret
+
+    def __serializeList(self, filePath, aList, enforceAscii=True, **kwargs):
+        """
+        """
+
+        try:
+            if enforceAscii:
+                encoding = 'ascii'
+            else:
+                encoding = 'utf-8'
+            #
+            if sys.version_info[0] > 2:
+                with open(filePath, 'w') as ofh:
+                    if enforceAscii:
+                        for st in aList:
+                            ofh.write("%s\n" % st.encode('ascii', 'xmlcharrefreplace').decode('ascii'))
+                    else:
+                        for st in aList:
+                            ofh.write("%s\n" % st)
+            else:
+                if enforceAscii:
+                    with io.open(filePath, 'w', encoding=encoding) as ofh:
+                        for st in aList:
+                            ofh.write("%s\n" % st.encode('ascii', 'xmlcharrefreplace').decode('ascii'))
+                else:
+                    with open(filePath, "wb") as ofh:
+                        for st in aList:
+                            ofh.write("%s\n" % st)
+            return True
+        except Exception as e:
+            logger.error("Unable to serialize %r %r" % (filePath, str(e)))
+        return False
+
+    def __deserializeList(self, filePath, enforceAscii=True, **kwargs):
+        aList = []
+        try:
+            with io.open(filePath, 'r', encoding="utf-8") as ifh:
+                for line in ifh:
+                    if enforceAscii:
+                        pth = line[:-1].encode('ascii', 'xmlcharrefreplace').decode('ascii')
+                    else:
+                        pth = line[:-1]
+                    if len(pth) and not pth.startswith("#"):
+                        aList.append(pth)
+        except Exception as e:
+            logger.error("Unable to deserialize %r %s" % (filePath, str(e)))
+        #
+        logger.debug("Reading list length %d" % len(aList))
+        return aList
+
+    def __toAscii(self, inputFilePath, outputFilePath, chunkSize=5000, encodingErrors='ignore'):
+        """ Encode input file to Ascii and write this to the target output file.   Handle encoding
+            errors according to the input settting ('ignore', 'escape', 'xmlcharrefreplace').
+        """
+        try:
+            chunk = []
+            with io.open(inputFilePath, "r", encoding="utf-8") as r, io.open(outputFilePath, "w", encoding='ascii') as w:
+                for line in r:
+                    # chunk.append(line.encode('ascii', 'xmlcharrefreplace').decode('ascii'))
+                    chunk.append(line.encode('ascii', encodingErrors).decode('ascii'))
+                    if len(chunk) == chunkSize:
+                        w.writelines(chunk)
+                        chunk = []
+                w.writelines(chunk)
+            return True
+        except Exception as e:
+            logger.error("Failing text ascii encoding for %s with %s" % (inputFilePath, str(e)))
+        #
+        return False
