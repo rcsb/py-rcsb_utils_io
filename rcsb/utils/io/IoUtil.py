@@ -74,6 +74,11 @@ class IoUtil(object):
             bool: status of serialization operation; true for success or false otherwise
 
         """
+
+        directory = os.path.dirname(filePath)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         ret = False
         fmt = str(format).lower()
         if fmt in ['mmcif']:
