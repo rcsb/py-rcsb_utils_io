@@ -5,6 +5,7 @@
 #   3-Jul-2018  jdw update CLI entry points and dependencies
 #  21-Aug-2018  jdw version adjustments
 #  22-Aug-2018  jdw adjust for namespace packaging
+#  25-Oct-2018  jdw update dependencies
 #
 import re
 
@@ -47,7 +48,7 @@ setup(
         'console_scripts': []
     },
     #
-    install_requires=['future', 'mmcif; python_version >= "0.18"'],
+    install_requires=['mmcif >= 0.22'],
     packages=find_packages(exclude=['rcsb.mock-data', 'rcsb.utils.tests-io', 'rcsb.utils.tests-*', 'tests.*']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
