@@ -14,6 +14,7 @@
 #   8-Oct-2018  jdw add convenience function to test for file existence
 #  11-Oct-2018  jdw make encoding utf-8 for lists
 #  13-Oct-2018  jdw add Py27 support for explicit encoding using io.open.
+#  26-Oct-2018  jdw add additonal JSON encodings for yaml data types
 #
 ##
 
@@ -32,6 +33,8 @@ import pprint
 import sys
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+
+import ruamel.yaml
 
 try:
     from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter
@@ -52,6 +55,12 @@ class JsonTypeEncoder(json.JSONEncoder):
 
         if isinstance(o, datetime.date):
             return o.isoformat()
+
+        if isinstance(o, ruamel.yaml.comments.CommentedMap):
+            return o._od
+
+        if isinstance(o, ruamel.yaml.comments.CommentedSeq):
+            return o._lst
 
         return json.JSONEncoder.default(self, o)
 
