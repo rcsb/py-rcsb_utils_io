@@ -11,7 +11,7 @@ Download the library source software from the project repository:
 
 ```bash
 
-git clone --recurse-submodules https://github.com/rcsb/py-rcsb_utils_config.git
+git clone --recurse-submodules https://github.com/rcsb/py-rcsb_utils_io.git
 
 ```
 

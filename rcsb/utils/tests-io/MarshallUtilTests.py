@@ -7,6 +7,7 @@
 #  23-May-2018  jdw add preliminary default and helper tests
 #   5-Jun-2018  jdw update prototypes for MarshalUtil() methods
 #  13-Jun-2018  jdw add content classes
+#  25-Nov-2018  ydw add FASTA tests
 #
 #
 #
@@ -54,7 +55,9 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathSaveIndexFile = os.path.join(HERE, 'test-output', 'all-pdb-list')
         self.__pathSaveCifFile = os.path.join(HERE, 'test-output', 'app_data_type_mapping.cif')
         #
-
+        self.__pathFastaFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_EXCHANGE_SANDBOX', 'sequence', 'pdb_seq_prerelease.fasta')
+        self.__pathSaveFastaFile = os.path.join(HERE, 'test-output', 'test-pre-release.fasta')
+        #
         self.__mU = MarshalUtil()
         self.__startTime = time.time()
         logger.debug("Running tests on version %s" % __version__)
@@ -101,7 +104,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadJsonFile(self):
-        """ Test the case read list text file
+        """ Test the case read JSON file
         """
         try:
             rObj = self.__mU.doImport(self.__pathProvenanceFile, format="json")
@@ -112,7 +115,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteDictionaryFiles(self):
-        """ Test the case read PDBx/mmCIF dictionary text file
+        """ Test the case read and write PDBx/mmCIF dictionary text file
         """
         try:
             cL = self.__mU.doImport(self.__pathPdbxDictionaryFile, format="mmcif-dict")
@@ -126,7 +129,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteCifFile(self):
-        """ Test the case read PDBx/mmCIF text file
+        """ Test the case read and write PDBx/mmCIF text file
         """
         try:
             cL = self.__mU.doImport(self.__pathCifFile, format="mmcif")
@@ -139,7 +142,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteJsonFile(self):
-        """ Test the case read list text file
+        """ Test the case read and write JSON file
         """
         try:
             rObj = self.__mU.doImport(self.__pathProvenanceFile, format="json")
@@ -153,13 +156,26 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteListFile(self):
-        """ Test the case read list text file
+        """ Test the case read and write list text file
         """
         try:
             cL = self.__mU.doImport(self.__pathIndexFile, format="list")
             logger.debug("List length %d" % len(cL))
             self.assertGreaterEqual(len(cL), 1000)
             ok = self.__mU.doExport(self.__pathSaveIndexFile, cL, format="list")
+            self.assertTrue(ok)
+        except Exception as e:
+            logger.exception("Failing with %s" % str(e))
+            self.fail()
+
+    def testReadWriteFastaFile(self):
+        """ Test the case read and write FASTA sequence file
+        """
+        try:
+            sD = self.__mU.doImport(self.__pathFastaFile, format="fasta", commentStyle='prerelease')
+            logger.debug("Sequence length %d" % len(sD))
+            self.assertGreaterEqual(len(sD), 940)
+            ok = self.__mU.doExport(self.__pathSaveFastaFile, sD, format="fasta")
             self.assertTrue(ok)
         except Exception as e:
             logger.exception("Failing with %s" % str(e))
@@ -181,6 +197,7 @@ def utilReadWriteSuite():
     suiteSelect.addTest(MarshalUtilTests("testReadWriteCifFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteJsonFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteListFile"))
+    suiteSelect.addTest(MarshalUtilTests("testReadWriteFastaFile"))
     return suiteSelect
 
 

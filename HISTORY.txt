@@ -9,6 +9,7 @@
 13-Oct-2018  - V0.15 Overhaul Py2-3 encoding for lists.
 25-Oct-2018  - V0.16 Update testing environment and dependencies
 26-Oct-2018  - V0.17 Add additonal JSON encodings for YAML mapping data types
+25-Nov-2018  - V0.18 Add support for FASTA format
 #
 
 

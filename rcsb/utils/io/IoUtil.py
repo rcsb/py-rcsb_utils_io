@@ -15,6 +15,7 @@
 #  11-Oct-2018  jdw make encoding utf-8 for lists
 #  13-Oct-2018  jdw add Py27 support for explicit encoding using io.open.
 #  26-Oct-2018  jdw add additonal JSON encodings for yaml data types
+#  25-Nov-2018  jdw add support for FASTA format sequence files
 #
 ##
 
@@ -33,6 +34,8 @@ import pprint
 import sys
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+
+from rcsb.utils.io.FastaUtil import FastaUtil
 
 import ruamel.yaml
 
@@ -97,6 +100,8 @@ class IoUtil(object):
             ret = self.__serializeMmCifDict(filePath, myObj, **kwargs)
         elif fmt in ['text-dump']:
             ret = self.__textDump(filePath, myObj, **kwargs)
+        elif fmt in ['fasta']:
+            ret = self.__serializeFasta(filePath, myObj, **kwargs)
         else:
             pass
 
@@ -126,6 +131,8 @@ class IoUtil(object):
             ret = self.__deserializeList(filePath, enforceAscii=True, **kwargs)
         elif fmt in ['mmcif-dict']:
             ret = self.__deserializeMmCifDict(filePath, **kwargs)
+        elif fmt in ['fasta']:
+            ret = self.__deserializeFasta(filePath, **kwargs)
         else:
             pass
 
@@ -136,6 +143,25 @@ class IoUtil(object):
             return os.access(filePath, os.R_OK)
         except Exception:
             return False
+
+    def __deserializeFasta(self, filePath, **kwargs):
+        try:
+            commentStyle = kwargs.get('commentStyle', 'uniprot')
+            fau = FastaUtil()
+            return fau.readFasta(filePath, commentStyle=commentStyle)
+        except Exception as e:
+            logger.error("Unable to deserialize %r %r " % (filePath, str(e)))
+        return {}
+
+    def __serializeFasta(self, filePath, myObj, **kwargs):
+        try:
+            maxLineLength = int(kwargs.get('maxLineLength', 70))
+            fau = FastaUtil()
+            ok = fau.writeFasta(filePath, myObj, maxLineLength=maxLineLength)
+            return ok
+        except Exception as e:
+            logger.error("Unable to serialize FASTA file %r  %r" % (filePath, str(e)))
+        return False
 
     def __textDump(self, filePath, myObj, **kwargs):
         try:

@@ -7,6 +7,7 @@
 #  23-May-2018  jdw add preliminary default and helper tests
 #   5-Jun-2018  jdw update prototypes for IoUtil() methods
 #  13-Jun-2018  jdw add content classes
+#  25-Nov-2018  jdw add FASTA tests
 #
 #
 #
@@ -60,6 +61,10 @@ class IoUtilTests(unittest.TestCase):
         self.__pathInsilicoFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_EXCHANGE_SANDBOX', 'status', 'theoretical_model.tsv')
         self.__pathSaveInsilicoFile = os.path.join(HERE, 'test-output', 'saved-theoretical_model.tsv')
         #
+        # self.__pathVariantFastaFile = os.path.join(self.__mockTopPath, 'UniProt', 'uniprot_sprot_varsplic.fasta.gz')
+        self.__pathFastaFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_EXCHANGE_SANDBOX', 'sequence', 'pdb_seq_prerelease.fasta')
+        self.__pathSaveFastaFile = os.path.join(HERE, 'test-output', 'test-pre-release.fasta')
+        #
 
         self.__ioU = IoUtil()
         self.__startTime = time.time()
@@ -107,7 +112,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadJsonFile(self):
-        """ Test the case read list text file
+        """ Test the case read JSON file
         """
         try:
             rObj = self.__ioU.deserialize(self.__pathProvenanceFile, format="json")
@@ -118,7 +123,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteDictionaryFiles(self):
-        """ Test the case read PDBx/mmCIF dictionary text file
+        """ Test the case read and write PDBx/mmCIF dictionary text file
         """
         try:
             cL = self.__ioU.deserialize(self.__pathPdbxDictionaryFile, format="mmcif-dict")
@@ -132,7 +137,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteCifFile(self):
-        """ Test the case read PDBx/mmCIF text file
+        """ Test the case read and write PDBx/mmCIF text file
         """
         try:
             cL = self.__ioU.deserialize(self.__pathCifFile, format="mmcif")
@@ -145,7 +150,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteJsonFile(self):
-        """ Test the case read list text file
+        """ Test the case read and write JSON file
         """
         try:
             rObj = self.__ioU.deserialize(self.__pathProvenanceFile, format="json")
@@ -159,7 +164,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteListFile(self):
-        """ Test the case read list text file
+        """ Test the case read and write list text file
         """
         try:
             cL = self.__ioU.deserialize(self.__pathIndexFile, format="list")
@@ -172,7 +177,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWritePickleFile(self):
-        """ Test the case read list text file
+        """ Test the case read and write pickle file
         """
         try:
             rObj = self.__ioU.deserialize(self.__pathProvenanceFile, format="json")
@@ -190,7 +195,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteListWithEncodingFile(self):
-        """ Test the case read list text file with non-ascii encoding
+        """ Test the case read and write list text file with non-ascii encoding
         """
         try:
             cL = self.__ioU.deserialize(self.__pathInsilicoFile, format="list")
@@ -201,6 +206,19 @@ class IoUtilTests(unittest.TestCase):
             ok = self.__ioU.serialize(self.__pathSaveInsilicoFile, cL, format="list")
             self.assertTrue(ok)
             #
+        except Exception as e:
+            logger.exception("Failing with %s" % str(e))
+            self.fail()
+
+    def testReadWriteFastaFile(self):
+        """ Test the case read and write FASTA sequence file
+        """
+        try:
+            sD = self.__ioU.deserialize(self.__pathFastaFile, format="fasta", commentStyle='prerelease')
+            logger.debug("Sequence length %d" % len(sD))
+            self.assertGreaterEqual(len(sD), 940)
+            ok = self.__ioU.serialize(self.__pathSaveFastaFile, sD, format="fasta")
+            self.assertTrue(ok)
         except Exception as e:
             logger.exception("Failing with %s" % str(e))
             self.fail()
@@ -223,6 +241,8 @@ def utilReadWriteSuite():
     suiteSelect.addTest(IoUtilTests("testReadWritePickleFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteListFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteListWithEncodingFile"))
+    suiteSelect.addTest(IoUtilTests("testReadWriteFastaFile"))
+
     return suiteSelect
 
 
