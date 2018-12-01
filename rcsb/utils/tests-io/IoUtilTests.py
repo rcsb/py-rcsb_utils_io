@@ -8,6 +8,7 @@
 #   5-Jun-2018  jdw update prototypes for IoUtil() methods
 #  13-Jun-2018  jdw add content classes
 #  25-Nov-2018  jdw add FASTA tests
+#  30-Nov-2018  jdw add CSV tests
 #
 #
 #
@@ -65,7 +66,10 @@ class IoUtilTests(unittest.TestCase):
         self.__pathFastaFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_EXCHANGE_SANDBOX', 'sequence', 'pdb_seq_prerelease.fasta')
         self.__pathSaveFastaFile = os.path.join(HERE, 'test-output', 'test-pre-release.fasta')
         #
-
+        self.__pathTaxonomyFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'NCBI', 'names.dmp.gz')
+        self.__pathSaveTaxonomyFilePic = os.path.join(HERE, 'test-output', 'taxonomy_names.pic')
+        self.__pathSaveTaxonomyFileCsv = os.path.join(HERE, 'test-output', 'taxonomy_names.csv')
+        #
         self.__ioU = IoUtil()
         self.__startTime = time.time()
         logger.debug("Running tests on version %s" % __version__)
@@ -223,6 +227,43 @@ class IoUtilTests(unittest.TestCase):
             logger.exception("Failing with %s" % str(e))
             self.fail()
 
+    def testReadWriteTaxonomyFile(self):
+        """ Test the case read and write taxonomy resource file
+        """
+        try:
+            tL = self.__ioU.deserialize(self.__pathTaxonomyFile, format="tdd", rowFormat='list')
+            logger.info("Taxonomy length %d" % len(tL))
+            self.assertGreaterEqual(len(tL), 940)
+            tD = {}
+            csvL = []
+            for t in tL:
+                taxId = int(t[0])
+                name = t[2]
+                nameType = t[6]
+                csvL.append({'t': taxId, 'name': name, 'type': nameType})
+                #
+                if nameType in ['scientific name', 'common name', 'synonym', 'genbank common name']:
+                    if taxId not in tD:
+                        tD[taxId] = {}
+                    if nameType in ['scientific name']:
+                        tD[taxId]['sn'] = name
+                        continue
+                    if 'cn' not in tD[taxId]:
+                        tD[taxId]['cn'] = []
+                    tD[taxId]['cn'].append(name)
+                else:
+                    pass
+
+            ok = self.__ioU.serialize(self.__pathSaveTaxonomyFilePic, tD, format="pickle")
+            self.assertTrue(ok)
+            ok = self.__ioU.serialize(self.__pathSaveTaxonomyFileCsv, csvL, format="csv")
+            self.assertTrue(ok)
+            tL = self.__ioU.deserialize(self.__pathSaveTaxonomyFileCsv, format='csv', rowFormat='dict')
+            self.assertTrue(len(tL) > 2887000)
+        except Exception as e:
+            logger.exception("Failing with %s" % str(e))
+            self.fail()
+
 
 def utilReadSuite():
     suiteSelect = unittest.TestSuite()
@@ -242,6 +283,7 @@ def utilReadWriteSuite():
     suiteSelect.addTest(IoUtilTests("testReadWriteListFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteListWithEncodingFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteFastaFile"))
+    suiteSelect.addTest(IoUtilTests("testReadWriteTaxonomyFile"))
 
     return suiteSelect
 

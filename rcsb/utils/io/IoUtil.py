@@ -16,6 +16,7 @@
 #  13-Oct-2018  jdw add Py27 support for explicit encoding using io.open.
 #  26-Oct-2018  jdw add additonal JSON encodings for yaml data types
 #  25-Nov-2018  jdw add support for FASTA format sequence files
+#  30-Nov-2018  jdw add support CSV file formats
 #
 ##
 
@@ -24,7 +25,9 @@ __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
+import csv
 import datetime
+import gzip
 import io
 import json
 import logging
@@ -102,6 +105,8 @@ class IoUtil(object):
             ret = self.__textDump(filePath, myObj, **kwargs)
         elif fmt in ['fasta']:
             ret = self.__serializeFasta(filePath, myObj, **kwargs)
+        elif fmt in ['csv']:
+            ret = self.__serializeCsv(filePath, myObj, **kwargs)
         else:
             pass
 
@@ -133,6 +138,9 @@ class IoUtil(object):
             ret = self.__deserializeMmCifDict(filePath, **kwargs)
         elif fmt in ['fasta']:
             ret = self.__deserializeFasta(filePath, **kwargs)
+        elif fmt in ['csv', 'tdd']:
+            delimiter = ',' if fmt == 'csv' else '\t'
+            ret = self.__deserializeCsv(filePath, delimiter=delimiter, **kwargs)
         else:
             pass
 
@@ -349,3 +357,55 @@ class IoUtil(object):
             logger.error("Failing text ascii encoding for %s with %s" % (inputFilePath, str(e)))
         #
         return False
+
+    def __csvReader(self, csvFile, rowFormat, delimiter):
+        oL = []
+        if rowFormat == 'dict':
+            reader = csv.DictReader(csvFile, delimiter=delimiter)
+            for rowD in reader:
+                oL.append(rowD)
+        elif rowFormat == 'list':
+            reader = csv.reader(csvFile, delimiter=delimiter)
+            for rowL in reader:
+                oL.append(rowL)
+        return oL
+
+    def __deserializeCsv(self, filePath, delimiter=',', rowFormat='dict', encodingErrors='ignore', **kwargs):
+        oL = []
+
+        try:
+            if filePath[-3:] == '.gz':
+                if sys.version_info[0] > 2:
+                    with gzip.open(filePath, 'rt', encoding='utf-8-sig', errors=encodingErrors) as csvFile:
+                        oL = self.__csvReader(csvFile, rowFormat, delimiter)
+                else:
+                    with gzip.open(filePath, 'rb') as csvFile:
+                        oL = self.__csvReader(csvFile, rowFormat, delimiter)
+            else:
+                with io.open(filePath, newline='', encoding='utf-8-sig', errors='ignore') as csvFile:
+                    oL = self.__csvReader(csvFile, rowFormat, delimiter)
+
+            return oL
+        except Exception as e:
+            logger.exception("Unable to deserialize %r %s" % (filePath, str(e)))
+        #
+        logger.debug("Reading list length %d" % len(oL))
+        return oL
+
+    def __serializeCsv(self, filePath, rowDictList, fieldNames=None, **kwargs):
+        """
+        """
+        try:
+            ret = False
+            fNames = fieldNames if fieldNames else list(rowDictList[0].keys())
+            # with io.open(filePath, 'w', newline='') as csvFile:
+            with open(filePath, 'w') as csvFile:
+                writer = csv.DictWriter(csvFile, fieldnames=fNames)
+                writer.writeheader()
+                for rowDict in rowDictList:
+                    wD = {k: v for k, v in rowDict.items() if k in fNames}
+                    writer.writerow(wD)
+            ret = True
+        except Exception as e:
+            logger.error("Failing for %s with %s" % (filePath, str(e)))
+        return ret
