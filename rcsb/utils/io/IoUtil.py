@@ -17,6 +17,7 @@
 #  26-Oct-2018  jdw add additonal JSON encodings for yaml data types
 #  25-Nov-2018  jdw add support for FASTA format sequence files
 #  30-Nov-2018  jdw add support CSV file formats
+#  11-Dec-2018  jdw add comment filtering on input for CSV files
 #
 ##
 
@@ -49,6 +50,13 @@ except Exception:
 
 
 logger = logging.getLogger(__name__)
+
+
+def uncomment(csvfile):
+    for row in csvfile:
+        raw = row.split('#')[0].strip()
+        if raw:
+            yield raw
 
 
 class JsonTypeEncoder(json.JSONEncoder):
@@ -361,11 +369,11 @@ class IoUtil(object):
     def __csvReader(self, csvFile, rowFormat, delimiter):
         oL = []
         if rowFormat == 'dict':
-            reader = csv.DictReader(csvFile, delimiter=delimiter)
+            reader = csv.DictReader(uncomment(csvFile), delimiter=delimiter)
             for rowD in reader:
                 oL.append(rowD)
         elif rowFormat == 'list':
-            reader = csv.reader(csvFile, delimiter=delimiter)
+            reader = csv.reader(uncomment(csvFile), delimiter=delimiter)
             for rowL in reader:
                 oL.append(rowL)
         return oL

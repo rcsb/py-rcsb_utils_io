@@ -237,6 +237,8 @@ class IoUtilTests(unittest.TestCase):
             tD = {}
             csvL = []
             for t in tL:
+                if len(t) < 7:
+                    continue
                 taxId = int(t[0])
                 name = t[2]
                 nameType = t[6]
@@ -259,7 +261,7 @@ class IoUtilTests(unittest.TestCase):
             ok = self.__ioU.serialize(self.__pathSaveTaxonomyFileCsv, csvL, format="csv")
             self.assertTrue(ok)
             tL = self.__ioU.deserialize(self.__pathSaveTaxonomyFileCsv, format='csv', rowFormat='dict')
-            self.assertTrue(len(tL) > 2887000)
+            self.assertTrue(len(tL) > 2880000)
         except Exception as e:
             logger.exception("Failing with %s" % str(e))
             self.fail()
