@@ -11,7 +11,9 @@
 26-Oct-2018  - V0.17 Add additonal JSON encodings for YAML mapping data types
 25-Nov-2018  - V0.18 Add support for FASTA format
  1-Dec-2018  - V0.19 Add support for CSV and related delimited row formats
-11-Dec-20-18 - V0.20 Add comment filtering on input for CSV files
+11-Dec-2018  - V0.20 Add comment filtering on input for CSV files
+ 6-Feb-2019  - V0.21 Add support for gzip compression as part of serializing mmCIF files,
+                     add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
 #
 
 

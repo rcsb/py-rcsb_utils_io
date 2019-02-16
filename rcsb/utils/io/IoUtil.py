@@ -18,6 +18,8 @@
 #  25-Nov-2018  jdw add support for FASTA format sequence files
 #  30-Nov-2018  jdw add support CSV file formats
 #  11-Dec-2018  jdw add comment filtering on input for CSV files
+#   5-Feb-2019  jdw add support for gzip compression as part of serializing mmCIF files.
+#   6-Feb-2019  jdw add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
 #
 ##
 
@@ -35,11 +37,15 @@ import logging
 import os
 import pickle
 import pprint
+import random
+import shutil
+import string
 import sys
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
 from rcsb.utils.io.FastaUtil import FastaUtil
+from rcsb.utils.validation.ValidationReportReader import ValidationReportReader
 
 import ruamel.yaml
 
@@ -146,6 +152,8 @@ class IoUtil(object):
             ret = self.__deserializeMmCifDict(filePath, **kwargs)
         elif fmt in ['fasta']:
             ret = self.__deserializeFasta(filePath, **kwargs)
+        elif fmt in ['vrpt-xml-to-cif']:
+            ret = self.__deserializeVrptToCif(filePath, **kwargs)
         elif fmt in ['csv', 'tdd']:
             delimiter = ',' if fmt == 'csv' else '\t'
             ret = self.__deserializeCsv(filePath, delimiter=delimiter, **kwargs)
@@ -160,11 +168,35 @@ class IoUtil(object):
         except Exception:
             return False
 
+    def __compress(self, inpPath, outPath, type="gzip"):
+        try:
+            with open(inpPath, 'rb') as f_in:
+                with gzip.open(outPath, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            return True
+        except Exception as e:
+            logger.exception("Compressing file %s failing with %s" % (inpPath, str(e)))
+            return False
+
     def __deserializeFasta(self, filePath, **kwargs):
         try:
             commentStyle = kwargs.get('commentStyle', 'uniprot')
             fau = FastaUtil()
             return fau.readFasta(filePath, commentStyle=commentStyle)
+        except Exception as e:
+            logger.error("Unable to deserialize %r %r " % (filePath, str(e)))
+        return {}
+
+    def __deserializeVrptToCif(self, filePath, **kwargs):
+        """ Deserialize XML validation report data file and return as mmcif container list
+        """
+        try:
+            dictMapPath = kwargs.get('dictMapPath', None)
+            if not dictMapPath:
+                logger.error("Missing dictionary mapping file")
+            dictMap = self.__deserializeJson(dictMapPath)
+            vrr = ValidationReportReader(dictMap)
+            return vrr.toCif(filePath)
         except Exception as e:
             logger.error("Unable to deserialize %r %r " % (filePath, str(e)))
         return {}
@@ -254,13 +286,19 @@ class IoUtil(object):
         """
         try:
             ret = False
-            # workPath = kwargs.get('workPath', None)
+            workPath = kwargs.get('workPath', None)
             enforceAscii = kwargs.get('enforceAscii', True)
             raiseExceptions = kwargs.get('raiseExceptions', True)
             useCharRefs = kwargs.get('useCharRefs', True)
             #
             myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
-            ret = myIo.writeFile(filePath, containerList=containerList, enforceAscii=enforceAscii)
+            if filePath.endswith(".gz") and workPath:
+                rfn = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+                tPath = os.path.join(workPath, rfn)
+                ret = myIo.writeFile(tPath, containerList=containerList, enforceAscii=enforceAscii)
+                ret = self.__compress(tPath, filePath, type="gzip")
+            else:
+                ret = myIo.writeFile(filePath, containerList=containerList, enforceAscii=enforceAscii)
         except Exception as e:
             logger.error("Failing for %s with %s" % (filePath, str(e)))
         return ret

@@ -7,7 +7,8 @@
 #  23-May-2018  jdw add preliminary default and helper tests
 #   5-Jun-2018  jdw update prototypes for MarshalUtil() methods
 #  13-Jun-2018  jdw add content classes
-#  25-Nov-2018  ydw add FASTA tests
+#  25-Nov-2018  jdw add FASTA tests
+#   5-Feb-2019  jdw add tests for validation report processing
 #
 #
 #
@@ -57,6 +58,10 @@ class MarshalUtilTests(unittest.TestCase):
         #
         self.__pathFastaFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_EXCHANGE_SANDBOX', 'sequence', 'pdb_seq_prerelease.fasta')
         self.__pathSaveFastaFile = os.path.join(HERE, 'test-output', 'test-pre-release.fasta')
+        #
+        self.__pathXmlVrpt = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_VALIDATION_REPORTS', 'dr', '6drg', '6drg_validation.xml.gz')
+        self.__pathSaveCifVrpt = os.path.join(HERE, 'test-output', '6drg_validation.cif')
+        self.__pathVrptMapFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'dictionaries', 'vrpt_dictmap.json')
         #
         self.__mU = MarshalUtil()
         self.__startTime = time.time()
@@ -181,6 +186,19 @@ class MarshalUtilTests(unittest.TestCase):
             logger.exception("Failing with %s" % str(e))
             self.fail()
 
+    def testReadWriteVrptFile(self):
+        """ Test the case read and write validation report data file
+        """
+        try:
+            sD = self.__mU.doImport(self.__pathXmlVrpt, format="vrpt-xml-to-cif", dictMapPath=self.__pathVrptMapFile)
+            logger.debug("Val report container length %d" % len(sD))
+            self.assertGreaterEqual(len(sD), 1)
+            ok = self.__mU.doExport(self.__pathSaveCifVrpt, sD, format="mmcif")
+            self.assertTrue(ok)
+        except Exception as e:
+            logger.exception("Failing with %s" % str(e))
+            self.fail()
+
 
 def utilReadSuite():
     suiteSelect = unittest.TestSuite()
@@ -198,6 +216,7 @@ def utilReadWriteSuite():
     suiteSelect.addTest(MarshalUtilTests("testReadWriteJsonFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteListFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteFastaFile"))
+    suiteSelect.addTest(MarshalUtilTests("testReadWriteVrptFile"))
     return suiteSelect
 
 
