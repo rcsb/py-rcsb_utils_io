@@ -14,6 +14,7 @@
 11-Dec-2018  - V0.20 Add comment filtering on input for CSV files
  6-Feb-2019  - V0.21 Add support for gzip compression as part of serializing mmCIF files,
                      add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
+ 6-Mar-2019  - V0.22 Update installation dependencies and documentation
 #
 
 
