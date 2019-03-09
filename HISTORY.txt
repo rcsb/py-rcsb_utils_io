@@ -16,6 +16,7 @@
                      add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
  6-Mar-2019  - V0.22 Update installation dependencies and documentation
  9-Mar-2019  - V0.23 Add implementations for stubbed out remote access.
+ 9-Mar-2019  - V0.24 Add URL locator test and import fix to resolve PY27 compatibility issue.
 #
 
 

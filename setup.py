@@ -45,7 +45,7 @@ setup(
         'console_scripts': []
     },
     #
-    install_requires=['mmcif >= 0.34', 'ruamel.yaml', 'rcsb.utils.validation >= 0.13'],
+    install_requires=['mmcif >= 0.34', 'ruamel.yaml', 'rcsb.utils.validation >= 0.13', 'backports.tempfile'],
     packages=find_packages(exclude=['rcsb.mock-data', 'rcsb.utils.tests-io', 'rcsb.utils.tests-*', 'tests.*']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:

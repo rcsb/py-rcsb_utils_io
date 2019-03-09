@@ -62,6 +62,8 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathXmlVrpt = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'MOCK_VALIDATION_REPORTS', 'dr', '6drg', '6drg_validation.xml.gz')
         self.__pathSaveCifVrpt = os.path.join(HERE, 'test-output', '6drg_validation.cif')
         self.__pathVrptMapFile = os.path.join(TOPDIR, 'rcsb', 'mock-data', 'dictionaries', 'vrpt_dictmap.json')
+        self.__workPath = os.path.join(HERE, 'test-output')
+        self.__urlTarget = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
         #
         self.__mU = MarshalUtil()
         self.__startTime = time.time()
@@ -199,6 +201,23 @@ class MarshalUtilTests(unittest.TestCase):
             logger.exception("Failing with %s" % str(e))
             self.fail()
 
+    def testReadUrlTarfile(self):
+        """ Test the case to read URL target and extract a member
+        """
+        try:
+            mU = MarshalUtil(workPath=self.__workPath)
+            pth, fn = os.path.split(self.__urlTarget)
+            #
+            nmL = mU.doImport(self.__urlTarget, format='tdd', rowFormat='list', tarMember='names.dmp')
+            self.assertGreater(len(nmL), 2000000)
+            logger.info("Names %d" % len(nmL))
+            ndL = mU.doImport(os.path.join(self.__workPath, fn), format='tdd', rowFormat='list', tarMember='nodes.dmp')
+            self.assertGreater(len(ndL), 2000000)
+            logger.info("Nodes %d" % len(ndL))
+        except Exception as e:
+            logger.exception("Failing with %s" % str(e))
+            self.fail()
+
 
 def utilReadSuite():
     suiteSelect = unittest.TestSuite()
@@ -206,6 +225,7 @@ def utilReadSuite():
     suiteSelect.addTest(MarshalUtilTests("testReadCifFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadJsonFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadListFile"))
+    suiteSelect.addTest(MarshalUtilTests("testReadUrlTarfile"))
     return suiteSelect
 
 

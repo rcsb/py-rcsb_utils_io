@@ -17,10 +17,16 @@ __license__ = "Apache 2.0"
 
 import logging
 import os
-import tempfile
+import sys
 
 from rcsb.utils.io.FileUtil import FileUtil
 from rcsb.utils.io.IoUtil import IoUtil
+
+if sys.version_info[0] == 2:
+    from backports import tempfile
+else:
+    import tempfile
+
 
 logger = logging.getLogger(__name__)
 
