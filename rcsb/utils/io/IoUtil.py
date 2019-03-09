@@ -131,7 +131,7 @@ class IoUtil(object):
 
         Args:
             filePath (str): local file path
-            format (str, optional): one of ['mmcif', 'json', 'list', 'pickle' (default)]
+            format (str, optional): one of ['mmcif', 'json', 'list', ..., 'pickle' (default)]
             **kwargs:  additional keyword arguments passed to worker methods -
 
         Returns:
