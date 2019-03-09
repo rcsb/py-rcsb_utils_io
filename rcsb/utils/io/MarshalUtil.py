@@ -4,7 +4,8 @@
 #
 # Updates:
 #      19-Jun-2018 jdw propagate the class workpath to serialize/deserialize methods explicitly
-#
+#       6-Mar-2019 jdw add previously stubbed remote access and tar file member support
+#       9-Mar-2019 jdw add exists()
 #
 # For py 27 pip install backports.tempfile
 ##
@@ -90,7 +91,8 @@ class MarshalUtil(object):
         try:
             ret = None
             cacheLocalFlag = kwargs.get('cacheLocal', False)
-            localFlag = self.__fileU.isLocal(locator)
+            tarMember = kwargs.get('tarMember', None)
+            localFlag = self.__fileU.isLocal(locator) and not tarMember
             #
             if localFlag and not cacheLocalFlag:
                 filePath = self.__fileU.getFilePath(locator)
@@ -98,9 +100,14 @@ class MarshalUtil(object):
             else:
                 #
                 with tempfile.TemporaryDirectory(suffix=self.__workDirSuffix, prefix=self.__workDirPrefix, dir=self.__workPath) as tmpDirName:
-                    # fetch first then read a local copy -
                     #
-                    localFilePath = os.path.join(self.__workPath, tmpDirName, self.__fileU.getFileName(locator))
+                    # Fetch first then read a local copy -
+                    #
+                    if tarMember:
+                        localFilePath = os.path.join(self.__workPath, tmpDirName, tarMember)
+                    else:
+                        localFilePath = os.path.join(self.__workPath, tmpDirName, self.__fileU.getFileName(locator))
+                    #
                     self.__fileU.get(locator, localFilePath, **kwargs)
                     myObj = self.__ioU.deserialize(localFilePath, format=format, workPath=self.__workPath, **kwargs)
 
@@ -112,3 +119,6 @@ class MarshalUtil(object):
             logger.exception("Importing locator %r failing with %s" % (locator, str(e)))
             ret = None
         return ret
+
+    def exists(self, filePath, mode=os.R_OK):
+        return self.__ioU.exists(filePath, mode=mode)
