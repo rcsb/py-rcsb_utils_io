@@ -6,6 +6,7 @@
 # Updates:
 #  5-Jun-2018 jdw add support for local copy operations using shutil.copy
 #  6-Mar-2019 jdw add previously stubbed remote access and tar file member support
+# 10-Mar-2019 jdw add exists() method
 #
 ##
 
@@ -17,7 +18,7 @@ __license__ = "Apache 2.0"
 #
 import contextlib
 import logging
-import os.path
+import os
 import shutil
 import tarfile
 
@@ -141,6 +142,12 @@ class FileUtil(object):
         except Exception as e:
             logger.exception("For locator %r Failing with %s" % (locator, str(e)))
         return None
+
+    def exists(self, filePath, mode=os.R_OK):
+        try:
+            return os.access(filePath, os.R_OK)
+        except Exception:
+            return False
 
     def __unbundle(self, tarFilePath, dirPath='.'):
         #   import tarfile contents into dirPath -
