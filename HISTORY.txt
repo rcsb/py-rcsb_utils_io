@@ -18,8 +18,9 @@
  9-Mar-2019  - V0.23 Add implementations for stubbed out remote access.
  9-Mar-2019  - V0.24 Add URL locator test and import fix to resolve PY27 compatibility issue.
 10-Mar-2019  - V0.25 Add FileUtils.exists() method
-16-Mar-2019. - V0.26 Add class UrlRequestUtils() with general wrappers for common get and post
+16-Mar-2019  - V0.26 Add class UrlRequestUtil() with general wrappers for common get and post
                      methods and associated tests.
+17-Mar-2019  - V0.27 Return HTTP response codes in UrlRequestUtil() methods.
 #
 
 

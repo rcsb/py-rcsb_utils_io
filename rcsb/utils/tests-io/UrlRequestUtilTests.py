@@ -66,9 +66,10 @@ class UrlRequestUtilTests(unittest.TestCase):
             pD['style'] = 'raw'
             #
             ureq = UrlRequestUtil()
-            ret = ureq.post(baseUrl, endPoint, pD)
+            ret, retCode = ureq.post(baseUrl, endPoint, pD)
             logger.debug("XML result %r" % ret)
             nm = ret.count("<entry ")
+            logger.info("Result count %d status code %r" % (nm, retCode))
             self.assertGreaterEqual(nm, len(idList))
         except Exception as e:
             logger.exception("Failing with %s" % str(e))
@@ -86,9 +87,10 @@ class UrlRequestUtilTests(unittest.TestCase):
             pD['size'] = '-1'
             pD['accession'] = ','.join(idList)
             ureq = UrlRequestUtil()
-            ret = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
             logger.debug("XML result %r" % ret)
             nm = ret.count("<entry ")
+            logger.info("Result count %d status code %r" % (nm, retCode))
             self.assertGreaterEqual(nm, len(idList) - 1)
 
         except Exception as e:
@@ -110,9 +112,10 @@ class UrlRequestUtilTests(unittest.TestCase):
                   'query': ' '.join(idList)
                   }
             ureq = UrlRequestUtil()
-            ret = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
             logger.debug("XML result %r" % ret)
             nm = ret.count("<entry ")
+            logger.info("Result count %d status code %r" % (nm, retCode))
             self.assertGreaterEqual(nm, len(idList))
 
         except Exception as e:
@@ -133,9 +136,10 @@ class UrlRequestUtilTests(unittest.TestCase):
             pD['id'] = ','.join(idList)
             pD['retmode'] = 'xml'
             ureq = UrlRequestUtil()
-            ret = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
             nm = ret.count("<DocSum")
             logger.debug("XML result %r" % ret)
+            logger.info("Result count %d status code %r" % (nm, retCode))
             self.assertGreaterEqual(nm, len(idList))
 
         except Exception as e:
@@ -156,9 +160,10 @@ class UrlRequestUtilTests(unittest.TestCase):
             pD['id'] = ','.join(idList)
             pD['retmode'] = 'xml'
             ureq = UrlRequestUtil()
-            ret = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
             nm = ret.count("<GBSeq_length>")
             logger.debug("XML result %r" % ret)
+            logger.info("Result count %d status code %r" % (nm, retCode))
             self.assertGreaterEqual(nm, len(idList))
 
         except Exception as e:

@@ -4,6 +4,7 @@
 # Simple wrapper for URL request processing
 #
 # Updates:
+#  17-Mar-2019 jdw adjust return value to include response error code
 #
 ##
 
@@ -40,6 +41,7 @@ class UrlRequestUtil(object):
         """
         """
         ret = None
+        retCode = None
         sslCert = kwargs.get("sslCert", 'disable')
         optD = {}
         try:
@@ -53,15 +55,18 @@ class UrlRequestUtil(object):
 
             with contextlib.closing(urlopen(urlPath, requestData, **optD)) as req:
                 ret = req.read().decode('utf-8')
-        except Exception as e:
-            logger.exception("Failing %s %s %r with %s" % (url, endPoint, paramD, str(e)))
+                retCode = req.getcode()
 
-        return ret
+        except Exception as e:
+            logger.error("Failing %s %s %r with %s" % (url, endPoint, paramD, str(e)))
+
+        return ret, retCode
 
     def get(self, url, endPoint, paramD, **kwargs):
         """
         """
         ret = None
+        retCode = None
         sslCert = kwargs.get("sslCert", 'disable')
         headerL = kwargs.get("headers", None)
         optD = {}
@@ -81,8 +86,9 @@ class UrlRequestUtil(object):
 
             with contextlib.closing(urlopen(req, **optD)) as req:
                 ret = req.read().decode('utf-8')
+                retCode = req.getcode()
 
         except Exception as e:
-            logger.exception("Failing %s %s %r with %s" % (url, endPoint, paramD, str(e)))
+            logger.error("Failing %s %s %r with %s" % (url, endPoint, paramD, str(e)))
 
-        return ret
+        return ret, retCode
