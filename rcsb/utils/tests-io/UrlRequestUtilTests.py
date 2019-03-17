@@ -12,8 +12,10 @@ Test cases for selected get and post requests using UrlRequestUtil wrappers -
 
 import logging
 import os
+import time
 import unittest
 
+from rcsb.utils.io import __version__
 from rcsb.utils.io.UrlRequestUtil import UrlRequestUtil
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -39,12 +41,19 @@ class UrlRequestUtilTests(unittest.TestCase):
                              'P29972', 'P29978', 'P29986', 'P29987', 'P29988', 'P29989', 'P29990', 'P29991', 'P29994']
 
         self.__unpIdListV = ['P42284', 'P42284-1', 'P42284-2', 'P42284-3', 'P29994-1', 'P29994-2', 'P29994-3', 'P29994-4', 'P29994-5', 'P29994-6', 'P29994-7']
+        logger.debug("Running tests on version %s" % __version__)
+        self.__startTime = time.time()
+        logger.info("Starting %s at %s" % (self.id(),
+                                           time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
 
     def tearDown(self):
-        pass
+        endTime = time.time()
+        logger.info("Completed %s at %s (%.4f seconds)" % (self.id(),
+                                                           time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
+                                                           endTime - self.__startTime))
 
     def testUnpBatchFetchPost(self):
-        """ UniProt batch fetch post test
+        """ UniProt batch fetch (ebi dbfetch) post test
         """
         baseUrl = 'https://www.ebi.ac.uk'
         endPoint = 'Tools/dbfetch/dbfetch'
@@ -66,7 +75,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchGet1(self):
-        """ UniProt batch fetch get test
+        """ UniProt batch fetch (proteins) get test
         """
         baseUrl = 'https://www.ebi.ac.uk'
         endPoint = 'proteins/api/proteins'
@@ -87,7 +96,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchGet2(self):
-        """ UniProt batch fetch get test
+        """ UniProt batch fetch (uploadlists) get test
         """
 
         baseUrl = 'http://www.uniprot.org'
@@ -111,7 +120,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testNcbiFetchSummaryPost(self):
-        """ UniProt batch fetch get test
+        """ NCBI batch fetch (esummary) get test
         """
         idList = ['AP012306.1', 'U53879.1']
         database = 'Nucleotide'
@@ -134,7 +143,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testNcbiFetchEntryPost(self):
-        """ UniProt batch fetch get test
+        """ NCBI batch fetch (efetch) get test
         """
         idList = ['AP012306.1', 'U53879.1']
         database = 'Nucleotide'
