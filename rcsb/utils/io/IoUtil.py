@@ -20,6 +20,7 @@
 #  11-Dec-2018  jdw add comment filtering on input for CSV files
 #   5-Feb-2019  jdw add support for gzip compression as part of serializing mmCIF files.
 #   6-Feb-2019  jdw add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
+#  24-Mar-2019  jdw suppress error message on missing validation report file.
 #
 ##
 
@@ -198,7 +199,7 @@ class IoUtil(object):
             vrr = ValidationReportReader(dictMap)
             return vrr.toCif(filePath)
         except Exception as e:
-            logger.error("Unable to deserialize %r %r " % (filePath, str(e)))
+            logger.debug("Unable to deserialize %r %r " % (filePath, str(e)))
         return {}
 
     def __serializeFasta(self, filePath, myObj, **kwargs):

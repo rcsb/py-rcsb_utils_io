@@ -34,8 +34,8 @@ class UrlRequestUtil(object):
 
     """
 
-    def __init__(self, workPath=None, **kwargs):
-        self.__workPath = workPath
+    def __init__(self, **kwargs):
+        pass
 
     def post(self, url, endPoint, paramD, **kwargs):
         """

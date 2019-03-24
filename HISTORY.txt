@@ -21,6 +21,7 @@
 16-Mar-2019  - V0.26 Add class UrlRequestUtil() with general wrappers for common get and post
                      methods and associated tests.
 17-Mar-2019  - V0.27 Return HTTP response codes in UrlRequestUtil() methods.
+24-Mar-2019  - V0.28 Suppress error message on missing validation report file.
 #
 
 
