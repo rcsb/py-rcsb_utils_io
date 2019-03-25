@@ -21,6 +21,7 @@
 #   5-Feb-2019  jdw add support for gzip compression as part of serializing mmCIF files.
 #   6-Feb-2019  jdw add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
 #  24-Mar-2019  jdw suppress error message on missing validation report file.
+#  25-Mar-2019  jdw expose comment processing for csv/tdd files as keyword argument
 #
 ##
 
@@ -59,7 +60,7 @@ except Exception:
 logger = logging.getLogger(__name__)
 
 
-def uncomment(csvfile):
+def uncommentFilter(csvfile):
     for row in csvfile:
         raw = row.split('#')[0].strip()
         if raw:
@@ -405,32 +406,38 @@ class IoUtil(object):
         #
         return False
 
-    def __csvReader(self, csvFile, rowFormat, delimiter):
+    def __csvReader(self, csvFile, rowFormat, delimiter, uncomment=True):
         oL = []
         if rowFormat == 'dict':
-            reader = csv.DictReader(uncomment(csvFile), delimiter=delimiter)
+            if uncomment:
+                reader = csv.DictReader(uncommentFilter(csvFile), delimiter=delimiter)
+            else:
+                reader = csv.DictReader(csvFile, delimiter=delimiter)
             for rowD in reader:
                 oL.append(rowD)
         elif rowFormat == 'list':
-            reader = csv.reader(uncomment(csvFile), delimiter=delimiter)
+            if uncomment:
+                reader = csv.reader(uncommentFilter(csvFile), delimiter=delimiter)
+            else:
+                reader = csv.reader(csvFile, delimiter=delimiter)
             for rowL in reader:
                 oL.append(rowL)
         return oL
 
-    def __deserializeCsv(self, filePath, delimiter=',', rowFormat='dict', encodingErrors='ignore', **kwargs):
+    def __deserializeCsv(self, filePath, delimiter=',', rowFormat='dict', encodingErrors='ignore', uncomment=True, **kwargs):
         oL = []
 
         try:
             if filePath[-3:] == '.gz':
                 if sys.version_info[0] > 2:
                     with gzip.open(filePath, 'rt', encoding='utf-8-sig', errors=encodingErrors) as csvFile:
-                        oL = self.__csvReader(csvFile, rowFormat, delimiter)
+                        oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
                 else:
                     with gzip.open(filePath, 'rb') as csvFile:
                         oL = self.__csvReader(csvFile, rowFormat, delimiter)
             else:
                 with io.open(filePath, newline='', encoding='utf-8-sig', errors='ignore') as csvFile:
-                    oL = self.__csvReader(csvFile, rowFormat, delimiter)
+                    oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
 
             return oL
         except Exception as e:
