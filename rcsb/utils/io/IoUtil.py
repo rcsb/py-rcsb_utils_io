@@ -22,6 +22,7 @@
 #   6-Feb-2019  jdw add vrpt-xml-to-cif option and supporting method __deserializeVrptToCif()
 #  24-Mar-2019  jdw suppress error message on missing validation report file.
 #  25-Mar-2019  jdw expose comment processing for csv/tdd files as keyword argument
+#   3-Apr-2019  jdw add comment option and compression handling to __deserializeList()
 #
 ##
 
@@ -369,7 +370,7 @@ class IoUtil(object):
             logger.error("Unable to serialize %r %r" % (filePath, str(e)))
         return False
 
-    def __deserializeList(self, filePath, enforceAscii=True, **kwargs):
+    def __XdeserializeList(self, filePath, enforceAscii=True, **kwargs):
         aList = []
         try:
             with io.open(filePath, 'r', encoding="utf-8") as ifh:
@@ -380,6 +381,37 @@ class IoUtil(object):
                         pth = line[:-1]
                     if len(pth) and not pth.startswith("#"):
                         aList.append(pth)
+        except Exception as e:
+            logger.error("Unable to deserialize %r %s" % (filePath, str(e)))
+        #
+        logger.debug("Reading list length %d" % len(aList))
+        return aList
+
+    def __processList(self, ifh, enforceAscii=True, uncomment=True):
+        aList = []
+        for line in ifh:
+            if enforceAscii:
+                pth = line[:-1].encode('ascii', 'xmlcharrefreplace').decode('ascii')
+            else:
+                pth = line[:-1]
+            if (not len(pth) or (uncomment and pth.startswith("#"))):
+                continue
+            aList.append(pth)
+        return aList
+
+    def __deserializeList(self, filePath, enforceAscii=True, encodingErrors='ignore', **kwargs):
+        aList = []
+        try:
+            if filePath[-3:] == '.gz':
+                if sys.version_info[0] > 2:
+                    with gzip.open(filePath, 'rt', encoding='utf-8-sig', errors=encodingErrors) as ifh:
+                        aList = self.__processList(ifh, enforceAscii=enforceAscii)
+                else:
+                    with gzip.open(filePath, 'rb') as ifh:
+                        aList = self.__processList(ifh, enforceAscii=enforceAscii)
+            else:
+                with io.open(filePath, encoding='utf-8-sig', errors='ignore') as ifh:
+                    aList = self.__processList(ifh, enforceAscii=enforceAscii)
         except Exception as e:
             logger.error("Unable to deserialize %r %s" % (filePath, str(e)))
         #
@@ -408,6 +440,9 @@ class IoUtil(object):
 
     def __csvReader(self, csvFile, rowFormat, delimiter, uncomment=True):
         oL = []
+
+        maxInt = sys.maxsize
+        csv.field_size_limit(maxInt)
         if rowFormat == 'dict':
             if uncomment:
                 reader = csv.DictReader(uncommentFilter(csvFile), delimiter=delimiter)
