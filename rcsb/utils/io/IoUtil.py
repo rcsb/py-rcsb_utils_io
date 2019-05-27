@@ -461,17 +461,17 @@ class IoUtil(object):
 
     def __deserializeCsv(self, filePath, delimiter=',', rowFormat='dict', encodingErrors='ignore', uncomment=True, **kwargs):
         oL = []
-
+        encoding = kwargs.get("encoding", 'utf-8-sig')
         try:
             if filePath[-3:] == '.gz':
                 if sys.version_info[0] > 2:
-                    with gzip.open(filePath, 'rt', encoding='utf-8-sig', errors=encodingErrors) as csvFile:
+                    with gzip.open(filePath, 'rt', encoding=encoding, errors=encodingErrors) as csvFile:
                         oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
                 else:
                     with gzip.open(filePath, 'rb') as csvFile:
                         oL = self.__csvReader(csvFile, rowFormat, delimiter)
             else:
-                with io.open(filePath, newline='', encoding='utf-8-sig', errors='ignore') as csvFile:
+                with io.open(filePath, newline='', encoding=encoding, errors='ignore') as csvFile:
                     oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
 
             return oL
