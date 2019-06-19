@@ -42,23 +42,24 @@ class UrlRequestUtil(object):
         """
         ret = None
         retCode = None
-        sslCert = kwargs.get("sslCert", 'disable')
+        sslCert = kwargs.get("sslCert", "disable")
         optD = {}
         try:
-            if sslCert == 'disable':
-                gcontext = ssl._create_unverified_context()
-                optD = {'context': gcontext}
+            if sslCert == "disable":
+                gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
+                optD = {"context": gcontext}
             #
             urlPath = "%s/%s" % (url, endPoint)
             requestData = urlencode(paramD).encode("utf-8")
-            logger.debug("Request %s with data %r" % (urlPath, requestData))
+            logger.debug("Request %s with data %r", urlPath, requestData)
 
             with contextlib.closing(urlopen(urlPath, requestData, **optD)) as req:
-                ret = req.read().decode('utf-8')
+                # pylint: disable=no-member
+                ret = req.read().decode("utf-8")
                 retCode = req.getcode()
 
         except Exception as e:
-            logger.error("Failing %s %s %r with %s" % (url, endPoint, paramD, str(e)))
+            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
 
         return ret, retCode
 
@@ -67,28 +68,29 @@ class UrlRequestUtil(object):
         """
         ret = None
         retCode = None
-        sslCert = kwargs.get("sslCert", 'disable')
+        sslCert = kwargs.get("sslCert", "disable")
         headerL = kwargs.get("headers", None)
         optD = {}
         try:
-            if sslCert == 'disable':
-                gcontext = ssl._create_unverified_context()
-                optD = {'context': gcontext}
+            if sslCert == "disable":
+                gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
+                optD = {"context": gcontext}
             #
             urlPath = "%s/%s" % (url, endPoint)
             requestData = urlencode(paramD)
-            logger.debug("Request %s with data %s" % (urlPath, requestData))
+            logger.debug("Request %s with data %s", urlPath, requestData)
 
-            req = Request('%s?%s' % (urlPath, requestData))
+            req = Request("%s?%s" % (urlPath, requestData))
             if headerL:
                 for hTup in headerL:
                     req.add_header(hTup[0], hTup[1])
 
             with contextlib.closing(urlopen(req, **optD)) as req:
-                ret = req.read().decode('utf-8')
+                # pylint: disable=no-member
+                ret = req.read().decode("utf-8")
                 retCode = req.getcode()
 
         except Exception as e:
-            logger.error("Failing %s %s %r with %s" % (url, endPoint, paramD, str(e)))
+            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
 
         return ret, retCode

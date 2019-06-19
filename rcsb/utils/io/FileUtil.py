@@ -22,6 +22,7 @@ import os
 import shutil
 import tarfile
 
+# pylint: disable=ungrouped-imports
 try:
     import urllib.request as myurl
 except Exception:
@@ -41,6 +42,7 @@ class FileUtil(object):
     """
 
     def __init__(self, workPath=None, **kwargs):
+        _ = kwargs
         self.__workPath = workPath
 
     #
@@ -73,21 +75,21 @@ class FileUtil(object):
                 rPath = self.getFilePath(remote)
                 lPath = self.getFilePath(local)
                 ret = self.__extractTarMember(rPath, tarMember, lPath)
-                logger.debug("Extract %r from %r to %r status %r" % (tarMember, rPath, lPath, ret))
+                logger.debug("Extract %r from %r to %r status %r", tarMember, rPath, lPath, ret)
             elif not localFlag and tarMember:
                 # Extract a particular member from a remote tar file
                 tarPath = os.path.join(self.__workPath, self.getFileName(remote))
                 ret = self.__fetchUrl(remote, tarPath)
-                logger.debug("Fetched %r to %r status %r" % (remote, tarPath, ret))
+                logger.debug("Fetched %r to %r status %r", remote, tarPath, ret)
                 ret = self.__extractTarMember(tarPath, tarMember, self.getFilePath(local)) if ret else False
-                logger.debug("Extract %r from %r to %r status %r" % (tarMember, tarPath, self.getFilePath(local), ret))
+                logger.debug("Extract %r from %r to %r status %r", tarMember, tarPath, self.getFilePath(local), ret)
             elif not localFlag and not tarMember:
                 ret = self.__fetchUrl(remote, self.getFilePath(local))
             else:
                 ret = False
             #
         except Exception as e:
-            logger.exception("For remote %r local %r failing with %s" % (remote, local, str(e)))
+            logger.exception("For remote %r local %r failing with %s", remote, local, str(e))
 
         #
         return ret
@@ -95,6 +97,7 @@ class FileUtil(object):
     def put(self, local, remote, **kwargs):
         """ Copy local file to remote location.
         """
+        _ = kwargs
         try:
             ret = False
             localFlag = self.isLocal(remote)
@@ -106,7 +109,7 @@ class FileUtil(object):
             else:
                 ret = False
         except Exception as e:
-            logger.exception("For remote %r local %r failing with %s" % (remote, local, str(e)))
+            logger.exception("For remote %r local %r failing with %s", remote, local, str(e))
             ret = False
         return ret
 
@@ -115,24 +118,24 @@ class FileUtil(object):
             locSp = urlsplit(locator)
             return locSp.path
         except Exception as e:
-            logger.exception("For locator %r failing with %s" % (locator, str(e)))
+            logger.exception("For locator %r failing with %s", locator, str(e))
         return None
 
     def getFileName(self, locator):
         try:
             locSp = urlsplit(locator)
-            (pth, fn) = os.path.split(locSp.path)
+            (_, fn) = os.path.split(locSp.path)
             return fn
         except Exception as e:
-            logger.exception("For locator %r failing with %s" % (locator, str(e)))
+            logger.exception("For locator %r failing with %s", locator, str(e))
         return None
 
     def isLocal(self, locator):
         try:
             locSp = urlsplit(locator)
-            return locSp.scheme in ['', 'file']
+            return locSp.scheme in ["", "file"]
         except Exception as e:
-            logger.exception("For locator %r failing with %s" % (locator, str(e)))
+            logger.exception("For locator %r failing with %s", locator, str(e))
         return None
 
     def getScheme(self, locator):
@@ -140,16 +143,16 @@ class FileUtil(object):
             locSp = urlsplit(locator)
             return locSp.scheme
         except Exception as e:
-            logger.exception("For locator %r Failing with %s" % (locator, str(e)))
+            logger.exception("For locator %r Failing with %s", locator, str(e))
         return None
 
     def exists(self, filePath, mode=os.R_OK):
         try:
-            return os.access(filePath, os.R_OK)
+            return os.access(filePath, mode)
         except Exception:
             return False
 
-    def __unbundle(self, tarFilePath, dirPath='.'):
+    def __unbundle(self, tarFilePath, dirPath="."):
         #   import tarfile contents into dirPath -
         with tarfile.open(tarFilePath) as tar:
             tar.extractall(path=dirPath)
@@ -157,28 +160,27 @@ class FileUtil(object):
     def __extractTarMember(self, tarFilePath, memberName, memberPath):
         try:
             with tarfile.open(tarFilePath) as tar:
-                f = tar.extractfile(memberName)
-                with open(memberPath, 'wb') as ofh:
-                    ofh.write(f.read())
+                fIn = tar.extractfile(memberName)
+                with open(memberPath, "wb") as ofh:
+                    ofh.write(fIn.read())
             ret = True
         except Exception as e:
-            logger.exception("Failing with %s" % str(e))
+            logger.exception("Failing with %s", str(e))
             ret = False
         return ret
 
     def __fetchUrl(self, url, filePath):
         try:
-            with open(filePath, 'wb') as out_file:
-                # with contextlib.closing(urllib.request.urlopen(url)) as fp:
+            with open(filePath, "wb") as outFile:
                 with contextlib.closing(myurl.urlopen(url)) as fp:
-                    block_size = 1024 * 8
+                    blockSize = 1024 * 8
                     while True:
-                        block = fp.read(block_size)
+                        block = fp.read(blockSize)  # pylint: disable=no-member
                         if not block:
                             break
-                        out_file.write(block)
+                        outFile.write(block)
             return True
         except Exception as e:
-            logger.exception("Failing for %s with %s" % (filePath, str(e)))
+            logger.exception("Failing for %s with %s", filePath, str(e))
 
         return False
