@@ -36,5 +36,5 @@ steps:
   - script: pip install tox
     displayName: 'Install Tox'
 
-  - script: tox -v
+  - script: tox -vv
     displayName: 'Run Tox'
