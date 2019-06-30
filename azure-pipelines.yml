@@ -14,6 +14,11 @@ strategy:
       python.version: '3.7'
 
 steps:
+  _ script: |
+    which apt
+    which rsync
+    displayName: 'Installing OS dependencies'
+    
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
     inputs:
