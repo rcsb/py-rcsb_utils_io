@@ -18,9 +18,9 @@ steps:
     displayName: 'Installing OS dependencies'
   - script: apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
     displayName: 'Checking for repos'
-  - script: apt-get install flex
+  - script: sudo apt-get install flex
     displayName: 'Install flex'
-  - script: apt-get install bison
+  - script: sudo apt-get install bison
     displayName: 'Install bison'
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
