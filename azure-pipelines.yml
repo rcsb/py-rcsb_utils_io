@@ -16,8 +16,8 @@ strategy:
 steps:
   - script: which apt
     displayName: 'Installing OS dependencies'
-  - script: which rsync
-    displayName: 'Checking for tools'
+  - script: apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
+    displayName: 'Checking for repos'
     
   - task: UsePythonVersion@0
     displayName: 'Use Python $(python.version)'
