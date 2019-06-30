@@ -1,0 +1,3 @@
+ruamel.yaml
+mmcif >= 0.40
+rcsb.utils.validation >= 0.14
