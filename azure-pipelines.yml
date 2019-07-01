@@ -25,7 +25,7 @@ strategy:
       python.version: '3.7'
     Python27:
       python.version: '2.7'
-    maxParallel: 2
+  maxParallel: 2
 
 steps:
   - script: which apt
