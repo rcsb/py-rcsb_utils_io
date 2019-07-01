@@ -1,4 +1,5 @@
-test-output/
+test-output/*
+!test-output/.gitkeep
 LOGTOX
 .vscode/
 # Byte-compiled / optimized / DLL files
