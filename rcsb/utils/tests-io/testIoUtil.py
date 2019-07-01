@@ -173,8 +173,8 @@ class IoUtilTests(unittest.TestCase):
             ok = self.__ioU.serialize(self.__pathSaveIndexFile, cL, fmt="list")
             self.assertTrue(ok)
             count = 0
-            for c in cL:
-                fields = c.split()
+            for cV in cL:
+                fields = cV.split()
                 count += len(fields)
             _ = count
         except Exception as e:
@@ -237,12 +237,12 @@ class IoUtilTests(unittest.TestCase):
             self.assertGreaterEqual(len(tL), 940)
             tD = {}
             csvL = []
-            for t in tL:
-                if len(t) < 7:
+            for tV in tL:
+                if len(tV) < 7:
                     continue
-                taxId = int(t[0])
-                name = t[2]
-                nameType = t[6]
+                taxId = int(tV[0])
+                name = tV[2]
+                nameType = tV[6]
                 csvL.append({"t": taxId, "name": name, "type": nameType})
                 #
                 if nameType in ["scientific name", "common name", "synonym", "genbank common name"]:
