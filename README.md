@@ -1,5 +1,7 @@
 ## RCSB Python I/O Utility Classes
 
+[![Build Status](https://dev.azure.com/jdwestbrook/jdwestbrook/_apis/build/status/rcsb.py-rcsb_utils_io?branchName=master)](https://dev.azure.com/jdwestbrook/jdwestbrook/_build/latest?definitionId=1&branchName=master)
+
 ### Introduction
 
 This module contains a collection of utility classes for performing i/o operations on common
