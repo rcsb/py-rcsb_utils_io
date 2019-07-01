@@ -20,9 +20,9 @@ pool:
 strategy:
   matrix:
     Python37:
-      python.version: '3.7.3'
+      python.version: '3.7'
     Python27:
-      python.version: '2.7.16'
+      python.version: '2.7'
   maxParallel: 2
 
 
