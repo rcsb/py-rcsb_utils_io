@@ -43,7 +43,7 @@ jobs:
       - script: sudo apt-get install bison
         displayName: 'Install bison'
       - task: UsePythonVersion@0
-        displayName: 'Use Python $(python.version)'
+        displayName: 'Using Python $(python.version)'
         inputs:
           versionSpec: '$(python.version)'
 
@@ -64,9 +64,16 @@ jobs:
       - test_linux
       condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
       pool: vmImage: 'ubuntu-latest'
+      strategy:
+      matrix:
+        Python37:
+          python.version: '3.7'
+        Python27:
+          python.version: '2.7'
+      maxParallel: 2
       steps:
       - task: UsePythonVersion@0
-        displayName: setup python3.7
+        displayName: 'Using Python $(python.version)'
         inputs:
           versionSpec: '$(python.version)'
           addToPath: true
@@ -76,12 +83,12 @@ jobs:
         inputs:
           externalFeeds: 'pypi'
       - script: pip install -U twine pip tox
-        displayName: "acquire build tools"
+        displayName: "Acquire build tools"
       - script: python setup.py  sdist bdist_wheeel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
-        displayName: "build source dist and wheel"
+        displayName: "Build source dist and wheel"
         # Check the install
       - script: ls -lR $(System.DefaultWorkingDirectory)/
         displayName: "Listing of installed software"
         # Try upload
       - script: 'twine upload -r pypitest --config-file $(PYPIRC_PATH) $(System.DefaultWorkingDirectory)/dist/*'
-        displayName: "upload sdist and wheel to PyPi"
+        displayName: "Upload sdist and wheel to PyPi"
