@@ -76,7 +76,7 @@ jobs:
         submodules: true
       - task: TwineAuthenticate@0
         inputs:
-          externalFeeds: 'pypi'
+          externalFeeds: 'pypitest'
       - script: pip install -U twine pip tox
         displayName: "acquire build tools"
       - script: python setup.py  sdist bdist_wheeel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
