@@ -86,7 +86,7 @@ jobs:
           externalFeeds: 'pypitest'
       - script: pip install -U twine pip tox
         displayName: "Acquire build tools"
-      - script: python setup.py  sdist bdist_wheeel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+      - script: python setup.py  sdist bdist_wheel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
         displayName: "Build source dist and wheel"
         # Check the install
       - script: ls -lR $(System.DefaultWorkingDirectory)/
