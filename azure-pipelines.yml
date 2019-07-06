@@ -84,11 +84,13 @@ jobs:
       - task: TwineAuthenticate@0
         inputs:
           externalFeeds: 'pypitest'
-      - script: pip install -U twine pip tox
+      - script: pip install -U twine pip tox setuptools
         displayName: "Acquire build tools"
-      - script: python setup.py  sdist bdist_wheel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+      - script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
+        displayName: 'Build wheel'
+      - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
         displayName: "Build source dist and wheel"
-        # Check the install
+        # Check the install artifacts
       - script: ls -lR $(System.DefaultWorkingDirectory)/
         displayName: "Listing of installed software"
         # Try upload
