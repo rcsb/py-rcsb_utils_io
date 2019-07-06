@@ -60,7 +60,7 @@ jobs:
         displayName: 'Run Tox'
       #
       #  Build artifacts
-      - script: pip install -upgrade twine setuptools
+      - script: pip install --upgrade twine setuptools
         displayName: "Acquire build tools"
       - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
         displayName: "Build source dist and wheel"
