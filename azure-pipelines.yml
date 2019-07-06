@@ -1,5 +1,6 @@
 # File: azure-pipelines.yml
-# Date: 1-Jul-2019 jdw
+# Date: 5-Jul-2019 jdw
+#       CI/CD example
 
 trigger:
 - master
@@ -15,45 +16,72 @@ schedules:
     - master
   always: true
 
-pool:
-  vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python37:
-      python.version: '3.7'
-    Python27:
-      python.version: '2.7'
-  maxParallel: 2
+jobs:
+  - job: 'test_linux'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      matrix:
+        Python37:
+          python.version: '3.7'
+        Python27:
+          python.version: '2.7'
+      maxParallel: 2
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(python.version)'
+          addToPath: true
+      - checkout: self
+        submodules: true
+      - script: which apt
+        displayName: 'Installing OS dependencies'
+      - script: apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
+        displayName: 'Checking for repos'
+      - script: sudo apt-get install flex
+        displayName: 'Install flex'
+      - script: sudo apt-get install bison
+        displayName: 'Install bison'
+      - task: UsePythonVersion@0
+        displayName: 'Use Python $(python.version)'
+        inputs:
+          versionSpec: '$(python.version)'
 
+      - script: python -m pip install --upgrade pip
+        displayName: 'Install tools'
 
-steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      addToPath: true
-  - checkout: self
-    submodules: true
-  - script: which apt
-    displayName: 'Installing OS dependencies'
-  - script: apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
-    displayName: 'Checking for repos'
-  - script: sudo apt-get install flex
-    displayName: 'Install flex'
-  - script: sudo apt-get install bison
-    displayName: 'Install bison'
-  - task: UsePythonVersion@0
-    displayName: 'Use Python $(python.version)'
-    inputs:
-      versionSpec: '$(python.version)'
+      - script: pip install -r requirements.txt
+        displayName: 'Install dependencies'
 
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
+      - script: pip install tox
+        displayName: 'Install Tox'
 
-  - script: pip install -r requirements.txt
-    displayName: 'Install dependencies'
-
-  - script: pip install tox
-    displayName: 'Install Tox'
-
-  - script: tox -v
-    displayName: 'Run Tox'
+      - script: tox -v
+        displayName: 'Run Tox'
+  #
+  - job: publish
+      dependsOn:
+      - test_linux
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      pool: vmImage: 'ubuntu-latest'
+      steps:
+      - task: UsePythonVersion@0
+        displayName: setup python3.7
+        inputs:
+          versionSpec: '$(python.version)'
+          addToPath: true
+      - checkout: self
+        submodules: true
+      - task: TwineAuthenticate@0
+        inputs:
+          externalFeeds: 'pypi'
+      - script: pip install -U twine pip tox
+        displayName: "acquire build tools"
+      - script: python setup.py  sdist bdist_wheeel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+        displayName: "build source dist and wheel"
+        # Check the install
+      - script: ls -lR $(System.DefaultWorkingDirectory)/
+        displayName: "Listing of installed software"
+        # Try upload
+      - script: 'twine upload -r pypitest --config-file $(PYPIRC_PATH) $(System.DefaultWorkingDirectory)/dist/*'
+        displayName: "upload sdist and wheel to PyPi"
