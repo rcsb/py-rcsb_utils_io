@@ -59,19 +59,21 @@ jobs:
       - script: tox -v
         displayName: 'Run Tox'
   #
-  - job: publish
-      dependsOn:
-      - test_linux
-      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-      pool: vmImage: 'ubuntu-latest'
-      strategy:
+  - job: 'publish'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
       matrix:
         Python37:
           python.version: '3.7'
         Python27:
           python.version: '2.7'
       maxParallel: 2
-      steps:
+    dependsOn:
+    - test_linux
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    #
+    steps:
       - task: UsePythonVersion@0
         displayName: 'Using Python $(python.version)'
         inputs:
@@ -81,7 +83,7 @@ jobs:
         submodules: true
       - task: TwineAuthenticate@0
         inputs:
-          externalFeeds: 'pypi'
+          externalFeeds: 'pypitest'
       - script: pip install -U twine pip tox
         displayName: "Acquire build tools"
       - script: python setup.py  sdist bdist_wheeel  --dist-dir "$(System.DefaultWorkingDirectory)/dist"
