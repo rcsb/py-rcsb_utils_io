@@ -58,6 +58,17 @@ jobs:
 
       - script: tox -v
         displayName: 'Run Tox'
+      #
+      #  Build artifacts
+      - script: pip install -upgrade twine setuptools
+        displayName: "Acquire build tools"
+      - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+        displayName: "Build source dist and wheel"
+      - script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
+        displayName: 'Build wheel'
+        # Check the install artifacts
+      - script: ls -lR $(System.DefaultWorkingDirectory)/
+        displayName: "Listing of installed software"
   #
   - job: 'publish'
     pool:
@@ -84,14 +95,8 @@ jobs:
       - task: TwineAuthenticate@0
         inputs:
           externalFeeds: 'pypitest'
-      - script: pip install -U twine pip tox setuptools
-        displayName: "Acquire build tools"
-      - script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
-        displayName: 'Build wheel'
-      - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
-        displayName: "Build source dist and wheel"
-        # Check the install artifacts
-      - script: ls -lR $(System.DefaultWorkingDirectory)/
+      # Check the install artifacts
+      - script: ls -lR $(System.DefaultWorkingDirectory)/dist
         displayName: "Listing of installed software"
         # Try upload
       - script: 'twine upload -r pypitest --config-file $(PYPIRC_PATH) $(System.DefaultWorkingDirectory)/dist/*'
