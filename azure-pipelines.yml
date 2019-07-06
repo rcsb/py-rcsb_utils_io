@@ -59,12 +59,14 @@ jobs:
       - script: tox -v
         displayName: 'Run Tox'
   #
-  - job: publish
-      dependsOn:
-      - test_linux
-      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-      pool: vmImage: 'ubuntu-latest'
-      steps:
+  - job: 'publish'
+    pool: 
+      vmImage: 'ubuntu-latest'
+    dependsOn:
+    - test_linux
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      
+    steps:
       - task: UsePythonVersion@0
         displayName: setup python3.7
         inputs:
