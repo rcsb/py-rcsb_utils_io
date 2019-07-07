@@ -42,20 +42,13 @@ jobs:
         displayName: 'Install flex'
       - script: sudo apt-get install bison
         displayName: 'Install bison'
-      - task: UsePythonVersion@0
-        displayName: 'Using Python $(python.version)'
-        inputs:
-          versionSpec: '$(python.version)'
-
-      - script: python -m pip install --upgrade pip
+      #
+      - script: python -m pip install --upgrade pip tox
         displayName: 'Install tools'
-
+      #
       - script: pip install -r requirements.txt
         displayName: 'Install dependencies'
-
-      - script: pip install tox
-        displayName: 'Install Tox'
-
+      #
       - script: tox -v
         displayName: 'Run Tox'
       #
@@ -95,6 +88,30 @@ jobs:
           addToPath: true
       - checkout: self
         submodules: true
+      #
+      - script: sudo apt-get install flex
+        displayName: 'Install flex'
+      - script: sudo apt-get install bison
+        displayName: 'Install bison'
+
+      - script: python -m pip install --upgrade pip twine setuptools wheel
+        displayName: 'Install tools'
+
+      - script: pip install -r requirements.txt
+        displayName: 'Install dependencies'
+      #
+      - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+        displayName: "Build source dist"
+      - script: python setup.py  bdist_wheel --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+        displayName: "Build wheel"
+      #
+      #- script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
+      #  displayName: 'Build wheel'
+      # Check the install artifacts
+      #
+      - script: ls -lR $(System.DefaultWorkingDirectory)/
+        displayName: "Listing of installed software"
+      #
       - task: TwineAuthenticate@0
         inputs:
           externalFeeds: 'pypitest'
