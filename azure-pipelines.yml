@@ -119,5 +119,5 @@ jobs:
       - script: ls -lR $(System.DefaultWorkingDirectory)/dist
         displayName: "Listing of installed software"
         # Try upload
-      - script: twine upload --verbose --skip-existing --repository pypitest --config-file $(PYPIRC_PATH) "$(System.DefaultWorkingDirectory)/dist/*"
+      - script: twine upload --verbose --skip-existing --repository testpypi --config-file $(PYPIRC_PATH) "$(System.DefaultWorkingDirectory)/dist/*"
         displayName: "Upload sdist and wheel to PyPi"
