@@ -55,9 +55,13 @@ jobs:
       #  Build artifacts
       - script: pip install --upgrade pip twine setuptools wheel
         displayName: "Acquire build tools"
-      - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+      #- script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+      #  displayName: "Build source dist"
+      #- script: python setup.py  bdist_wheel --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+      #  displayName: "Build wheel"
+      - script: python setup.py  sdist --dist-dir "$(Pipeline.Workspace)/dist"
         displayName: "Build source dist"
-      - script: python setup.py  bdist_wheel --dist-dir "$(System.DefaultWorkingDirectory)/dist"
+      - script: python setup.py  bdist_wheel --dist-dir "$(Pipeline.Workspace)/dist"
         displayName: "Build wheel"
       #
       #- script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
@@ -70,7 +74,7 @@ jobs:
       - publish: $(System.DefaultWorkingDirectory)/dist
         artifact: SourceAndWheels
   #
-  - job: 'publish'
+  - job: 'publish_linux'
     pool:
       vmImage: 'ubuntu-latest'
     strategy:
@@ -93,8 +97,8 @@ jobs:
       - checkout: self
         submodules: true
       #
-      - download: current
-        artifact: SourceAndWheels
+      #- download: current
+      #  artifact: SourceAndWheels
       - script: ls -lR $(Pipeline.Workspace)
         displayName: "Listing of downloaded artifacts"
       #
