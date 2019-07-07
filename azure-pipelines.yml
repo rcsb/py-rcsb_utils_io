@@ -16,8 +16,6 @@ schedules:
     - master
   always: true
 
-publish: $(Pipeline.Workspace)/dist
-  artifact: SourceAndWheels
 
 jobs:
   - job: 'test_linux'
@@ -58,24 +56,19 @@ jobs:
       #  Build artifacts
       - script: pip install --upgrade pip twine setuptools wheel
         displayName: "Acquire build tools"
-      #- script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
-      #  displayName: "Build source dist"
-      #- script: python setup.py  bdist_wheel --dist-dir "$(System.DefaultWorkingDirectory)/dist"
-      #  displayName: "Build wheel"
-      - script: python setup.py  sdist --dist-dir "$(Pipeline.Workspace)/dist"
+      - script: python setup.py  sdist --dist-dir "$(System.DefaultWorkingDirectory)/dist"
         displayName: "Build source dist"
-      - script: python setup.py  bdist_wheel --dist-dir "$(Pipeline.Workspace)/dist"
+      - script: python setup.py  bdist_wheel --dist-dir "$(System.DefaultWorkingDirectory)/dist"
         displayName: "Build wheel"
-      #
       #- script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
       #  displayName: 'Build wheel'
       #
       # Check the install artifacts
-      - script: ls -lR "$(Pipeline.Workspace)/"
+      - script: ls -lR "$(System.DefaultWorkingDirectory)/dist"
         displayName: "Listing of installed software"
       #
-      #- publish: $(System.DefaultWorkingDirectory)/dist
-      #  artifact: SourceAndWheels
+      - publish: $(System.DefaultWorkingDirectory)/dist
+        artifact: "SW_$(Agent.OS)_$(python.version)"
   #
   - job: 'publish_linux'
     pool:
@@ -100,8 +93,9 @@ jobs:
       - checkout: self
         submodules: true
       #
-      #- download: current
-      #  artifact: SourceAndWheels
+      - download: current
+        artifact: "SW_$(Agent.OS)_$(python.version)"
+      #
       - script: ls -lR $(Pipeline.Workspace)
         displayName: "Listing of downloaded artifacts"
       #
