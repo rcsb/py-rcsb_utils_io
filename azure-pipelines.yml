@@ -16,6 +16,9 @@ schedules:
     - master
   always: true
 
+publish: $(Pipeline.Workspace)/dist
+  artifact: SourceAndWheels
+
 jobs:
   - job: 'test_linux'
     pool:
