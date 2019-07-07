@@ -62,9 +62,13 @@ jobs:
       #
       #- script: pip wheel --wheel-dir "$(System.DefaultWorkingDirectory)/dist"  .
       #  displayName: 'Build wheel'
+      #
       # Check the install artifacts
       - script: ls -lR $(System.DefaultWorkingDirectory)/
         displayName: "Listing of installed software"
+      #
+      - publish: $(System.DefaultWorkingDirectory)/dist
+        artifact: SourceAndWheels
   #
   - job: 'publish'
     pool:
@@ -88,6 +92,11 @@ jobs:
           addToPath: true
       - checkout: self
         submodules: true
+      #
+      - download: current
+        artifact: SourceAndWheels
+      - script: ls -lR $(Pipeline.Workspace)
+        displayName: "Listing of downloaded artifacts"
       #
       - script: sudo apt-get install flex
         displayName: 'Install flex'
@@ -114,7 +123,7 @@ jobs:
       #
       - task: TwineAuthenticate@0
         inputs:
-          externalFeeds: 'pypitest'
+          externalFeeds: 'testpypi'
       # Check the install artifacts
       - script: ls -lR $(System.DefaultWorkingDirectory)/dist
         displayName: "Listing of installed software"
