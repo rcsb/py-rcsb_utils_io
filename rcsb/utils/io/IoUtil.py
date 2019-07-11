@@ -23,6 +23,8 @@
 #  24-Mar-2019  jdw suppress error message on missing validation report file.
 #  25-Mar-2019  jdw expose comment processing for csv/tdd files as keyword argument
 #   3-Apr-2019  jdw add comment option and compression handling to __deserializeList()
+#  11-Jul-2019  jdw add explicit py2 safe file decompression to avoid encoding problems.
+#
 #
 ##
 
@@ -31,6 +33,7 @@ __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
+import bz2
 import csv
 import datetime
 import gzip
@@ -44,17 +47,18 @@ import random
 import shutil
 import string
 import sys
+import tempfile
+import zipfile
 
 import ruamel.yaml
+from mmcif.io.IoAdapterPy import IoAdapterPy
 from rcsb.utils.io.FastaUtil import FastaUtil
 from rcsb.utils.validation.ValidationReportReader import ValidationReportReader
 
-from mmcif.io.IoAdapterPy import IoAdapterPy
-
 try:
-    from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter
+    from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter  # pylint: disable=ungrouped-imports
 except Exception:
-    from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter  # pylint: disable=reimported
+    from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter  # pylint: disable=reimported,ungrouped-imports
 
 
 logger = logging.getLogger(__name__)
@@ -393,7 +397,11 @@ class IoUtil(object):
                     with gzip.open(filePath, "rt", encoding="utf-8-sig", errors=encodingErrors) as ifh:
                         aList = self.__processList(ifh, enforceAscii=enforceAscii)
                 else:
-                    with gzip.open(filePath, "rb") as ifh:
+                    tPath = self.__uncompress(filePath, outputDir=None)
+                    # for py2 this commented code is problematic for non-ascii data
+                    # with gzip.open(filePath, "rb") as ifh:
+                    #    aList = self.__processList(ifh, enforceAscii=enforceAscii)
+                    with io.open(tPath, encoding="utf-8-sig", errors="ignore") as ifh:
                         aList = self.__processList(ifh, enforceAscii=enforceAscii)
             else:
                 with io.open(filePath, encoding="utf-8-sig", errors="ignore") as ifh:
@@ -454,8 +462,12 @@ class IoUtil(object):
                     with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as csvFile:
                         oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
                 else:
-                    with gzip.open(filePath, "rb") as csvFile:
-                        oL = self.__csvReader(csvFile, rowFormat, delimiter)
+                    # Py2 situation non-ascii encodings is problematic
+                    # with gzip.open(filePath, "rb") as csvFile:
+                    #    oL = self.__csvReader(csvFile, rowFormat, delimiter)
+                    tPath = self.__uncompress(filePath, outputDir=None)
+                    with io.open(tPath, newline="", encoding=encoding, errors="ignore") as csvFile:
+                        oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
             else:
                 with io.open(filePath, newline="", encoding=encoding, errors="ignore") as csvFile:
                     oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
@@ -472,16 +484,68 @@ class IoUtil(object):
         """
         _ = kwargs
         try:
+            wD = {}
             ret = False
             fNames = fieldNames if fieldNames else list(rowDictList[0].keys())
             # with io.open(filePath, 'w', newline='') as csvFile:
             with open(filePath, "w") as csvFile:
                 writer = csv.DictWriter(csvFile, fieldnames=fNames)
                 writer.writeheader()
-                for rowDict in rowDictList:
-                    wD = {k: v for k, v in rowDict.items() if k in fNames}
-                    writer.writerow(wD)
+                for ii, rowDict in enumerate(rowDictList):
+                    try:
+                        wD = {k: v for k, v in rowDict.items() if k in fNames}
+                        writer.writerow(wD)
+                    except Exception as e:
+                        logger.error("Skipping bad CSV record %d wD %r rowDict %r", ii + 1, wD, rowDict)
+                        continue
+
             ret = True
         except Exception as e:
-            logger.error("Failing for %s with %s", filePath, str(e))
+            logger.error("Failing for %s : %r with %s", filePath, wD, str(e))
         return ret
+
+    def __uncompress(self, inputFilePath, outputDir=None):
+        """ Uncompress the input file if the path name has a recognized compression type file extension.
+
+            Return the path of the uncompressed file (in outDir) or the original input file path.
+
+        """
+        try:
+            outputDir = outputDir if outputDir else tempfile.gettempdir()
+            _, fn = os.path.split(inputFilePath)
+            bn, _ = os.path.splitext(fn)
+            outputFilePath = os.path.join(outputDir, bn)
+            if inputFilePath.endswith(".gz"):
+                with gzip.open(inputFilePath, mode="rb") as inpF:
+                    with io.open(outputFilePath, "wb") as outF:
+                        shutil.copyfileobj(inpF, outF)
+            elif inputFilePath.endswith(".bz2"):
+                with bz2.open(inputFilePath, mode="rb") as inpF:
+                    with io.open(outputFilePath, "wb") as outF:
+                        shutil.copyfileobj(inpF, outF)
+            # elif inputFilePath.endswith(".xz"):
+            #    with lzma.open(inputFilePath, mode="rb") as inpF:
+            #        with io.open(outputFilePath, "wb") as outF:
+            #            shutil.copyfileobj(inpF, outF)
+            elif inputFilePath.endswith(".zip"):
+                with zipfile.ZipFile(inputFilePath, mode="rb") as inpF:
+                    with io.open(outputFilePath, "wb") as outF:
+                        shutil.copyfileobj(inpF, outF)
+            else:
+                outputFilePath = inputFilePath
+
+        except Exception as e:
+            logger.exception("Failing uncompress for file %s with %s", inputFilePath, str(e))
+        logger.debug("Returning file path %r", outputFilePath)
+        return outputFilePath
+
+    def __csvEncoder(self, csvData, encoding="utf-8-sig", encodingErrors="ignore"):
+        """ Handle encoding issues for gzipped data in Py2. (beware of the BOM chars)
+
+        Args:
+            csvData (text lines): uncompressed data from gzip open
+            encoding (str, optional): character encoding. Defaults to "utf-8-sig".
+            encodingErrors (str, optional): error treatement. Defaults to "ignore".
+        """
+        for line in csvData:
+            yield line.decode("utf-8-sig", errors=encodingErrors).encode(encoding, errors=encodingErrors)

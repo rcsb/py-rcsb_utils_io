@@ -25,6 +25,7 @@
 25-Mar-2019  - V0.29 Expose comment processing for csv/tdd files as keyword argument
  2-Apr-2019  - V0.30 Add comment option and compression handling to __deserializeList()
 19-Jun-2019  - V0.31 Address linting issues and and adjustments for multi-type return values.
+11-Jul-2019  - V0.32 add explicit py2 safe file decompression to avoid encoding problems
 #
 
 
