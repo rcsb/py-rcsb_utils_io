@@ -39,7 +39,8 @@ jobs:
     #
     - task: TwineAuthenticate@0
       inputs:
-        externalFeeds: 'pypi'
+        artifactFeeds: ''
+        externalFeeds: pypi-conn
     # Try upload
     - bash: cat $(PYPIRC_PATH)
       displayName: "What is going on here"
