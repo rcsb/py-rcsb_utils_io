@@ -41,8 +41,8 @@ jobs:
       inputs:
         externalFeeds: 'pypi'
     # Try upload
-    #- bash: cat $(PYPIRC_PATH)
-    #  displayName: "What is going on here"
+    - bash: cat $(PYPIRC_PATH)
+      displayName: "What is going on here"
     - script: twine upload --verbose --skip-existing -r pypi --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
       displayName: "Upload sdist and wheel to PyPi"
     #
