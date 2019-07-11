@@ -26,6 +26,9 @@ jobs:
         addToPath: true
       displayName: setup python
     #
+    - checkout: self
+      submodules: true
+    #
     - ${{ if startsWith(parameters.os, 'macos') }}:
       - bash: |
           set -e
