@@ -39,10 +39,14 @@ jobs:
     #
     - task: TwineAuthenticate@0
       inputs:
-        externalFeeds: pypi-pub
+        externalFeeds: pypi
     # Try upload
-    - bash: cat $(PYPIRC_PATH)
+    - bash: |
+        cat $(PYPIRC_PATH)
+        sed "s/username=\*\*\*/username=westbrook/g" $(PYPIRC_PATH) > $(System.DefaultWorkingDirectory)/.pypirc
+        cat $(System.DefaultWorkingDirectory)/.pypirc
       displayName: "What is going on here"
-    - script: twine upload --verbose --skip-existing -r pypi-pub  --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
+      $(System.DefaultWorkingDirectory)
+    - script: twine upload --verbose --skip-existing -r pypi  --config-file $(System.DefaultWorkingDirectory)/.pypirc  $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
       displayName: "Upload sdist and wheel to PyPi ..."
-    # --repository-url https://upload.pypi.org/legacy/
+    #
