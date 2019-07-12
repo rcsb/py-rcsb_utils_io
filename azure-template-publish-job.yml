@@ -53,7 +53,7 @@ jobs:
         export un='westbrook'
         export rp=`grep repository $(PYPIRC_PATH) | sed 's/repository=//g'`
         echo "pw: $pw un: $un rpurl: $rp"
-        twine upload --verbose --skip-existing -r pypi -p $pw -u $un --repository-url $rp $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
+        twine upload --verbose --skip-existing -p $pw -u $un --repository-url $rp $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
       displayName: "What is going on here"
       continueOnError: true
     - script: twine upload --verbose --skip-existing -r pypi  --config-file $(System.DefaultWorkingDirectory)/.pypirc  $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
