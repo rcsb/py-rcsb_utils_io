@@ -46,7 +46,6 @@ jobs:
         sed "s/username=\*\*\*/username=westbrook/g" $(PYPIRC_PATH) > $(System.DefaultWorkingDirectory)/.pypirc
         cat $(System.DefaultWorkingDirectory)/.pypirc
       displayName: "What is going on here"
-      $(System.DefaultWorkingDirectory)
     - script: twine upload --verbose --skip-existing -r pypi  --config-file $(System.DefaultWorkingDirectory)/.pypirc  $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
       displayName: "Upload sdist and wheel to PyPi ..."
     #
