@@ -496,7 +496,7 @@ class IoUtil(object):
                         wD = {k: v for k, v in rowDict.items() if k in fNames}
                         writer.writerow(wD)
                     except Exception as e:
-                        logger.error("Skipping bad CSV record %d wD %r rowDict %r", ii + 1, wD, rowDict)
+                        logger.error("Skipping bad CSV record %d wD %r rowDict %r with %s", ii + 1, wD, rowDict, str(e))
                         continue
 
             ret = True
