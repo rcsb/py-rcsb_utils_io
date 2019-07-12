@@ -48,12 +48,12 @@ jobs:
         sudo cat $(System.DefaultWorkingDirectory)/.pypirc
         #
         export pw=`grep password $(PYPIRC_PATH) | sed 's/password=//g'`
-        export un=`grep username $(PYPIRC_PATH) | sed 's/username=//g'`
+        #export un=`grep username $(PYPIRC_PATH) | sed 's/username=//g'`
+        export un='westbrook'
         export rp=`grep repository $(PYPIRC_PATH) | sed 's/repository=//g'`
-        #
         echo $pw, $un, $rp
-
+        twine upload --verbose --skip-existing -r pypi -p $pw -u $un --repository-url $rp $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
       displayName: "What is going on here"
-    - script: twine upload --verbose --skip-existing -r pypi  --config-file $(System.DefaultWorkingDirectory)/.pypirc  $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
-      displayName: "Upload sdist and wheel to PyPi ..."
+    #- script: twine upload --verbose --skip-existing -r pypi  --config-file $(System.DefaultWorkingDirectory)/.pypirc  $(Pipeline.Workspace)/${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}/*
+    #  displayName: "Upload sdist and wheel to PyPi ..."
     #
