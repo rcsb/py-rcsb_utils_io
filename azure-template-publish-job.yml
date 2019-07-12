@@ -48,7 +48,7 @@ jobs:
         sudo cat $(System.DefaultWorkingDirectory)/.pypirc
         #
         export pw=`grep password $(PYPIRC_PATH) | sed 's/password=//g'`
-        export un=`grep usernamee $(PYPIRC_PATH) | sed 's/username=//g'`
+        export un=`grep username $(PYPIRC_PATH) | sed 's/username=//g'`
         export rp=`grep repository $(PYPIRC_PATH) | sed 's/repository=//g'`
         #
         echo $pw, $un, $rp
