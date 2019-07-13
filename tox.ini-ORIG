@@ -2,13 +2,13 @@
 # Updated:  3-Jul-2019 jdw Cleanup
 #           8-Jul-2019 jdw Disable flake8 plugin (pydocstyle compat issue)
 #          11-Jul-2019 jdw Add placeholders for up to three test paths
-##
+#
 [local_settings]
 # project specific local settings
 test_pattern = "test*.py"
 #
-# Source pathls (unquoted and space separated list of files/directories) for linting and format checks
-source_paths = rcsb/utils/io rcsb/utils/tests-io setup.py
+# Source pathls (space separated list of files/directories) for linting and format checks
+source_paths = "rcsb/utils/io rcsb/utils/tests-io setup.py"
 #
 # Start directory path for test discovery
 # Each path must reference valid directory that is searchable by Python (i.e. contains __init__.py)
@@ -28,14 +28,16 @@ coverage_cutoff = 65
 ##
 [tox]
 # The complete list of supported test environments to setup and invoke
-envlist = format_pep8-{py37}, lint_pylint-{py37}, format_black-{py37}, py{37,27}, test_coverage-{py37}
+envlist = format_pep8-{linux,macos}-{py37}, lint_pylint-{linux,macos}-{py37}, format_black-{linux,macos}-{py37}, py{37,27}, test_coverage-{linux,macos}-{py37}
 #
 minversion = 3.4.0
-skip_missing_interpreters = true
-skipsdist = false
+skip_missing_interpreters = True
+skip_install = False
+skipsdist = True
 
 [testenv]
 whitelist_externals = echo
+#skip_install = false
 deps = echo
 commands =
     echo "Starting default tests in testenv"
@@ -48,10 +50,7 @@ platform=
        linux: linux
 basepython =
     py27: python2.7
-skip_install = false
-recreate = true
-alwayscopy=true
-usedevelop=true
+
 deps = echo
        -r requirements.txt
 commands =
@@ -70,12 +69,10 @@ platform=
        linux: linux
 basepython =
     py37: python3.7
-skip_install = false
-recreate = true
-alwayscopy=true
-usedevelop=true
+
 deps = echo
        -r requirements.txt
+
 commands =
     echo "Starting {envname}"
     {envpython} -V
@@ -85,13 +82,14 @@ commands =
     echo "Completed {envname}"
 
 #
-[testenv:format_pep8-py37]
+[testenv:format_pep8]
 description = 'Run selected PEP8 compliance checks (flake8)'
 platform=
        macos: darwin
        linux: linux
 whitelist_externals = echo
 basepython = py37: python3.7
+#skip_install = true
 deps =
     echo
     flake8
@@ -104,14 +102,14 @@ commands =
     flake8 --max-line-length=185 --ignore=D,I,E203,W503  {[local_settings]source_paths}
 
 #
-[testenv:lint_pylint-py37]
+[testenv:lint_pylint]
 description = 'Run linting compliance checks (pylint)'
 platform=
        macos: darwin
        linux: linux
 whitelist_externals = echo
 basepython = py37: python3.7
-
+#skip_install = true
 deps =
     echo
     pylint
@@ -122,7 +120,7 @@ commands =
     echo "Completed {envname}"
 
 #
-[testenv:format_black-py37]
+[testenv:format_black]
 description = 'Run format compliance checks (black)'
 platform=
        macos: darwin
@@ -139,6 +137,7 @@ commands =
     black --check --line-length 180  {[local_settings]source_paths}
     #    isort -rc rcsb/utils --check-only
     echo "Completed {envname}"
+#changedir = {toxinidir}
 
 #
 [testenv:test_coverage-py37]
@@ -148,9 +147,6 @@ platform=
        linux: linux
 whitelist_externals = echo
 basepython = py37: python3.7
-recreate = true
-alwayscopy=true
-usedevelop=true
 deps =
     echo
     coverage
@@ -168,3 +164,4 @@ commands =
     coverage report --fail-under={[local_settings]coverage_cutoff}
     - coverage xml
     echo "Completed {envname}"
+#
