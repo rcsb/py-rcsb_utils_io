@@ -26,7 +26,5 @@
  2-Apr-2019  - V0.30 Add comment option and compression handling to __deserializeList()
 19-Jun-2019  - V0.31 Address linting issues and and adjustments for multi-type return values.
 11-Jul-2019  - V0.32 add explicit py2 safe file decompression to avoid encoding problems
+25-Jul-2019  - V0.33 Try to improve retention of ordering for json load
 #
-
-
-

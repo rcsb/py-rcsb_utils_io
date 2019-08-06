@@ -49,11 +49,13 @@ import string
 import sys
 import tempfile
 import zipfile
+from collections import OrderedDict
 
 import ruamel.yaml
-from mmcif.io.IoAdapterPy import IoAdapterPy
 from rcsb.utils.io.FastaUtil import FastaUtil
 from rcsb.utils.validation.ValidationReportReader import ValidationReportReader
+
+from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
     from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter  # pylint: disable=ungrouped-imports
@@ -268,7 +270,7 @@ class IoUtil(object):
         myDefault = kwargs.get("default", {})
         try:
             with open(filePath, "r") as infile:
-                return json.load(infile)
+                return json.load(infile, object_pairs_hook=OrderedDict)
         except Exception as e:
             logger.warning("Unable to deserialize %r %r", filePath, str(e))
         return myDefault
