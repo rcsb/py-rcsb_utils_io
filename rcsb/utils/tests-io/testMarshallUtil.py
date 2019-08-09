@@ -63,6 +63,7 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathVrptMapFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__workPath = os.path.join(HERE, "test-output")
         self.__urlTarget = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
+        self.__urlTargetBad = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump-missing.tar.gz"
         #
         self.__mU = MarshalUtil()
         self.__startTime = time.time()
@@ -165,8 +166,8 @@ class MarshalUtilTests(unittest.TestCase):
             cL = self.__mU.doImport(self.__pathIndexFile, fmt="list")
             logger.debug("List element %r length %d", cL[0], len(cL))
             count = 0
-            for c in cL:
-                fields = c.split()
+            for cV in cL:
+                fields = cV.split()
                 count += len(fields)
             _ = count
             self.assertGreaterEqual(len(cL), 1000)
@@ -215,6 +216,18 @@ class MarshalUtilTests(unittest.TestCase):
             ndL = mU.doImport(os.path.join(self.__workPath, fn), fmt="tdd", rowFormat="list", tarMember="nodes.dmp")
             self.assertGreater(len(ndL), 2000000)
             logger.info("Nodes %d", len(ndL))
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testReadUrlTarfileFail(self):
+        """ Test the case to read URL target and extract a member (failing case)
+        """
+        try:
+            mU = MarshalUtil(workPath=self.__workPath)
+            rL = mU.doImport(self.__urlTargetBad, fmt="tdd", rowFormat="list", tarMember="names.dmp")
+            logger.info("Return is %r", rL)
+            self.assertEqual(len(rL), 0)
         except Exception as e:
             logger.exception("Failing with %s", str(e))
             self.fail()

@@ -22,6 +22,8 @@ import os
 import shutil
 import tarfile
 
+from rcsb.utils.io.decorators import retry
+
 # pylint: disable=ungrouped-imports
 try:
     import urllib.request as myurl
@@ -32,6 +34,7 @@ try:
     from urllib.parse import urlsplit
 except Exception:
     from urlparse import urlsplit
+
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +72,8 @@ class FileUtil(object):
             if localFlag and not tarMember:
                 rPath = self.getFilePath(remote)
                 lPath = self.getFilePath(local)
-                ret = shutil.copyfile(rPath, lPath)
+                shutil.copyfile(rPath, lPath)
+                ret = True
             elif localFlag and tarMember:
                 # Extract a particular member from a local tar file -
                 rPath = self.getFilePath(remote)
@@ -105,7 +109,8 @@ class FileUtil(object):
             if localFlag:
                 rPath = self.getFilePath(remote)
                 lPath = self.getFilePath(local)
-                ret = shutil.copyfile(lPath, rPath)
+                shutil.copyfile(lPath, rPath)
+                ret = True
             else:
                 ret = False
         except Exception as e:
@@ -169,6 +174,7 @@ class FileUtil(object):
             ret = False
         return ret
 
+    @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
     def __fetchUrl(self, url, filePath):
         try:
             with open(filePath, "wb") as outFile:
@@ -181,6 +187,7 @@ class FileUtil(object):
                         outFile.write(block)
             return True
         except Exception as e:
-            logger.exception("Failing for %s with %s", filePath, str(e))
+            logger.error("Failing for %s with %s", filePath, str(e))
+            raise e
 
         return False

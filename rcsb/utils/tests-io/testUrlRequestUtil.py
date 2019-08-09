@@ -158,8 +158,30 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testUnpBatchFetchFail(self):
+        """ UniProt batch fetch (proteins) get test
+        """
+        baseUrl = "https://www0.ebi.ac.uk"
+        endPoint = "proteins/api/proteins"
+        idList = self.__unpIdList1
+        try:
+            hL = [("Accept", "application/xml")]
+            pD = {}
+            pD["size"] = "-1"
+            pD["accession"] = ",".join(idList)
+            ureq = UrlRequestUtil()
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            logger.debug("XML result %r", ret)
+            logger.debug("Result status code %r", retCode)
+            self.assertEqual(ret, None)
+            self.assertEqual(retCode, None)
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
     def testUnpBatchFetchGet2(self):
-        """ UniProt batch fetch (uploadlists) get test
+        """ UniProt batch fetch (uploadlists) get test (test failed case)
         """
 
         baseUrl = "http://www.uniprot.org"

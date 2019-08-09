@@ -18,12 +18,14 @@ import contextlib
 import logging
 import ssl
 
+from rcsb.utils.io.decorators import retry
+
 try:
     from urllib.parse import urlencode
-    from urllib.request import urlopen, Request
+    from urllib.request import urlopen, Request, URLError, HTTPError
 except ImportError:
     from urllib import urlencode
-    from urllib2 import urlopen, Request
+    from urllib2 import urlopen, Request, URLError, HTTPError
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +39,7 @@ class UrlRequestUtil(object):
     def __init__(self, **kwargs):
         pass
 
+    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=(None, None), logger=logger)
     def post(self, url, endPoint, paramD, **kwargs):
         """
         """
@@ -60,9 +63,11 @@ class UrlRequestUtil(object):
 
         except Exception as e:
             logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
+            raise e
 
         return ret, retCode
 
+    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=(None, None), logger=logger)
     def get(self, url, endPoint, paramD, **kwargs):
         """
         """
@@ -92,5 +97,6 @@ class UrlRequestUtil(object):
 
         except Exception as e:
             logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
+            raise e
 
         return ret, retCode

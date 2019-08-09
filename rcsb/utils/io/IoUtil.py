@@ -476,7 +476,7 @@ class IoUtil(object):
 
             return oL
         except Exception as e:
-            logger.exception("Unable to deserialize %r %s", filePath, str(e))
+            logger.error("Unable to deserialize %r %s", filePath, str(e))
         #
         logger.debug("Reading list length %d", len(oL))
         return oL
