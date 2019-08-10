@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class MarshalUtil(object):
-    """
+    """ Wrapper for serialization and deserialization methods.
     """
 
     def __init__(self, **kwargs):
@@ -44,7 +44,17 @@ class MarshalUtil(object):
         self.__ioU = IoUtil()
 
     def doExport(self, locator, obj, fmt="list", marshalHelper=None, **kwargs):
-        """
+        """Serialize the input object at locator path in specified format.  The
+        input object is optionally preprocessed by the helper method.
+
+        Args:
+            locator (str): target path or URI
+            obj (object): data to be serialized
+            fmt (str, optional): format for serialization (mmcif, tdd, csv, list). Defaults to "list".
+            marshalHelper (method, optional): pre-processor method applied to input data object. Defaults to None.
+
+        Returns:
+            bool: True for sucess or False otherwise
         """
         try:
             ret = False
@@ -74,12 +84,13 @@ class MarshalUtil(object):
         return ret
 
     def doImport(self, locator, fmt="list", marshalHelper=None, **kwargs):
-        """[summary]
+        """Deserialize data at the target locator in specified format. The deserialized
+        data is optionally post-processed by the input helper method.
 
         Args:
-            locator (str): [description]
-            fmt (str, optional): [description]. Defaults to "list".
-            marshalHelper (object, optional): [description]. Defaults to None.
+            locator (str): path or URI to input data
+            fmt (str, optional): format for deserialization (mmcif, tdd, csv, list). Defaults to "list".
+            marshalHelper (method, optional): post-processor method applied to deserialized data object. Defaults to None.
 
         Returns:
             Any: format specific return type

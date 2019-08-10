@@ -24,8 +24,7 @@
 #  25-Mar-2019  jdw expose comment processing for csv/tdd files as keyword argument
 #   3-Apr-2019  jdw add comment option and compression handling to __deserializeList()
 #  11-Jul-2019  jdw add explicit py2 safe file decompression to avoid encoding problems.
-#
-#
+#  10-Aug-2019  jdw add XML/ElementTree reader
 ##
 
 __docformat__ = "restructuredtext en"
@@ -48,6 +47,7 @@ import shutil
 import string
 import sys
 import tempfile
+import time
 import zipfile
 from collections import OrderedDict
 
@@ -62,6 +62,10 @@ try:
 except Exception:
     from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter  # pylint: disable=reimported,ungrouped-imports
 
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +168,8 @@ class IoUtil(object):
         elif fmt in ["csv", "tdd"]:
             delimiter = "," if fmt == "csv" else "\t"
             ret = self.__deserializeCsv(filePath, delimiter=delimiter, **kwargs)  # type: ignore
+        elif fmt in ["xml"]:
+            ret = self.__deserializeXml(filePath, **kwargs)  # type: ignore
         else:
             ret = None  # type: ignore
 
@@ -551,3 +557,30 @@ class IoUtil(object):
         """
         for line in csvData:
             yield line.decode("utf-8-sig", errors=encodingErrors).encode(encoding, errors=encodingErrors)
+
+    def __deserializeXml(self, filePath, **kwargs):
+        """Read the input XML file path and return an ElementTree data object instance.
+
+        Args:
+            filePath (sting): input XML file path
+
+        Returns:
+            object: instance of an ElementTree tree object
+        """
+        _ = kwargs
+        tree = None
+        try:
+            logger.debug("Parsing XML path %s", filePath)
+            if filePath[-3:] == ".gz":
+                with gzip.open(filePath, mode="rb") as ifh:
+                    tV = time.time()
+                    tree = ET.parse(ifh)
+            else:
+                with open(filePath, mode="rb") as ifh:
+                    tV = time.time()
+                    tree = ET.parse(ifh)
+            logger.debug("Parsed %s in %.2f seconds", filePath, time.time() - tV)
+        except Exception as e:
+            logger.error("Unable to deserialize %r %s", filePath, str(e))
+        #
+        return tree

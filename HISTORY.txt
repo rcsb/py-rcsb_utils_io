@@ -28,4 +28,5 @@
 11-Jul-2019  - V0.32 add explicit py2 safe file decompression to avoid encoding problems
 25-Jul-2019  - V0.33 Try to improve retention of ordering for json load
  9-Aug-2019  - V0.34 Added retry for all url or service requests
+10-Aug-2019  - V0.35 Incorporate ElementTree parser for XML deserializer
 #
