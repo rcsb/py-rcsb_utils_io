@@ -1,3 +1,5 @@
 ruamel.yaml
+requests >= 2.21.0
 mmcif >= 0.40
 rcsb.utils.validation >= 0.14
+backports.tempfile; python_version < "3.0"

@@ -198,6 +198,18 @@ class FileUtil(object):
             ret = False
         return ret
 
+    def __fetchUrl(self, url, filePath, **kwargs):
+
+        try:
+            scheme = self.getScheme(url)
+            if scheme in ["ftp"]:
+                return self.__fetchUrlPy(url, filePath, **kwargs)
+            else:
+                return self.__fetchUrlReq(url, filePath, **kwargs)
+        except Exception as e:
+            logger.error("Failing for url %r with %s", url, str(e))
+        return False
+
     @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
     def __fetchUrlPy(self, url, filePath, **kwargs):
         """ Fetch data from a remote URL and store this in input filePath.
@@ -242,7 +254,7 @@ class FileUtil(object):
         return False
 
     @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
-    def __fetchUrl(self, url, filePath, **kwargs):
+    def __fetchUrlReq(self, url, filePath, **kwargs):
         """ Fetch data from a remote URL and store this in input filePath.
 
         Args:
