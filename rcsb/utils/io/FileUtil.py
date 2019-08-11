@@ -7,7 +7,10 @@
 #  5-Jun-2018 jdw add support for local copy operations using shutil.copy
 #  6-Mar-2019 jdw add previously stubbed remote access and tar file member support
 # 10-Mar-2019 jdw add exists() method
-#
+# 11-Aug-2019 jdw incorporate compress/uncompreess and toAscii methods from IoUtil.py
+#                 add __extractZipMember() method.  Add retry support for __fetchUrl().
+#                 Replace urlibx version of __fetchUrl with a version that depends on
+#                 requests module to better support redirection and authentication.
 ##
 
 __docformat__ = "restructuredtext en"
@@ -16,12 +19,18 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
 #
+import bz2
 import contextlib
+import gzip
+import io
 import logging
 import os
 import shutil
 import tarfile
+import tempfile
+import zipfile
 
+import requests
 from rcsb.utils.io.decorators import retry
 
 # pylint: disable=ungrouped-imports
@@ -83,12 +92,12 @@ class FileUtil(object):
             elif not localFlag and tarMember:
                 # Extract a particular member from a remote tar file
                 tarPath = os.path.join(self.__workPath, self.getFileName(remote))
-                ret = self.__fetchUrl(remote, tarPath)
+                ret = self.__fetchUrl(remote, tarPath, **kwargs)
                 logger.debug("Fetched %r to %r status %r", remote, tarPath, ret)
                 ret = self.__extractTarMember(tarPath, tarMember, self.getFilePath(local)) if ret else False
                 logger.debug("Extract %r from %r to %r status %r", tarMember, tarPath, self.getFilePath(local), ret)
             elif not localFlag and not tarMember:
-                ret = self.__fetchUrl(remote, self.getFilePath(local))
+                ret = self.__fetchUrl(remote, self.getFilePath(local), **kwargs)
             else:
                 ret = False
             #
@@ -174,9 +183,49 @@ class FileUtil(object):
             ret = False
         return ret
 
-    @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
-    def __fetchUrl(self, url, filePath):
+    def __extractZipMember(self, zipFilePath, memberName, memberPath):
+        ret = False
         try:
+            with zipfile.ZipFile(zipFilePath, mode="r") as zObj:
+                memberList = zObj.namelist()
+                for member in memberList:
+                    if member == memberName:
+                        zObj.extract(member, path=memberPath)
+                        ret = True
+                        break
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            ret = False
+        return ret
+
+    @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
+    def __fetchUrlPy(self, url, filePath, **kwargs):
+        """ Fetch data from a remote URL and store this in input filePath.
+
+        Args:
+            url (str): target URL to fetch
+            filePath (str): path to store the data from the remote url
+            username (str): basic auth username
+            password (str): dasic auth password
+            kwargs (dict, optional): other options
+
+        Raises:
+            e: any exception
+
+        Returns:
+            bool: True for sucess or False otherwise
+        """
+        try:
+            user = kwargs.get("username", None)
+            pw = kwargs.get("password", None)
+            if user and pw:
+                pwMgr = myurl.HTTPPasswordMgrWithDefaultRealm()
+                pwMgr.add_password(None, url, user, pw)
+                handler = myurl.HTTPBasicAuthHandler(pwMgr)
+                opener = myurl.build_opener(handler)
+                # Install the opener.
+                myurl.install_opener(opener)
+            #
             with open(filePath, "wb") as outFile:
                 with contextlib.closing(myurl.urlopen(url)) as fp:
                     blockSize = 1024 * 8
@@ -191,3 +240,112 @@ class FileUtil(object):
             raise e
 
         return False
+
+    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
+    def __fetchUrl(self, url, filePath, **kwargs):
+        """ Fetch data from a remote URL and store this in input filePath.
+
+        Args:
+            url (str): target URL to fetch
+            filePath (str): path to store the data from the remote url
+            username (str): basic auth username
+            password (str): dasic auth password
+            kwargs (dict, optional): other options
+
+        Raises:
+            e: any exception
+
+        Returns:
+            bool: True for sucess or False otherwise
+        """
+        user = kwargs.get("username", None)
+        pw = kwargs.get("password", None)
+        #
+        try:
+            if user and pw:
+                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
+                    with open(filePath, "wb") as fOut:
+                        shutil.copyfileobj(rIn.raw, fOut)
+
+            else:
+                with requests.get(url, stream=True, allow_redirects=True) as rIn:
+                    with open(filePath, "wb") as fOut:
+                        shutil.copyfileobj(rIn.raw, fOut)
+
+            return True
+        except Exception as e:
+            logger.error("Failing for %s with %s", filePath, str(e))
+            raise e
+
+        return False
+
+    def toAscii(self, inputFilePath, outputFilePath, chunkSize=5000, encodingErrors="ignore"):
+        """ Encode input file to Ascii and write this to the target output file.   Handle encoding
+            errors according to the input settting ('ignore', 'escape', 'xmlcharrefreplace').
+        """
+        try:
+            chunk = []
+            with io.open(inputFilePath, "r", encoding="utf-8") as rIn, io.open(outputFilePath, "w", encoding="ascii") as wOut:
+                for line in rIn:
+                    # chunk.append(line.encode('ascii', 'xmlcharrefreplace').decode('ascii'))
+                    chunk.append(line.encode("ascii", encodingErrors).decode("ascii"))
+                    if len(chunk) == chunkSize:
+                        wOut.writelines(chunk)
+                        chunk = []
+                wOut.writelines(chunk)
+            return True
+        except Exception as e:
+            logger.error("Failing text ascii encoding for %s with %s", inputFilePath, str(e))
+        #
+        return False
+
+    def uncompress(self, inputFilePath, outputDir=None):
+        """ Uncompress the input file if the path name has a recognized compression type file extension.
+
+            Return the path of the uncompressed file (in outDir) or the original input file path.
+
+        """
+        try:
+            outputDir = outputDir if outputDir else tempfile.gettempdir()
+            _, fn = os.path.split(inputFilePath)
+            bn, _ = os.path.splitext(fn)
+            outputFilePath = os.path.join(outputDir, bn)
+            if inputFilePath.endswith(".gz"):
+                with gzip.open(inputFilePath, mode="rb") as inpF:
+                    with io.open(outputFilePath, "wb") as outF:
+                        shutil.copyfileobj(inpF, outF)
+            elif inputFilePath.endswith(".bz2"):
+                with bz2.open(inputFilePath, mode="rb") as inpF:
+                    with io.open(outputFilePath, "wb") as outF:
+                        shutil.copyfileobj(inpF, outF)
+            # elif inputFilePath.endswith(".xz"):
+            #    with lzma.open(inputFilePath, mode="rb") as inpF:
+            #        with io.open(outputFilePath, "wb") as outF:
+            #            shutil.copyfileobj(inpF, outF)
+            elif inputFilePath.endswith(".zip"):
+                with zipfile.ZipFile(inputFilePath, mode="r") as zObj:
+                    memberList = zObj.namelist()
+                    for member in memberList[:1]:
+                        zObj.extract(member, path=outputDir)
+                if memberList:
+                    outputFilePath = os.path.join(outputDir, memberList[0])
+            else:
+                outputFilePath = inputFilePath
+
+        except Exception as e:
+            logger.exception("Failing uncompress for file %s with %s", inputFilePath, str(e))
+        logger.debug("Returning file path %r", outputFilePath)
+        return outputFilePath
+
+    def compress(self, inpPath, outPath, compressType="gzip"):
+        try:
+            if compressType == "gzip":
+                with open(inpPath, "rb") as fIn:
+                    with gzip.open(outPath, "wb") as fOut:
+                        shutil.copyfileobj(fIn, fOut)
+                return True
+            else:
+                logger.error("Unsupported compressType %r", compressType)
+        except Exception as e:
+            logger.exception("Compressing file %s failing with %s", inpPath, str(e))
+            return False

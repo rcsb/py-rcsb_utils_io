@@ -1,6 +1,6 @@
 # File:    IoUtilTests.py
 # Author:  J. Westbrook
-# Date:    22-May-2013
+# Date:    22-May-2018
 # Version: 0.001
 #
 # Update:
@@ -14,7 +14,7 @@
 #
 ##
 """
-Tests for extraction, supplementing and packaging dictionary metadata for schema construction.
+Tests for core serialization and deserialization utilities.
 
 """
 

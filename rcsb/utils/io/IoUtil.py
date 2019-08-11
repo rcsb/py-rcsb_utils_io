@@ -32,7 +32,6 @@ __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
-import bz2
 import csv
 import datetime
 import gzip
@@ -43,16 +42,14 @@ import os
 import pickle
 import pprint
 import random
-import shutil
 import string
 import sys
-import tempfile
 import time
-import zipfile
 from collections import OrderedDict
 
 import ruamel.yaml
 from rcsb.utils.io.FastaUtil import FastaUtil
+from rcsb.utils.io.FileUtil import FileUtil
 from rcsb.utils.validation.ValidationReportReader import ValidationReportReader
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
@@ -99,8 +96,8 @@ class JsonTypeEncoder(json.JSONEncoder):
 
 
 class IoUtil(object):
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+        self.__fileU = FileUtil(**kwargs)
 
     def serialize(self, filePath, myObj, fmt="pickle", **kwargs):
         """Public method to serialize format appropriate objects
@@ -179,19 +176,6 @@ class IoUtil(object):
         try:
             return os.access(filePath, mode)
         except Exception:
-            return False
-
-    def __compress(self, inpPath, outPath, compressType="gzip"):
-        try:
-            if compressType == "gzip":
-                with open(inpPath, "rb") as fIn:
-                    with gzip.open(outPath, "wb") as fOut:
-                        shutil.copyfileobj(fIn, fOut)
-                return True
-            else:
-                logger.error("Unsupported compressType %r", compressType)
-        except Exception as e:
-            logger.exception("Compressing file %s failing with %s", inpPath, str(e))
             return False
 
     def __deserializeFasta(self, filePath, **kwargs):
@@ -312,7 +296,7 @@ class IoUtil(object):
                 rfn = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
                 tPath = os.path.join(workPath, rfn)
                 ret = myIo.writeFile(tPath, containerList=containerList, enforceAscii=enforceAscii)
-                ret = self.__compress(tPath, filePath, compressType="gzip")
+                ret = self.__fileU.compress(tPath, filePath, compressType="gzip")
             else:
                 ret = myIo.writeFile(filePath, containerList=containerList, enforceAscii=enforceAscii)
         except Exception as e:
@@ -405,7 +389,7 @@ class IoUtil(object):
                     with gzip.open(filePath, "rt", encoding="utf-8-sig", errors=encodingErrors) as ifh:
                         aList = self.__processList(ifh, enforceAscii=enforceAscii)
                 else:
-                    tPath = self.__uncompress(filePath, outputDir=None)
+                    tPath = self.__fileU.uncompress(filePath, outputDir=None)
                     # for py2 this commented code is problematic for non-ascii data
                     # with gzip.open(filePath, "rb") as ifh:
                     #    aList = self.__processList(ifh, enforceAscii=enforceAscii)
@@ -419,26 +403,6 @@ class IoUtil(object):
         #
         logger.debug("Reading list length %d", len(aList))
         return aList
-
-    def __toAscii(self, inputFilePath, outputFilePath, chunkSize=5000, encodingErrors="ignore"):
-        """ Encode input file to Ascii and write this to the target output file.   Handle encoding
-            errors according to the input settting ('ignore', 'escape', 'xmlcharrefreplace').
-        """
-        try:
-            chunk = []
-            with io.open(inputFilePath, "r", encoding="utf-8") as rIn, io.open(outputFilePath, "w", encoding="ascii") as wOut:
-                for line in rIn:
-                    # chunk.append(line.encode('ascii', 'xmlcharrefreplace').decode('ascii'))
-                    chunk.append(line.encode("ascii", encodingErrors).decode("ascii"))
-                    if len(chunk) == chunkSize:
-                        wOut.writelines(chunk)
-                        chunk = []
-                wOut.writelines(chunk)
-            return True
-        except Exception as e:
-            logger.error("Failing text ascii encoding for %s with %s", inputFilePath, str(e))
-        #
-        return False
 
     def __csvReader(self, csvFile, rowFormat, delimiter, uncomment=True):
         oL = []
@@ -473,7 +437,7 @@ class IoUtil(object):
                     # Py2 situation non-ascii encodings is problematic
                     # with gzip.open(filePath, "rb") as csvFile:
                     #    oL = self.__csvReader(csvFile, rowFormat, delimiter)
-                    tPath = self.__uncompress(filePath, outputDir=None)
+                    tPath = self.__fileU.uncompress(filePath, outputDir=None)
                     with io.open(tPath, newline="", encoding=encoding, errors="ignore") as csvFile:
                         oL = self.__csvReader(csvFile, rowFormat, delimiter, uncomment=uncomment)
             else:
@@ -511,41 +475,6 @@ class IoUtil(object):
         except Exception as e:
             logger.error("Failing for %s : %r with %s", filePath, wD, str(e))
         return ret
-
-    def __uncompress(self, inputFilePath, outputDir=None):
-        """ Uncompress the input file if the path name has a recognized compression type file extension.
-
-            Return the path of the uncompressed file (in outDir) or the original input file path.
-
-        """
-        try:
-            outputDir = outputDir if outputDir else tempfile.gettempdir()
-            _, fn = os.path.split(inputFilePath)
-            bn, _ = os.path.splitext(fn)
-            outputFilePath = os.path.join(outputDir, bn)
-            if inputFilePath.endswith(".gz"):
-                with gzip.open(inputFilePath, mode="rb") as inpF:
-                    with io.open(outputFilePath, "wb") as outF:
-                        shutil.copyfileobj(inpF, outF)
-            elif inputFilePath.endswith(".bz2"):
-                with bz2.open(inputFilePath, mode="rb") as inpF:
-                    with io.open(outputFilePath, "wb") as outF:
-                        shutil.copyfileobj(inpF, outF)
-            # elif inputFilePath.endswith(".xz"):
-            #    with lzma.open(inputFilePath, mode="rb") as inpF:
-            #        with io.open(outputFilePath, "wb") as outF:
-            #            shutil.copyfileobj(inpF, outF)
-            elif inputFilePath.endswith(".zip"):
-                with zipfile.ZipFile(inputFilePath, mode="rb") as inpF:
-                    with io.open(outputFilePath, "wb") as outF:
-                        shutil.copyfileobj(inpF, outF)
-            else:
-                outputFilePath = inputFilePath
-
-        except Exception as e:
-            logger.exception("Failing uncompress for file %s with %s", inputFilePath, str(e))
-        logger.debug("Returning file path %r", outputFilePath)
-        return outputFilePath
 
     def __csvEncoder(self, csvData, encoding="utf-8-sig", encodingErrors="ignore"):
         """ Handle encoding issues for gzipped data in Py2. (beware of the BOM chars)
