@@ -34,3 +34,4 @@
                      Add retry support for __fetchUrlx(). Replace urlibx version of __fetchUrlx
                      with a version that depends on  requests module to better support
                      redirection and authentication.  Add further unit tests for FileUtil.
+12-Aug-2019  - V0.37 Add modules CryptUtils and testCryptUtils.
