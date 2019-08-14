@@ -81,8 +81,8 @@ class MarshalUtilTests(unittest.TestCase):
         """
         try:
             lenL = 12013
-            dD = {"a": 100, "b": 200, "c": 300}
-            dL = [dD for ii in range(lenL)]
+            aL = [100, 200, 300, 400, 500]
+            dL = [aL for ii in range(lenL)]
             numParts = 4
             sPath = os.path.join(self.__workPath, "list-m-data.json")
             ok = self.__mU.doExport(sPath, dL, numParts=numParts, fmt="json", indent=3)
@@ -93,8 +93,8 @@ class MarshalUtilTests(unittest.TestCase):
             self.assertEqual(dL, rL)
             #
             lenD = 23411
-            qD = OrderedDict({"a": 100, "b": 200, "c": 300})
-            dD = OrderedDict({str(ii): qD for ii in range(lenD)})
+            qD = OrderedDict([("a", 100), ("b", 100), ("c", 100)])
+            dD = OrderedDict([(str(ii), qD) for ii in range(lenD)])
             numParts = 4
             sPath = os.path.join(self.__workPath, "dict-m-data.json")
             ok = self.__mU.doExport(sPath, dD, numParts=numParts, fmt="json", indent=3)

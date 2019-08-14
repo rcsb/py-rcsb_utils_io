@@ -84,9 +84,10 @@ class IoUtilTests(unittest.TestCase):
         """ Test the case reading and writing in parts.
         """
         try:
-            lenL = 12013
-            dD = {"a": 100, "b": 200, "c": 300}
-            dL = [dD for ii in range(lenL)]
+            self.maxDiff = None
+            lenL = 12483
+            aL = [100, 200, 300, 400, 500]
+            dL = [aL for ii in range(lenL)]
             numParts = 4
             sPath = os.path.join(self.__workPath, "list-data.json")
             ok = self.__ioU.serializeInParts(sPath, dL, numParts, fmt="json", indent=3)
@@ -95,19 +96,20 @@ class IoUtilTests(unittest.TestCase):
             logger.info("Reading %d parts with total length %d", numParts, len(rL))
             self.assertEqual(dL, rL)
             #
-            lenD = 23411
-            qD = OrderedDict({"a": 100, "b": 200, "c": 300})
-            dD = OrderedDict({str(ii): qD for ii in range(lenD)})
+            lenD = 20341
+            qD = OrderedDict([("a", 100), ("b", 100), ("c", 100)])
+            dD = OrderedDict([(str(ii), qD) for ii in range(lenD)])
             numParts = 4
             sPath = os.path.join(self.__workPath, "dict-data.json")
             ok = self.__ioU.serializeInParts(sPath, dD, numParts, fmt="json", indent=3)
             self.assertTrue(ok)
             rD = self.__ioU.deserializeInParts(sPath, numParts, fmt="json")
             logger.info("Reading %d parts with total length %d", numParts, len(rD))
-            self.assertEqual(dD, rD)
+            self.assertDictEqual(dD, rD)
+            #
             rD = self.__ioU.deserializeInParts(sPath, None, fmt="json")
-            logger.info("Reading %d parts with total length %d", numParts, len(rD))
-            self.assertEqual(dD, rD)
+            logger.info("Reading %d globbed parts with total length %d", numParts, len(rD))
+            self.assertDictEqual(dD, rD)
         except Exception as e:
             logger.exception("Failing with %s", str(e))
             self.fail()

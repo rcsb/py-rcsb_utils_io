@@ -209,7 +209,7 @@ class IoUtil(object):
         elif isinstance(myObj, dict):
             for ii, keyList in enumerate(self.__sliceInChunks(list(myObj.keys()), numParts)):
                 fp = os.path.join(pth, bn + "_part_%d" % (ii + 1) + ext)
-                ok = self.serialize(fp, OrderedDict({k: myObj[k] for k in keyList}), fmt=fmt, **kwargs)
+                ok = self.serialize(fp, OrderedDict([(k, myObj[k]) for k in keyList]), fmt=fmt, **kwargs)
                 ret = ret and ok
         else:
             logger.error("Unsupported data type for serialization in parts")
