@@ -6,6 +6,7 @@
 #      19-Jun-2018 jdw propagate the class workpath to serialize/deserialize methods explicitly
 #       6-Mar-2019 jdw add previously stubbed remote access and tar file member support
 #       9-Mar-2019 jdw add exists()
+#      13-Aug-2019 jdw add multipart support for json/pickle
 #
 # For py 27 pip install backports.tempfile
 ##
@@ -43,7 +44,7 @@ class MarshalUtil(object):
         self.__fileU = FileUtil(workPath=self.__workPath)
         self.__ioU = IoUtil()
 
-    def doExport(self, locator, obj, fmt="list", marshalHelper=None, **kwargs):
+    def doExport(self, locator, obj, fmt="list", marshalHelper=None, numParts=None, **kwargs):
         """Serialize the input object at locator path in specified format.  The
         input object is optionally preprocessed by the helper method.
 
@@ -52,7 +53,7 @@ class MarshalUtil(object):
             obj (object): data to be serialized
             fmt (str, optional): format for serialization (mmcif, tdd, csv, list). Defaults to "list".
             marshalHelper (method, optional): pre-processor method applied to input data object. Defaults to None.
-
+            numParts (int, optional): serialize the data in parts. Defaults to None. (json and pickle formats)
         Returns:
             bool: True for sucess or False otherwise
         """
@@ -65,7 +66,10 @@ class MarshalUtil(object):
             else:
                 myObj = obj
             #
-            if localFlag and not cacheLocalFlag:
+            if localFlag and numParts and fmt in ["json", "pickle"]:
+                localFilePath = self.__fileU.getFilePath(locator)
+                ret = self.__ioU.serializeInParts(localFilePath, myObj, numParts, fmt=fmt, **kwargs)
+            elif localFlag and not cacheLocalFlag:
                 localFilePath = self.__fileU.getFilePath(locator)
                 ret = self.__ioU.serialize(localFilePath, myObj, fmt=fmt, workPath=self.__workPath, **kwargs)
             else:
@@ -83,7 +87,7 @@ class MarshalUtil(object):
 
         return ret
 
-    def doImport(self, locator, fmt="list", marshalHelper=None, **kwargs):
+    def doImport(self, locator, fmt="list", marshalHelper=None, numParts=None, **kwargs):
         """Deserialize data at the target locator in specified format. The deserialized
         data is optionally post-processed by the input helper method.
 
@@ -91,6 +95,7 @@ class MarshalUtil(object):
             locator (str): path or URI to input data
             fmt (str, optional): format for deserialization (mmcif, tdd, csv, list). Defaults to "list".
             marshalHelper (method, optional): post-processor method applied to deserialized data object. Defaults to None.
+            numParts (int, optional): serialize the data in parts. Defaults to None. (json and pickle formats)
 
         Returns:
             Any: format specific return type
@@ -100,7 +105,10 @@ class MarshalUtil(object):
             tarMember = kwargs.get("tarMember", None)
             localFlag = self.__fileU.isLocal(locator) and not tarMember
             #
-            if localFlag and not cacheLocalFlag:
+            if localFlag and numParts and fmt in ["json", "pickle"]:
+                filePath = self.__fileU.getFilePath(locator)
+                ret = self.__ioU.deserializeInParts(filePath, numParts, fmt=fmt, **kwargs)
+            elif localFlag and not cacheLocalFlag:
                 filePath = self.__fileU.getFilePath(locator)
                 ret = self.__ioU.deserialize(filePath, fmt=fmt, workPath=self.__workPath, **kwargs)
             else:

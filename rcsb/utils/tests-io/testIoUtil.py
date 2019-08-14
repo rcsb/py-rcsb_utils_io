@@ -9,6 +9,7 @@
 #  13-Jun-2018  jdw add content classes
 #  25-Nov-2018  jdw add FASTA tests
 #  30-Nov-2018  jdw add CSV tests
+#  13-Aug-2019  jdw add tests for multipart json/pickle
 #
 #
 #
@@ -28,6 +29,7 @@ import logging
 import os
 import time
 import unittest
+from collections import OrderedDict
 
 from rcsb.utils.io import __version__
 from rcsb.utils.io.IoUtil import IoUtil
@@ -48,26 +50,26 @@ class IoUtilTests(unittest.TestCase):
         self.__pathProvenanceFile = os.path.join(TOPDIR, "rcsb", "mock-data", "provenance", "rcsb_extend_provenance_info.json")
         self.__pathIndexFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "update-lists", "all-pdb-list")
         self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "data_type_info", "app_data_type_mapping.cif")
-
+        self.__workPath = os.path.join(HERE, "test-output")
         #
-        self.__pathSaveDictionaryFile = os.path.join(HERE, "test-output", "mmcif_pdbx_v5_next.dic")
-        self.__pathSaveProvenanceFile = os.path.join(HERE, "test-output", "rcsb_extend_provenance_info.json")
-        self.__pathSaveIndexFile = os.path.join(HERE, "test-output", "all-pdb-list")
-        self.__pathSaveCifFile = os.path.join(HERE, "test-output", "app_data_type_mapping.cif")
-        self.__pathSavePickleFile = os.path.join(HERE, "test-output", "rcsb_extend_provenance_info.pic")
-        self.__pathSaveTextFile = os.path.join(HERE, "test-output", "rcsb_extend_provenance_info.txt")
+        self.__pathSaveDictionaryFile = os.path.join(self.__workPath, "mmcif_pdbx_v5_next.dic")
+        self.__pathSaveProvenanceFile = os.path.join(self.__workPath, "rcsb_extend_provenance_info.json")
+        self.__pathSaveIndexFile = os.path.join(self.__workPath, "all-pdb-list")
+        self.__pathSaveCifFile = os.path.join(self.__workPath, "app_data_type_mapping.cif")
+        self.__pathSavePickleFile = os.path.join(self.__workPath, "rcsb_extend_provenance_info.pic")
+        self.__pathSaveTextFile = os.path.join(self.__workPath, "rcsb_extend_provenance_info.txt")
         #
         #
         self.__pathInsilicoFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "status", "theoretical_model.tsv")
-        self.__pathSaveInsilicoFile = os.path.join(HERE, "test-output", "saved-theoretical_model.tsv")
+        self.__pathSaveInsilicoFile = os.path.join(self.__workPath, "saved-theoretical_model.tsv")
         #
         # self.__pathVariantFastaFile = os.path.join(self.__mockTopPath, 'UniProt', 'uniprot_sprot_varsplic.fasta.gz')
         self.__pathFastaFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "sequence", "pdb_seq_prerelease.fasta")
-        self.__pathSaveFastaFile = os.path.join(HERE, "test-output", "test-pre-release.fasta")
+        self.__pathSaveFastaFile = os.path.join(self.__workPath, "test-pre-release.fasta")
         #
         self.__pathTaxonomyFile = os.path.join(TOPDIR, "rcsb", "mock-data", "NCBI", "names.dmp.gz")
-        self.__pathSaveTaxonomyFilePic = os.path.join(HERE, "test-output", "taxonomy_names.pic")
-        self.__pathSaveTaxonomyFileCsv = os.path.join(HERE, "test-output", "taxonomy_names.csv")
+        self.__pathSaveTaxonomyFilePic = os.path.join(self.__workPath, "taxonomy_names.pic")
+        self.__pathSaveTaxonomyFileCsv = os.path.join(self.__workPath, "taxonomy_names.csv")
         #
         self.__ioU = IoUtil()
         self.__startTime = time.time()
@@ -77,6 +79,38 @@ class IoUtilTests(unittest.TestCase):
     def tearDown(self):
         endTime = time.time()
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
+
+    def testReadWriteInParts(self):
+        """ Test the case reading and writing in parts.
+        """
+        try:
+            lenL = 12013
+            dD = {"a": 100, "b": 200, "c": 300}
+            dL = [dD for ii in range(lenL)]
+            numParts = 4
+            sPath = os.path.join(self.__workPath, "list-data.json")
+            ok = self.__ioU.serializeInParts(sPath, dL, numParts, fmt="json", indent=3)
+            self.assertTrue(ok)
+            rL = self.__ioU.deserializeInParts(sPath, numParts, fmt="json")
+            logger.info("Reading %d parts with total length %d", numParts, len(rL))
+            self.assertEqual(dL, rL)
+            #
+            lenD = 23411
+            qD = OrderedDict({"a": 100, "b": 200, "c": 300})
+            dD = OrderedDict({str(ii): qD for ii in range(lenD)})
+            numParts = 4
+            sPath = os.path.join(self.__workPath, "dict-data.json")
+            ok = self.__ioU.serializeInParts(sPath, dD, numParts, fmt="json", indent=3)
+            self.assertTrue(ok)
+            rD = self.__ioU.deserializeInParts(sPath, numParts, fmt="json")
+            logger.info("Reading %d parts with total length %d", numParts, len(rD))
+            self.assertEqual(dD, rD)
+            rD = self.__ioU.deserializeInParts(sPath, None, fmt="json")
+            logger.info("Reading %d parts with total length %d", numParts, len(rD))
+            self.assertEqual(dD, rD)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
 
     def testReadDictionaryFile(self):
         """ Test the case read PDBx/mmCIF dictionary text file

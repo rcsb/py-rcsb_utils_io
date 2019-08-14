@@ -9,6 +9,7 @@
 #  13-Jun-2018  jdw add content classes
 #  25-Nov-2018  jdw add FASTA tests
 #   5-Feb-2019  jdw add tests for validation report processing
+#  13-Aug-2019  jdw add tests for multipart json/pickle
 #
 #
 #
@@ -28,6 +29,7 @@ import logging
 import os
 import time
 import unittest
+from collections import OrderedDict
 
 from rcsb.utils.io import __version__
 from rcsb.utils.io.MarshalUtil import MarshalUtil
@@ -73,6 +75,39 @@ class MarshalUtilTests(unittest.TestCase):
     def tearDown(self):
         endTime = time.time()
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
+
+    def testReadWriteInParts(self):
+        """ Test the case reading and writing in parts.
+        """
+        try:
+            lenL = 12013
+            dD = {"a": 100, "b": 200, "c": 300}
+            dL = [dD for ii in range(lenL)]
+            numParts = 4
+            sPath = os.path.join(self.__workPath, "list-m-data.json")
+            ok = self.__mU.doExport(sPath, dL, numParts=numParts, fmt="json", indent=3)
+            #
+            self.assertTrue(ok)
+            rL = self.__mU.doImport(sPath, numParts=numParts, fmt="json")
+            logger.info("Reading %d parts with total length %d", numParts, len(rL))
+            self.assertEqual(dL, rL)
+            #
+            lenD = 23411
+            qD = OrderedDict({"a": 100, "b": 200, "c": 300})
+            dD = OrderedDict({str(ii): qD for ii in range(lenD)})
+            numParts = 4
+            sPath = os.path.join(self.__workPath, "dict-m-data.json")
+            ok = self.__mU.doExport(sPath, dD, numParts=numParts, fmt="json", indent=3)
+            self.assertTrue(ok)
+            rD = self.__mU.doImport(sPath, numParts=numParts, fmt="json")
+            logger.info("Reading %d parts with total length %d", numParts, len(rD))
+            self.assertEqual(dD, rD)
+            rD = self.__mU.doImport(sPath, numParts=numParts, fmt="json")
+            logger.info("Reading %d parts with total length %d", numParts, len(rD))
+            self.assertEqual(dD, rD)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
 
     def testReadDictionaryFile(self):
         """ Test the case read PDBx/mmCIF dictionary text file
@@ -251,6 +286,7 @@ def utilReadWriteSuite():
     suiteSelect.addTest(MarshalUtilTests("testReadWriteListFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteFastaFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteVrptFile"))
+    suiteSelect.addTest(MarshalUtilTests("testReadWriteInParts"))
     return suiteSelect
 
 

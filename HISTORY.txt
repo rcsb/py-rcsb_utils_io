@@ -35,3 +35,4 @@
                      with a version that depends on  requests module to better support
                      redirection and authentication.  Add further unit tests for FileUtil.
 12-Aug-2019  - V0.37 Add modules CryptUtils and testCryptUtils.
+13-Aug-2019  - V0.38 Add support for multipart serialization/deserialization

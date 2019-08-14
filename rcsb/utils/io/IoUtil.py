@@ -25,6 +25,7 @@
 #   3-Apr-2019  jdw add comment option and compression handling to __deserializeList()
 #  11-Jul-2019  jdw add explicit py2 safe file decompression to avoid encoding problems.
 #  10-Aug-2019  jdw add XML/ElementTree reader
+#  13-Aug-2019  jdw add serialization/deserialization in parts
 ##
 
 __docformat__ = "restructuredtext en"
@@ -34,6 +35,7 @@ __license__ = "Apache 2.0"
 
 import csv
 import datetime
+import glob
 import gzip
 import io
 import json
@@ -172,7 +174,97 @@ class IoUtil(object):
 
         return ret
 
+    def __sliceInChunks(self, myList, numChunks):
+        mc = min(len(myList), numChunks)
+        chunkSize = int(len(myList) / mc)
+        if len(myList) % mc:
+            chunkSize += 1
+        for i in range(0, len(myList), chunkSize):
+            yield myList[i : i + chunkSize]
+
+    def serializeInParts(self, filePath, myObj, numParts, fmt="json", **kwargs):
+        """Public method to serialize format appropriate (json, pickle) objects in multiple parts
+
+        Args:
+            filePath (str): local file path
+            myObj (object): format appropriate object to be serialized
+            numParts (int): divide the data into numParts segments
+            format (str, optional): one of ['json' or 'pickle']. Defaults to json
+            **kwargs: additional keyword arguments passed to worker methods -
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        if fmt not in ["json", "pickle"]:
+            logger.error("Unsupported format for %s", fmt)
+            return False
+        pth, fn = os.path.split(filePath)
+        bn, ext = os.path.splitext(fn)
+        ret = True
+        if isinstance(myObj, list):
+            for ii, subList in enumerate(self.__sliceInChunks(myObj, numParts)):
+                fp = os.path.join(pth, bn + "_part_%d" % (ii + 1) + ext)
+                ok = self.serialize(fp, subList, fmt=fmt, **kwargs)
+                ret = ret and ok
+        elif isinstance(myObj, dict):
+            for ii, keyList in enumerate(self.__sliceInChunks(list(myObj.keys()), numParts)):
+                fp = os.path.join(pth, bn + "_part_%d" % (ii + 1) + ext)
+                ok = self.serialize(fp, OrderedDict({k: myObj[k] for k in keyList}), fmt=fmt, **kwargs)
+                ret = ret and ok
+        else:
+            logger.error("Unsupported data type for serialization in parts")
+            ret = False
+        #
+        return ret
+
+    def deserializeInParts(self, filePath, numParts, fmt="json", **kwargs):
+        """Public method to deserialize objects in supported formats from muliple parts
+
+        Args:
+            filePath (str): local file path
+            numParts (int): reconstruct the data object from numParts segments
+            format (str, optional): one of ['json' or 'pickle']. Defaults to json
+            **kwargs: additional keyword arguments passed to worker methods -
+
+        Returns:
+            object: deserialized object data
+        """
+        rObj = None
+        if fmt not in ["json", "pickle"]:
+            logger.error("Unsupported format for %s", fmt)
+            return rObj
+        #
+        pth, fn = os.path.split(filePath)
+        bn, ext = os.path.splitext(fn)
+        if not numParts:
+            fp = os.path.join(pth, bn + "_part_*" + ext)
+            numParts = len(glob.glob(fp))
+        #
+        for ii in range(numParts):
+            fp = os.path.join(pth, bn + "_part_%d" % (ii + 1) + ext)
+            tObj = self.deserialize(fp, fmt=fmt, **kwargs)
+            if isinstance(tObj, list):
+                if not rObj:
+                    rObj = []
+                rObj.extend(tObj)
+            elif isinstance(tObj, dict):
+                if not rObj:
+                    rObj = OrderedDict()
+                rObj.update(tObj)
+            else:
+                logger.error("Unsupported data type for deserialization in parts")
+        return rObj
+
     def exists(self, filePath, mode=os.R_OK):
+        """Return if the input file exists with optional mode settings
+
+        Args:
+            filePath (string): local file path
+            mode (mode, optional): mode setting. Defaults to os.R_OK.
+
+        Returns:
+            bool: True if file exists or False otherwise
+        """
         try:
             return os.access(filePath, mode)
         except Exception:
