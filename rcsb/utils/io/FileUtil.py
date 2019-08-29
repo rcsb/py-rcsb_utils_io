@@ -56,14 +56,51 @@ class FileUtil(object):
     def __init__(self, workPath=None, **kwargs):
         _ = kwargs
         self.__workPath = workPath
+        if self.__workPath and self.__workPath != ".":
+            self.mkdir(workPath)
+
+    def exists(self, filePath, mode=os.R_OK):
+        """Return if the input file exists with optional mode settings
+
+        Args:
+            filePath (string): local file path
+            mode (mode, optional): mode setting. Defaults to os.R_OK.
+
+        Returns:
+            bool: True if file exists or False otherwise
+        """
+        try:
+            return os.access(filePath, mode)
+        except Exception:
+            return False
+
+    def mkdir(self, dirPath, mode=0o755):
+        """Create the input directory.
+
+        Args:
+            dirPath (string): local file path
+            mode (mode, optional): mode setting. Defaults to os.W_OK.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        try:
+            logger.debug("Checking target directory %s", dirPath)
+            if not os.access(dirPath, mode=os.W_OK):
+                logger.debug("Creating cache directory %s", dirPath)
+                os.makedirs(dirPath, mode)
+            return True
+        except Exception as e:
+            logger.exception("Failing for %s with %s", dirPath, str(e))
+            return False
 
     #
     def get(self, remote, local, **kwargs):
         """Fetch remote file to a local path.
 
         Arguments:
-            remote (TYPE): Description
-            local (TYPE): Description
+            remote (TYPE): source locator (remote)
+            local (TYPE): destination locator (local)
             **kwargs: Description
 
                 tarMember(str) : target member name in a remote tarfile
@@ -98,6 +135,7 @@ class FileUtil(object):
                 logger.debug("Extract %r from %r to %r status %r", tarMember, tarPath, self.getFilePath(local), ret)
             elif not localFlag and not tarMember:
                 ret = self.__fetchUrl(remote, self.getFilePath(local), **kwargs)
+                logger.debug("Fetched %r localpath %r status %r", remote, self.getFilePath(local), ret)
             else:
                 ret = False
             #
@@ -160,12 +198,6 @@ class FileUtil(object):
             logger.exception("For locator %r Failing with %s", locator, str(e))
         return None
 
-    def exists(self, filePath, mode=os.R_OK):
-        try:
-            return os.access(filePath, mode)
-        except Exception:
-            return False
-
     def __unbundle(self, tarFilePath, dirPath="."):
         #   import tarfile contents into dirPath -
         with tarfile.open(tarFilePath) as tar:
@@ -202,6 +234,8 @@ class FileUtil(object):
 
         try:
             scheme = self.getScheme(url)
+            pth, _ = os.path.split(filePath)
+            self.mkdir(pth)
             if scheme in ["ftp"]:
                 return self.__fetchUrlPy(url, filePath, **kwargs)
             else:
@@ -254,6 +288,50 @@ class FileUtil(object):
         return False
 
     @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
+    def __fetchUrlReqRaw(self, url, filePath, **kwargs):
+        """ Fetch data from a remote URL and store this in input filePath.
+
+        Args:
+            url (str): target URL to fetch
+            filePath (str): path to store the data from the remote url
+            username (str): basic auth username
+            password (str): dasic auth password
+            kwargs (dict, optional): other options
+
+        Raises:
+            e: any exception
+
+        Returns:
+            bool: True for sucess or False otherwise
+
+            with open(filename, 'wb') as fd:
+                for chunk in r.iter_content(chunk_size=128):
+                    fd.write(chunk)
+
+
+        """
+        user = kwargs.get("username", None)
+        pw = kwargs.get("password", None)
+        #
+        try:
+            if user and pw:
+                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
+                    with open(filePath, "wb") as fOut:
+                        shutil.copyfileobj(rIn.raw, fOut)
+
+            else:
+                with requests.get(url, stream=True, allow_redirects=True) as rIn:
+                    with open(filePath, "wb") as fOut:
+                        shutil.copyfileobj(rIn.raw, fOut)
+
+            return True
+        except Exception as e:
+            logger.error("Failing for %s with %s", filePath, str(e))
+            raise e
+
+        return False
+
+    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
     def __fetchUrlReq(self, url, filePath, **kwargs):
         """ Fetch data from a remote URL and store this in input filePath.
 
@@ -269,20 +347,31 @@ class FileUtil(object):
 
         Returns:
             bool: True for sucess or False otherwise
+
         """
         user = kwargs.get("username", None)
         pw = kwargs.get("password", None)
+        chunkSize = kwargs.get("chunkSize", 1024 * 1024 * 3)
         #
         try:
             if user and pw:
                 with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
-                    with open(filePath, "wb") as fOut:
-                        shutil.copyfileobj(rIn.raw, fOut)
-
+                    if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
+                        with open(filePath, "wb") as fOut:
+                            for chunk in rIn.iter_content(chunk_size=chunkSize):
+                                fOut.write(chunk)
+                    else:
+                        logger.error("Fetch %r fails with %r", url, rIn.status_code)
+                        return False
             else:
                 with requests.get(url, stream=True, allow_redirects=True) as rIn:
-                    with open(filePath, "wb") as fOut:
-                        shutil.copyfileobj(rIn.raw, fOut)
+                    if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
+                        with open(filePath, "wb") as fOut:
+                            for chunk in rIn.iter_content(chunk_size=chunkSize):
+                                fOut.write(chunk)
+                    else:
+                        logger.error("Fetch %r fails with %r", url, rIn.status_code)
+                        return False
 
             return True
         except Exception as e:

@@ -52,7 +52,6 @@ from collections import OrderedDict
 import ruamel.yaml
 from rcsb.utils.io.FastaUtil import FastaUtil
 from rcsb.utils.io.FileUtil import FileUtil
-from rcsb.utils.validation.ValidationReportReader import ValidationReportReader
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -162,8 +161,8 @@ class IoUtil(object):
             ret = self.__deserializeMmCifDict(filePath, **kwargs)  # type: ignore
         elif fmt in ["fasta"]:
             ret = self.__deserializeFasta(filePath, **kwargs)  # type: ignore
-        elif fmt in ["vrpt-xml-to-cif"]:
-            ret = self.__deserializeVrptToCif(filePath, **kwargs)  # type: ignore
+        # elif fmt in ["vrpt-xml-to-cif"]:
+        #    ret = self.__deserializeVrptToCif(filePath, **kwargs)  # type: ignore
         elif fmt in ["csv", "tdd"]:
             delimiter = "," if fmt == "csv" else "\t"
             ret = self.__deserializeCsv(filePath, delimiter=delimiter, **kwargs)  # type: ignore
@@ -256,19 +255,10 @@ class IoUtil(object):
         return rObj
 
     def exists(self, filePath, mode=os.R_OK):
-        """Return if the input file exists with optional mode settings
+        return self.__fileU.exists(filePath, mode=mode)
 
-        Args:
-            filePath (string): local file path
-            mode (mode, optional): mode setting. Defaults to os.R_OK.
-
-        Returns:
-            bool: True if file exists or False otherwise
-        """
-        try:
-            return os.access(filePath, mode)
-        except Exception:
-            return False
+    def mkdir(self, dirPath, mode=0o755):
+        return self.__fileU.mkdir(dirPath, mode=mode)
 
     def __deserializeFasta(self, filePath, **kwargs):
         try:
@@ -277,20 +267,6 @@ class IoUtil(object):
             return fau.readFasta(filePath, commentStyle=commentStyle)
         except Exception as e:
             logger.error("Unable to deserialize %r %r ", filePath, str(e))
-        return {}
-
-    def __deserializeVrptToCif(self, filePath, **kwargs):
-        """ Deserialize XML validation report data file and return as mmcif container list
-        """
-        try:
-            dictMapPath = kwargs.get("dictMapPath", None)
-            if not dictMapPath:
-                logger.error("Missing dictionary mapping file")
-            dictMap = self.__deserializeJson(dictMapPath)
-            vrr = ValidationReportReader(dictMap)
-            return vrr.toCif(filePath)
-        except Exception as e:
-            logger.debug("Unable to deserialize %r %r", filePath, str(e))
         return {}
 
     def __serializeFasta(self, filePath, myObj, **kwargs):

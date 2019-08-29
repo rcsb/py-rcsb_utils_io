@@ -27,6 +27,7 @@ __license__ = "Apache 2.0"
 
 import logging
 import os
+import sys
 import time
 import unittest
 from collections import OrderedDict
@@ -60,9 +61,6 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathFastaFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "sequence", "pdb_seq_prerelease.fasta")
         self.__pathSaveFastaFile = os.path.join(HERE, "test-output", "test-pre-release.fasta")
         #
-        self.__pathXmlVrpt = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_VALIDATION_REPORTS", "dr", "6drg", "6drg_validation.xml.gz")
-        self.__pathSaveCifVrpt = os.path.join(HERE, "test-output", "6drg_validation.cif")
-        self.__pathVrptMapFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__workPath = os.path.join(HERE, "test-output")
         self.__urlTarget = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
         self.__urlTargetBad = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump-missing.tar.gz"
@@ -225,19 +223,6 @@ class MarshalUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
-    def testReadWriteVrptFile(self):
-        """ Test the case read and write validation report data file
-        """
-        try:
-            sD = self.__mU.doImport(self.__pathXmlVrpt, fmt="vrpt-xml-to-cif", dictMapPath=self.__pathVrptMapFile)
-            logger.debug("Val report container length %d", len(sD))
-            self.assertGreaterEqual(len(sD), 1)
-            ok = self.__mU.doExport(self.__pathSaveCifVrpt, sD, fmt="mmcif")
-            self.assertTrue(ok)
-        except Exception as e:
-            logger.exception("Failing with %s", str(e))
-            self.fail()
-
     def testReadUrlTarfile(self):
         """ Test the case to read URL target and extract a member
         """
@@ -251,6 +236,25 @@ class MarshalUtilTests(unittest.TestCase):
             ndL = mU.doImport(os.path.join(self.__workPath, fn), fmt="tdd", rowFormat="list", tarMember="nodes.dmp")
             self.assertGreater(len(ndL), 2000000)
             logger.info("Nodes %d", len(ndL))
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testReadUrlTddfile(self):
+        """ Test the case to read URL target of a tdd
+        """
+        try:
+            mU = MarshalUtil(workPath=self.__workPath)
+            version = "2.07-2019-07-23"
+            urlTarget = "http://scop.berkeley.edu/downloads/update"
+            encoding = "utf-8-sig" if sys.version_info[0] > 2 else "ascii"
+            fn = "dir.des.scope.%s.txt" % version
+            url = os.path.join(urlTarget, fn)
+            logger.info("Fetch url %r", url)
+            desL = mU.doImport(url, fmt="tdd", rowFormat="list", uncomment=True, encoding=encoding)
+            logger.info("Fetched URL is %s len %d", url, len(desL))
+            self.assertGreater(len(desL), 100)
+            logger.info("Lines %d", len(desL))
         except Exception as e:
             logger.exception("Failing with %s", str(e))
             self.fail()

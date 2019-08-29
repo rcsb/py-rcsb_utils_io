@@ -41,9 +41,9 @@ class FileUtilTests(unittest.TestCase):
         self.__pathPdbxDictionaryFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "mmcif_pdbx_v5_next.dic")
 
         self.__pathTaxonomyFile = os.path.join(TOPDIR, "rcsb", "mock-data", "NCBI", "names.dmp.gz")
-
         self.__zipFileUrl = "https://inventory.data.gov/dataset/794cd3d7-4d28-4408-8f7d-84b820dbf7f2/resource/6b78ec0c-4980-4ad8-9cbd-2d6eb9eda8e7/download/myfoodapediadata.zip"
-
+        #
+        self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__fileU = FileUtil()
@@ -96,6 +96,33 @@ class FileUtilTests(unittest.TestCase):
             self.assertEqual(lPath, tPath)
             fp = self.__fileU.uncompress(lPath, outputDir=self.__workPath)
             ok = fp.endswith("Food_Display_Table.xlsx")
+            self.assertTrue(ok)
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testFtpUrl(self):
+        """ Test case for downloading remote file ftp protocol and extracting contents.
+        """
+        try:
+            remoteLocator = self.__ftpFileUrl
+            # fn = self.__fileU.getFileName(remoteLocator)
+            ok = self.__fileU.isLocal(remoteLocator)
+            self.assertFalse(ok)
+            #
+            dirPath = os.path.join(self.__workPath, "chem_comp_models")
+            lPath = os.path.join(dirPath, self.__fileU.getFileName(self.__ftpFileUrl))
+            ok = self.__fileU.get(remoteLocator, lPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.exists(lPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.isLocal(lPath)
+            self.assertTrue(ok)
+            tPath = self.__fileU.getFilePath(lPath)
+            self.assertEqual(lPath, tPath)
+            fp = self.__fileU.uncompress(lPath, outputDir=dirPath)
+            ok = fp.endswith("chem_comp_model.cif")
             self.assertTrue(ok)
 
         except Exception as e:

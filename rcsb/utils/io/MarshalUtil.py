@@ -133,4 +133,7 @@ class MarshalUtil(object):
         return ret
 
     def exists(self, filePath, mode=os.R_OK):
-        return self.__ioU.exists(filePath, mode=mode)
+        return self.__fileU.exists(filePath, mode=mode)
+
+    def mkdir(self, dirPath, mode=0o755):
+        return self.__fileU.mkdir(dirPath, mode=mode)
