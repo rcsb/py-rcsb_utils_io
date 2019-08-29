@@ -37,3 +37,4 @@
 12-Aug-2019  - V0.37 Add modules CryptUtils and testCryptUtils.
 13-Aug-2019  - V0.38 Add support for multipart serialization/deserialization
 14-Aug-2019  - V0.39 Add methods for making working directories
+29-Aug-2019  - V0.40 Fix py27 compatibility issues
