@@ -39,7 +39,7 @@ class UrlRequestUtil(object):
     def __init__(self, **kwargs):
         pass
 
-    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=(None, None), logger=logger)
+    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def post(self, url, endPoint, paramD, **kwargs):
         """
         """
@@ -67,7 +67,7 @@ class UrlRequestUtil(object):
 
         return ret, retCode
 
-    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=(None, None), logger=logger)
+    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def get(self, url, endPoint, paramD, **kwargs):
         """
         """

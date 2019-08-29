@@ -244,7 +244,7 @@ class FileUtil(object):
             logger.error("Failing for url %r with %s", url, str(e))
         return False
 
-    @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
+    @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=False, logger=logger)
     def __fetchUrlPy(self, url, filePath, **kwargs):
         """ Fetch data from a remote URL and store this in input filePath.
 
@@ -287,7 +287,7 @@ class FileUtil(object):
 
         return False
 
-    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
+    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=False, logger=logger)
     def __fetchUrlReqRaw(self, url, filePath, **kwargs):
         """ Fetch data from a remote URL and store this in input filePath.
 
@@ -331,7 +331,7 @@ class FileUtil(object):
 
         return False
 
-    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=3, multiplier=2, defaultValue=False, logger=logger)
+    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=False, logger=logger)
     def __fetchUrlReq(self, url, filePath, **kwargs):
         """ Fetch data from a remote URL and store this in input filePath.
 

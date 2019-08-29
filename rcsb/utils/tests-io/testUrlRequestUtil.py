@@ -118,7 +118,7 @@ class UrlRequestUtilTests(unittest.TestCase):
         """
         baseUrl = "https://www.ebi.ac.uk"
         endPoint = "Tools/dbfetch/dbfetch"
-        idList = self.__unpIdList1
+        idList = self.__unpIdList1[:10]
         try:
             pD = {}
             pD["db"] = "uniprotkb"
@@ -141,7 +141,7 @@ class UrlRequestUtilTests(unittest.TestCase):
         """
         baseUrl = "https://www.ebi.ac.uk"
         endPoint = "proteins/api/proteins"
-        idList = self.__unpIdList1
+        idList = self.__unpIdList1[:10]
         try:
             hL = [("Accept", "application/xml")]
             pD = {}
@@ -163,7 +163,7 @@ class UrlRequestUtilTests(unittest.TestCase):
         """
         baseUrl = "https://www0.ebi.ac.uk"
         endPoint = "proteins/api/proteins"
-        idList = self.__unpIdList1
+        idList = self.__unpIdList1[:10]
         try:
             hL = [("Accept", "application/xml")]
             pD = {}
@@ -186,7 +186,7 @@ class UrlRequestUtilTests(unittest.TestCase):
 
         baseUrl = "http://www.uniprot.org"
         endPoint = "uploadlists"
-        idList = self.__unpIdList1
+        idList = self.__unpIdList1[:10]
         try:
             hL = [("Accept", "application/xml")]
             pD = {"from": "ACC+ID", "to": "ACC", "format": "xml", "query": " ".join(idList)}
