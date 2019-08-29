@@ -86,7 +86,7 @@ class FileUtil(object):
         """
         try:
             logger.debug("Checking target directory %s", dirPath)
-            if not os.access(dirPath, mode=os.W_OK):
+            if not os.access(dirPath, os.W_OK):
                 logger.debug("Creating cache directory %s", dirPath)
                 os.makedirs(dirPath, mode)
             return True
