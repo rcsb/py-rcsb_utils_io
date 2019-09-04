@@ -41,7 +41,15 @@ setup(
     ],
     entry_points={"console_scripts": []},
     #
-    install_requires=["mmcif >= 0.40", "ruamel.yaml", "requests >= 2.21.0", "rcsb.utils.validation >= 0.14", "PyNaCl >= 1.3.0", 'backports.tempfile; python_version < "3.0"'],
+    install_requires=[
+        "numpy",
+        "mmcif >= 0.40",
+        "ruamel.yaml",
+        "requests >= 2.21.0",
+        "rcsb.utils.validation >= 0.14",
+        "PyNaCl >= 1.3.0",
+        'backports.tempfile; python_version < "3.0"',
+    ],
     packages=find_packages(exclude=["rcsb.mock-data", "rcsb.utils.tests-io", "rcsb.utils.tests-*", "tests.*"]),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
