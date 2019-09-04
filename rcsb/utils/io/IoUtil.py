@@ -49,6 +49,7 @@ import sys
 import time
 from collections import OrderedDict
 
+import numpy
 import ruamel.yaml
 from rcsb.utils.io.FastaUtil import FastaUtil
 from rcsb.utils.io.FileUtil import FileUtil
@@ -92,6 +93,15 @@ class JsonTypeEncoder(json.JSONEncoder):
 
         if isinstance(o, ruamel.yaml.comments.CommentedSeq):
             return o._lst
+
+        if isinstance(o, numpy.integer):
+            return int(o)
+
+        if isinstance(o, numpy.floating):
+            return float(o)
+
+        if isinstance(o, numpy.ndarray):
+            return o.tolist()
 
         return json.JSONEncoder.default(self, o)
 
