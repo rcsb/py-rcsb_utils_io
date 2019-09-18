@@ -545,7 +545,7 @@ class IoUtil(object):
         except Exception as e:
             logger.error("Unable to deserialize %r %s", filePath, str(e))
         #
-        return None
+        return
 
     def __deserializeCsv(self, filePath, delimiter=",", rowFormat="dict", encodingErrors="ignore", uncomment=True, **kwargs):
         oL = []
