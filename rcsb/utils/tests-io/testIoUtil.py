@@ -10,6 +10,7 @@
 #  25-Nov-2018  jdw add FASTA tests
 #  30-Nov-2018  jdw add CSV tests
 #  13-Aug-2019  jdw add tests for multipart json/pickle
+#  18-Sep-2019  jdw add tests for method deserializeCsvIter()
 #
 #
 #
@@ -27,6 +28,7 @@ __license__ = "Apache 2.0"
 
 import logging
 import os
+import sys
 import time
 import unittest
 from collections import OrderedDict
@@ -71,6 +73,8 @@ class IoUtilTests(unittest.TestCase):
         self.__pathSaveTaxonomyFilePic = os.path.join(self.__workPath, "taxonomy_names.pic")
         self.__pathSaveTaxonomyFileCsv = os.path.join(self.__workPath, "taxonomy_names.csv")
         #
+        self.__pathSiftsFile = os.path.join(TOPDIR, "rcsb", "mock-data", "sifts-summary", "pdb_chain_go.csv.gz")
+        #
         self.__ioU = IoUtil()
         self.__startTime = time.time()
         logger.debug("Running tests on version %s", __version__)
@@ -79,6 +83,23 @@ class IoUtilTests(unittest.TestCase):
     def tearDown(self):
         endTime = time.time()
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
+
+    @unittest.skipIf(sys.version_info[0] < 3, "not compatible with Python 2")
+    def testReadCsvIter(self):
+        """ Test returning an iterator for a large CSV file with leading comments
+        """
+        try:
+            iCount = 0
+            for row in self.__ioU.deserializeCsvIter(self.__pathSiftsFile, delimiter=",", rowFormat="list", encodingErrors="ignore"):
+                if len(row) < 6:
+                    logger.error("Failing with row %r", row)
+                iCount += 1
+            self.assertGreater(iCount, 25000000)
+
+            logger.info("Row count is %d", iCount)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
 
     def testReadWriteInParts(self):
         """ Test the case reading and writing in parts.
@@ -116,6 +137,7 @@ class IoUtilTests(unittest.TestCase):
 
     def testReadDictionaryFile(self):
         """ Test the case read PDBx/mmCIF dictionary text file
+
         """
         try:
             cL = self.__ioU.deserialize(self.__pathPdbxDictionaryFile, fmt="mmcif-dict")

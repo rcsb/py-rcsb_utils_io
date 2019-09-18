@@ -39,3 +39,4 @@
 14-Aug-2019  - V0.39 Add methods for making working directories
 29-Aug-2019  - V0.40 Fix py27 compatibility issues
  4-Sep-2019  - V0.41 Add common json numpy type encodings
+18-Sep-2019  - V0.42 Add IoUtil() method deserializeCsvIter()

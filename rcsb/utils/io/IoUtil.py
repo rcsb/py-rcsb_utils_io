@@ -26,6 +26,7 @@
 #  11-Jul-2019  jdw add explicit py2 safe file decompression to avoid encoding problems.
 #  10-Aug-2019  jdw add XML/ElementTree reader
 #  13-Aug-2019  jdw add serialization/deserialization in parts
+#  18-Sep-2019  jdw add method deserializeCsvIter()
 ##
 
 __docformat__ = "restructuredtext en"
@@ -38,6 +39,7 @@ import datetime
 import glob
 import gzip
 import io
+import itertools
 import json
 import logging
 import os
@@ -502,6 +504,48 @@ class IoUtil(object):
             for rowL in reader:
                 oL.append(rowL)
         return oL
+
+    def deserializeCsvIter(self, filePath, delimiter=",", rowFormat="dict", encodingErrors="ignore", uncomment=True, **kwargs):
+        """ Return an iterator to input CSV format file.
+
+        Args:
+            filePath (str): input file path
+            delimiter (str, optional): CSV delimiter. Defaults to ",".
+            rowFormat (str, optional): format for each process row (list or dict). Defaults to "dict".
+            encodingErrors (str, optional): treatment of incoding errors. Defaults to "ignore".
+            uncomment (bool, optional): flag to ignore leading commeents. Defaults to True.
+
+        Returns:
+            (iterator): iterator for rowwise access to processed CSV data
+        """
+        encoding = kwargs.get("encoding", "utf-8-sig")
+        maxInt = sys.maxsize
+        csv.field_size_limit(maxInt)
+        try:
+            if filePath[-3:] == ".gz":
+                with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as csvFile:
+                    startIt = itertools.dropwhile(lambda x: x.startswith("#"), csvFile) if uncomment else csvFile
+                    if rowFormat == "dict":
+                        reader = csv.DictReader(startIt, delimiter=delimiter)
+                    elif rowFormat == "list":
+                        reader = csv.reader(startIt, delimiter=delimiter)
+                    for row in reader:
+                        yield row
+            else:
+                with io.open(filePath, newline="", encoding=encoding, errors="ignore") as csvFile:
+                    startIt = itertools.dropwhile(lambda x: x.startswith("#"), csvFile) if uncomment else csvFile
+                    if rowFormat == "dict":
+                        reader = csv.DictReader(startIt, delimiter=delimiter)
+                    elif rowFormat == "list":
+                        reader = csv.reader(startIt, delimiter=delimiter)
+                    for row in reader:
+                        # if uncomment and row.startswith("#"):
+                        #    continue
+                        yield row
+        except Exception as e:
+            logger.error("Unable to deserialize %r %s", filePath, str(e))
+        #
+        return None
 
     def __deserializeCsv(self, filePath, delimiter=",", rowFormat="dict", encodingErrors="ignore", uncomment=True, **kwargs):
         oL = []
