@@ -48,20 +48,20 @@ class MarshalUtilTests(unittest.TestCase):
     def setUp(self):
         self.__verbose = True
         self.__pathPdbxDictionaryFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "mmcif_pdbx_v5_next.dic")
-        self.__pathProvenanceFile = os.path.join(TOPDIR, "rcsb", "mock-data", "provenance", "rcsb_extend_provenance_info.json")
+        self.__pathJsonTestFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__pathIndexFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "update-lists", "all-pdb-list")
-        self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "data_type_info", "app_data_type_mapping.cif")
-
-        #
-        self.__pathSaveDictionaryFile = os.path.join(HERE, "test-output", "mmcif_pdbx_v5_next.dic")
-        self.__pathSaveProvenanceFile = os.path.join(HERE, "test-output", "rcsb_extend_provenance_info.json")
-        self.__pathSaveIndexFile = os.path.join(HERE, "test-output", "all-pdb-list")
-        self.__pathSaveCifFile = os.path.join(HERE, "test-output", "app_data_type_mapping.cif")
-        #
-        self.__pathFastaFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "sequence", "pdb_seq_prerelease.fasta")
-        self.__pathSaveFastaFile = os.path.join(HERE, "test-output", "test-pre-release.fasta")
+        self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_BIRD_CC_REPO", "0", "PRDCC_000010.cif")
         #
         self.__workPath = os.path.join(HERE, "test-output")
+        self.__pathSaveDictionaryFile = os.path.join(self.__workPath, "mmcif_pdbx_v5_next.dic")
+        self.__pathSaveJsonTestFile = os.path.join(self.__workPath, "json-content.json")
+        self.__pathSaveIndexFile = os.path.join(self.__workPath, "all-pdb-list")
+        self.__pathSaveCifFile = os.path.join(self.__workPath, "cif-content.cif")
+        #
+        self.__pathFastaFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "sequence", "pdb_seq_prerelease.fasta")
+        self.__pathSaveFastaFile = os.path.join(self.__workPath, "test-pre-release.fasta")
+        #
+
         self.__urlTarget = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz"
         self.__urlTargetBad = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump-missing.tar.gz"
         #
@@ -144,7 +144,7 @@ class MarshalUtilTests(unittest.TestCase):
         """ Test the case read JSON file
         """
         try:
-            rObj = self.__mU.doImport(self.__pathProvenanceFile, fmt="json")
+            rObj = self.__mU.doImport(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
             self.assertGreaterEqual(len(rObj), 1)
         except Exception as e:
@@ -182,10 +182,10 @@ class MarshalUtilTests(unittest.TestCase):
         """ Test the case read and write JSON file
         """
         try:
-            rObj = self.__mU.doImport(self.__pathProvenanceFile, fmt="json")
+            rObj = self.__mU.doImport(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
             self.assertGreaterEqual(len(rObj), 1)
-            ok = self.__mU.doExport(self.__pathSaveProvenanceFile, rObj, fmt="json")
+            ok = self.__mU.doExport(self.__pathSaveJsonTestFile, rObj, fmt="json")
             self.assertTrue(ok)
 
         except Exception as e:
