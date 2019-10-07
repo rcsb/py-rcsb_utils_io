@@ -72,7 +72,8 @@ class FileUtil(object):
         try:
             return os.access(filePath, mode)
         except Exception:
-            return False
+            pass
+        return False
 
     def mkdir(self, dirPath, mode=0o755):
         """Create the input directory.
@@ -92,7 +93,7 @@ class FileUtil(object):
             return True
         except Exception as e:
             logger.exception("Failing for %s with %s", dirPath, str(e))
-            return False
+        return False
 
     #
     def get(self, remote, local, **kwargs):
@@ -235,7 +236,10 @@ class FileUtil(object):
         try:
             scheme = self.getScheme(url)
             pth, _ = os.path.split(filePath)
-            self.mkdir(pth)
+            ok = self.mkdir(pth)
+            if not ok:
+                logger.error("For %r failing to create target directory %r for file %r", url, pth, filePath)
+                return False
             if scheme in ["ftp"]:
                 return self.__fetchUrlPy(url, filePath, **kwargs)
             else:
@@ -449,4 +453,4 @@ class FileUtil(object):
                 logger.error("Unsupported compressType %r", compressType)
         except Exception as e:
             logger.exception("Compressing file %s failing with %s", inpPath, str(e))
-            return False
+        return False

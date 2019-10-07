@@ -42,3 +42,4 @@
 18-Sep-2019  - V0.42 Add IoUtil() method deserializeCsvIter()
 18-Sep-2019  - V0.43 remove return in the generator method for Py27
 18-Sep-2019  - V0.44 Adjust testing timeout.
+ 7-Oct-2019  - V0.45 Adjust error handling in FileUtil()
