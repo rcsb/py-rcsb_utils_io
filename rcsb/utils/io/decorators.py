@@ -3,11 +3,66 @@
 # Date:  9-Aug-2019 Jdw
 #
 
-# import logging
+import multiprocessing
 import time
 from functools import wraps
 
-# logger = logging.getLogger(__name__)
+
+class TimeoutException(Exception):
+    def __init__(self, value):
+        super(TimeoutException, self).__init__(value)
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return repr(self.value)
+
+
+class MyProcess(multiprocessing.Process):
+    def __init__(self, func, *args, **kwargs):
+        self.queue = multiprocessing.Queue(maxsize=1)
+        args = (func,) + args
+        multiprocessing.Process.__init__(self, target=self.runner, args=args, kwargs=kwargs)
+
+    def runner(self, func, *args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+            self.queue.put((True, result))
+        except Exception as e:
+            self.queue.put((False, e))
+
+    def done(self):
+        return self.queue.full()
+
+    def result(self):
+        return self.queue.get()
+
+
+def timeout(seconds, forceKill=True):
+    def wrapper(function):
+        @wraps(function)
+        def wrapped(*args, **kwargs):
+            now = time.time()
+            proc = MyProcess(function, *args, **kwargs)
+            proc.start()
+            proc.join(seconds)
+            if proc.is_alive():
+                if forceKill:
+                    proc.terminate()
+                runtime = int(time.time() - now)
+                raise TimeoutException("timed out after {0} seconds".format(runtime))
+            assert proc.done()
+            success, result = proc.result()
+            if success:
+                return result
+            else:
+                raise result
+
+        return wrapped
+
+    return wrapper
 
 
 def retry(targetException, maxAttempts=3, delaySeconds=2, multiplier=3, defaultValue=None, logger=None):
