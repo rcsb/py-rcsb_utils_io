@@ -19,7 +19,7 @@ import os
 import time
 import unittest
 
-from rcsb.utils.io.decorators import timeout, TimeoutException
+from rcsb.utils.io.decorators import timeout, timeoutMp, TimeoutException
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
@@ -44,16 +44,35 @@ class TimeoutDecoratorTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     @timeout(10)
-    def __longrunner(self, iSeconds=10):
+    def __longrunner1(self, iSeconds=10):
         logger.info("SLEEPING FOR %d seconds", iSeconds)
         time.sleep(iSeconds)
         logger.info("SLEEPING COMPLETED")
 
-    def testTimeout(self):
-        """Test case - timeout decorator
+    def testTimeoutSignal(self):
+        """Test case - timeout decorator (signal)
         """
         try:
-            self.__longrunner(20)
+            self.__longrunner1(20)
+        except TimeoutException as e:
+            logger.info("Caught timeout exception %s", str(e))
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+        else:
+            logger.info("Successful completion")
+
+    @timeoutMp(10)
+    def __longrunner2(self, iSeconds=10):
+        logger.info("SLEEPING FOR %d seconds", iSeconds)
+        time.sleep(iSeconds)
+        logger.info("SLEEPING COMPLETED")
+
+    def testTimeoutMulti(self):
+        """Test case - timeout decorator (multiprocessing)
+        """
+        try:
+            self.__longrunner2(20)
         except TimeoutException as e:
             logger.info("Caught timeout exception %s", str(e))
         except Exception as e:
@@ -65,7 +84,8 @@ class TimeoutDecoratorTests(unittest.TestCase):
 
 def suiteTimeout():
     suiteSelect = unittest.TestSuite()
-    suiteSelect.addTest(TimeoutDecoratorTests("testTimeout"))
+    suiteSelect.addTest(TimeoutDecoratorTests("testTimeoutMulti"))
+    suiteSelect.addTest(TimeoutDecoratorTests("testTimeoutSignal"))
     return suiteSelect
 
 

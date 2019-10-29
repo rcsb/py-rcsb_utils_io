@@ -4,6 +4,7 @@
 #
 
 import multiprocessing
+import signal
 import time
 from functools import wraps
 
@@ -40,7 +41,27 @@ class MyProcess(multiprocessing.Process):
         return self.queue.get()
 
 
-def timeout(seconds, forceKill=True):
+def timeout(seconds, message="Function call timed out"):
+    def wrapper(function):
+        def _handleTimeout(signum, frame):
+            raise TimeoutException(message)
+
+        @wraps(function)
+        def wrapped(*args, **kwargs):
+            signal.signal(signal.SIGALRM, _handleTimeout)
+            signal.alarm(seconds)
+            try:
+                result = function(*args, **kwargs)
+            finally:
+                signal.alarm(0)
+            return result
+
+        return wrapped
+
+    return wrapper
+
+
+def timeoutMp(seconds, forceKill=True):
     def wrapper(function):
         @wraps(function)
         def wrapped(*args, **kwargs):
