@@ -53,10 +53,10 @@ from collections import OrderedDict
 
 import numpy
 import ruamel.yaml
-from rcsb.utils.io.FastaUtil import FastaUtil
-from rcsb.utils.io.FileUtil import FileUtil
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+from rcsb.utils.io.FastaUtil import FastaUtil
+from rcsb.utils.io.FileUtil import FileUtil
 
 try:
     from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter  # pylint: disable=ungrouped-imports
@@ -176,7 +176,7 @@ class IoUtil(object):
         # elif fmt in ["vrpt-xml-to-cif"]:
         #    ret = self.__deserializeVrptToCif(filePath, **kwargs)  # type: ignore
         elif fmt in ["csv", "tdd"]:
-            delimiter = "," if fmt == "csv" else "\t"
+            delimiter = kwargs.get("csvDelimiter", "," if fmt == "csv" else "\t")
             ret = self.__deserializeCsv(filePath, delimiter=delimiter, **kwargs)  # type: ignore
         elif fmt in ["xml"]:
             ret = self.__deserializeXml(filePath, **kwargs)  # type: ignore
