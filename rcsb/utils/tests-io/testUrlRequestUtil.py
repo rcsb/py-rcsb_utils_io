@@ -159,7 +159,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchFail(self):
-        """ UniProt batch fetch (proteins) get test
+        """ UniProt batch fetch (proteins) get test (expected failure)
         """
         baseUrl = "https://www0.ebi.ac.uk"
         endPoint = "proteins/api/proteins"
