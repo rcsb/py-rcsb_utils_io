@@ -5,6 +5,7 @@
 #
 # Updates:
 #  17-Mar-2019 jdw adjust return value to include response error code
+#  16-Dec-2019 jdw add HTTPException to retry()
 #
 ##
 
@@ -21,9 +22,14 @@ import ssl
 from rcsb.utils.io.decorators import retry
 
 try:
+    from http.client import HTTPException
     from urllib.parse import urlencode
     from urllib.request import urlopen, Request, URLError, HTTPError
+
+    # from http.client import HTTPException, RemoteDisconnected
 except ImportError:
+    # pylint: disable=ungrouped-imports
+    from httplib import HTTPException
     from urllib import urlencode
     from urllib2 import urlopen, Request, URLError, HTTPError
 
@@ -39,7 +45,7 @@ class UrlRequestUtil(object):
     def __init__(self, **kwargs):
         pass
 
-    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
+    @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def post(self, url, endPoint, paramD, **kwargs):
         """
         """
@@ -67,7 +73,7 @@ class UrlRequestUtil(object):
 
         return ret, retCode
 
-    @retry((URLError, HTTPError), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
+    @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def get(self, url, endPoint, paramD, **kwargs):
         """
         """

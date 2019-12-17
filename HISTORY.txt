@@ -46,3 +46,4 @@
 27-Oct-2019  - V0.46 Add multiprocessor timeout decorator
 29-Oct-2019  - V0.47 Add signal timeout decorator
 20-Nov-2019  - V0.48 Add support for user supplied alternative delimiters, upgrade to py38
+16-Dec-2019  - V0.49 Expand the exceptions for retry() on urlrequest get and post
