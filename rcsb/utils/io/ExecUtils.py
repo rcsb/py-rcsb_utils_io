@@ -3,7 +3,6 @@
 # Date: 24-Jan-2020 jdw
 #
 ##
-
 import logging
 import os
 import subprocess
@@ -29,6 +28,7 @@ class ExecUtils(object):
             outPath ([type], optional): redirect stdout and stderr to this file handle. Defaults to None.
             outAppend (bool, optional): append output. Defaults to False.
             timeOut ([type], optional): timeout (seconds). Defaults to None.
+
 
         Returns:
             bool: true for sucess or False otherwise
