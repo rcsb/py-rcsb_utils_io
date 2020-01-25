@@ -47,3 +47,4 @@
 29-Oct-2019  - V0.47 Add signal timeout decorator
 20-Nov-2019  - V0.48 Add support for user supplied alternative delimiters, upgrade to py38
 16-Dec-2019  - V0.49 Expand the exceptions for retry() on urlrequest get and post
+25-Jan-2020  - V0.50 Add module ExecUtils() subprocess execution wrapper.

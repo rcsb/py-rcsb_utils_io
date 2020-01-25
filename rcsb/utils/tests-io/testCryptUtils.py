@@ -7,7 +7,7 @@
 # Updates:
 ##
 """
-Test cases for
+Test cases for message encryption utilities
 """
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
