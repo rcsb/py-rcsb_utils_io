@@ -7,11 +7,12 @@
 import logging
 import os
 import subprocess
+import sys
 
 logger = logging.getLogger(__name__)
 
 
-class ExecUtils:
+class ExecUtils(object):
     """Wrapper for subprocess execution.
     """
 
@@ -33,18 +34,21 @@ class ExecUtils:
             bool: true for sucess or False otherwise
         """
         retCode = False
+        kwD = {}
         try:
             if not os.path.isfile(execPath) and os.access(execPath, os.X_OK):
                 return retCode
+            if sys.version_info[0] > 2 and timeOut:
+                kwD = {"timeout": timeOut}
             cmdL = [execPath]
             if execArgList:
                 cmdL.extend(execArgList)
             if outPath:
                 myMode = "a" if outAppend else "w"
                 with open(outPath, myMode) as ofh:
-                    subProcResult = subprocess.call(cmdL, stdout=ofh, stderr=subprocess.STDOUT, timeout=timeOut)
+                    subProcResult = subprocess.call(cmdL, stdout=ofh, stderr=subprocess.STDOUT, **kwD)
             else:
-                subProcResult = subprocess.call(cmdL, timeout=timeOut)
+                subProcResult = subprocess.call(cmdL, **kwD)
             retCode = not subProcResult
         except Exception as e:
             logger.exception("Failing execution of %s (%s) with %s", execPath, execArgList, str(e))
