@@ -328,9 +328,14 @@ class IoUtil(object):
             helper class is included to handle selected python data types (e.g., datetime)
         """
         indent = kwargs.get("indent", 0)
+        enforceAscii = kwargs.get("enforceAscii", True)
         try:
-            with open(filePath, "w") as outfile:
-                json.dump(myObj, outfile, indent=indent, cls=JsonTypeEncoder)
+            if enforceAscii:
+                with open(filePath, "w") as outfile:
+                    json.dump(myObj, outfile, indent=indent, cls=JsonTypeEncoder, ensure_ascii=enforceAscii)
+            else:
+                with io.open(filePath, "w", encoding="utf-8") as outfile:
+                    json.dump(myObj, outfile, indent=indent, cls=JsonTypeEncoder, ensure_ascii=enforceAscii)
             return True
         except Exception as e:
             logger.error("Unable to serialize %r  %r", filePath, str(e))
@@ -607,7 +612,7 @@ class IoUtil(object):
         for line in csvData:
             yield line.decode("utf-8-sig", errors=encodingErrors).encode(encoding, errors=encodingErrors)
 
-    def __deserializeXml(self, filePath, **kwargs):
+    def __deserializeXmlPrev(self, filePath, **kwargs):
         """Read the input XML file path and return an ElementTree data object instance.
 
         Args:
@@ -626,6 +631,42 @@ class IoUtil(object):
                     tree = ET.parse(ifh)
             else:
                 with open(filePath, mode="rb") as ifh:
+                    tV = time.time()
+                    tree = ET.parse(ifh)
+            logger.debug("Parsed %s in %.2f seconds", filePath, time.time() - tV)
+        except Exception as e:
+            logger.error("Unable to deserialize %r %s", filePath, str(e))
+        #
+        return tree
+
+    def __deserializeXml(self, filePath, **kwargs):
+        """Read the input XML file path and return an ElementTree data object instance.
+
+        Args:
+            filePath (sting): input XML file path
+
+        Returns:
+            object: instance of an ElementTree tree object
+        """
+        _ = kwargs
+        tree = None
+        encoding = kwargs.get("encoding", "utf-8-sig")
+        encodingErrors = kwargs.get("encodingErrors", "ignore")
+        #
+        try:
+            logger.debug("Parsing XML path %s", filePath)
+            if filePath[-3:] == ".gz":
+                if sys.version_info[0] > 2:
+                    with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as ifh:
+                        tV = time.time()
+                        tree = ET.parse(ifh)
+                else:
+                    tPath = self.__fileU.uncompress(filePath, outputDir=None)
+                    with io.open(tPath, encoding=encoding, errors=encodingErrors) as ifh:
+                        tV = time.time()
+                        tree = ET.parse(ifh)
+            else:
+                with io.open(filePath, encoding=encoding, errors=encodingErrors) as ifh:
                     tV = time.time()
                     tree = ET.parse(ifh)
             logger.debug("Parsed %s in %.2f seconds", filePath, time.time() - tV)
