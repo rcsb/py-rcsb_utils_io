@@ -78,6 +78,27 @@ def uncommentFilter(csvfile):
             yield raw
 
 
+def getObjSize(obj, seen=None):
+    """Report the size of the input object"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    objId = id(obj)
+    if objId in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(objId)
+    if isinstance(obj, dict):
+        size += sum([getObjSize(v, seen) for v in obj.values()])
+        size += sum([getObjSize(k, seen) for k in obj.keys()])
+    elif hasattr(obj, "__dict__"):
+        size += getObjSize(obj.__dict__, seen)
+    elif hasattr(obj, "__iter__") and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([getObjSize(i, seen) for i in obj])
+    return size
+
+
 class JsonTypeEncoder(json.JSONEncoder):
     """ Helper class to handle serializing date and time objects
     """
