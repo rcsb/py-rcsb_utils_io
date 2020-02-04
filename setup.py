@@ -43,10 +43,10 @@ setup(
     #
     install_requires=[
         "numpy",
-        "mmcif >= 0.40",
+        "mmcif >= 0.50",
         "ruamel.yaml",
         "requests >= 2.21.0",
-        "rcsb.utils.validation >= 0.14",
+        "rcsb.utils.validation >= 0.20",
         "PyNaCl >= 1.3.0",
         'backports.tempfile; python_version < "3.0"',
     ],
