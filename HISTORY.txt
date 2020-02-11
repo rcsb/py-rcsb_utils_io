@@ -51,3 +51,4 @@
 29-Jan-2020  - V0.51 Add encoding options for json serializer and xml deserializer
  1-Feb-2020  - V0.52 Add utility function getObjSize()
  3-Feb-2020  - V0.53 Update dependencies
+10-Feb-2020  - V0.54 Add module TimeUtil()

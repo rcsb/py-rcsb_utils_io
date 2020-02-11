@@ -43,6 +43,7 @@ setup(
     #
     install_requires=[
         "numpy",
+        "pytz",
         "mmcif >= 0.50",
         "ruamel.yaml",
         "requests >= 2.21.0",

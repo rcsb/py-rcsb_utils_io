@@ -1,4 +1,5 @@
 numpy
+pytz
 ruamel.yaml
 requests >= 2.21.0
 mmcif >= 0.50
