@@ -44,6 +44,7 @@ setup(
     install_requires=[
         "numpy",
         "pytz",
+        "python-dateutil",
         "mmcif >= 0.50",
         "ruamel.yaml",
         "requests >= 2.21.0",

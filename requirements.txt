@@ -1,5 +1,6 @@
 numpy
 pytz
+python-dateutil
 ruamel.yaml
 requests >= 2.21.0
 mmcif >= 0.50
