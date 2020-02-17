@@ -137,3 +137,6 @@ class MarshalUtil(object):
 
     def mkdir(self, dirPath, mode=0o755):
         return self.__fileU.mkdir(dirPath, mode=mode)
+
+    def remove(self, pth):
+        return self.__fileU.remove(pth)

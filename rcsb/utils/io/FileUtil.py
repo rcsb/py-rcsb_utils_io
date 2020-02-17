@@ -96,6 +96,26 @@ class FileUtil(object):
         return False
 
     #
+    def remove(self, pth):
+        """Method to remove input file, link  or directory.
+        """
+        ok = False
+        try:
+            if pth and not self.exists(pth):
+                ok = True
+            if os.path.isfile(pth) or os.path.islink(pth):
+                os.unlink(pth)
+                ok = True
+            elif os.path.isdir(pth):
+                shutil.rmtree(pth, True)
+                ok = True
+        except Exception as e:
+            logger.error("Failing for %s with %s", pth, str(e))
+            ok = False
+        #
+        return ok
+
+    #
     def get(self, remote, local, **kwargs):
         """Fetch remote file to a local path.
 

@@ -56,7 +56,7 @@ class FileUtilTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testGetFile(self):
-        """ Test case for a local file
+        """ Test case for a local files and directories
         """
         try:
             remoteLocator = self.__pathPdbxDictionaryFile
@@ -71,6 +71,15 @@ class FileUtilTests(unittest.TestCase):
             self.assertTrue(ok)
             tPath = self.__fileU.getFilePath(lPath)
             self.assertEqual(lPath, tPath)
+            ok = self.__fileU.remove(lPath)
+            self.assertTrue(ok)
+            dPath = os.path.join(self.__workPath, "tdir")
+            ok = self.__fileU.mkdir(dPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.remove(dPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.remove(";lakdjf")
+            self.assertTrue(ok)
 
         except Exception as e:
             logger.exception("Failing with %s", str(e))
