@@ -53,3 +53,4 @@
  3-Feb-2020  - V0.53 Update dependencies
 10-Feb-2020  - V0.54 Add module TimeUtil()
 17-Feb-2020  - V0.55 Add remove methods.
+19-Feb-2020  - V0.56 Adjust failover processing for url fetches.

@@ -385,7 +385,8 @@ class FileUtil(object):
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
                                 fOut.write(chunk)
                     else:
-                        logger.error("Fetch %r fails with %r", url, rIn.status_code)
+                        logger.error("Fetch %r fails with status %r", url, rIn.status_code)
+                        rIn.raise_for_status()
                         return False
             else:
                 with requests.get(url, stream=True, allow_redirects=True) as rIn:
@@ -394,7 +395,8 @@ class FileUtil(object):
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
                                 fOut.write(chunk)
                     else:
-                        logger.error("Fetch %r fails with %r", url, rIn.status_code)
+                        logger.error("Fetch %r fails with status %r", url, rIn.status_code)
+                        rIn.raise_for_status()
                         return False
 
             return True
