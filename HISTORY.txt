@@ -54,3 +54,4 @@
 10-Feb-2020  - V0.54 Add module TimeUtil()
 17-Feb-2020  - V0.55 Add remove methods.
 19-Feb-2020  - V0.56 Adjust failover processing for url fetches.
+14-Mar-2020  - V0.57 Change policy to always precheck and create missing paths.

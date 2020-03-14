@@ -148,6 +148,9 @@ class IoUtil(object):
         """
         ret = False
         fmt = str(fmt).lower()
+        ret = self.__fileU.mkdirForFile(filePath)
+        if not ret:
+            return ret
         if fmt in ["mmcif"]:
             ret = self.__serializeMmCif(filePath, myObj, **kwargs)
         elif fmt in ["json"]:
@@ -231,6 +234,7 @@ class IoUtil(object):
             logger.error("Unsupported format for %s", fmt)
             return False
         pth, fn = os.path.split(filePath)
+        self.__fileU.mkdirForFile(pth)
         bn, ext = os.path.splitext(fn)
         ret = True
         if isinstance(myObj, list):

@@ -79,7 +79,7 @@ class FileUtil(object):
         """Create the input directory.
 
         Args:
-            dirPath (string): local file path
+            dirPath (string): local directory path
             mode (mode, optional): mode setting. Defaults to os.W_OK.
 
         Returns:
@@ -93,6 +93,24 @@ class FileUtil(object):
             return True
         except Exception as e:
             logger.exception("Failing for %s with %s", dirPath, str(e))
+        return False
+
+    def mkdirForFile(self, filePath, mode=0o755):
+        """Create directory path for the input path if it does not exists.
+
+        Args:
+            filePath (string): local file path target
+            mode (mode, optional): mode setting. Defaults to os.W_OK.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        try:
+            logger.debug("Checking target directory for file %s", filePath)
+            dirPath, _ = os.path.split(filePath)
+            return self.mkdir(dirPath, mode)
+        except Exception as e:
+            logger.exception("Failing for %s with %s", filePath, str(e))
         return False
 
     #
@@ -176,6 +194,7 @@ class FileUtil(object):
             #
             if localFlag:
                 rPath = self.getFilePath(remote)
+                self.mkdirForFile(rPath)
                 lPath = self.getFilePath(local)
                 shutil.copyfile(lPath, rPath)
                 ret = True
@@ -255,10 +274,9 @@ class FileUtil(object):
 
         try:
             scheme = self.getScheme(url)
-            pth, _ = os.path.split(filePath)
-            ok = self.mkdir(pth)
+            ok = self.mkdirForFile(filePath)
             if not ok:
-                logger.error("For %r failing to create target directory %r for file %r", url, pth, filePath)
+                logger.error("Failing to create target directory for file %r", filePath)
                 return False
             if scheme in ["ftp"]:
                 return self.__fetchUrlPy(url, filePath, **kwargs)
@@ -296,6 +314,10 @@ class FileUtil(object):
                 # Install the opener.
                 myurl.install_opener(opener)
             #
+            ok = self.mkdirForFile(filePath)
+            if not ok:
+                logger.error("Failing to create target directory for file %r", filePath)
+                return False
             with open(filePath, "wb") as outFile:
                 with contextlib.closing(myurl.urlopen(url)) as fp:
                     blockSize = 1024 * 8
@@ -338,6 +360,10 @@ class FileUtil(object):
         pw = kwargs.get("password", None)
         #
         try:
+            ok = self.mkdirForFile(filePath)
+            if not ok:
+                logger.error("Failing to create target directory for file %r", filePath)
+                return False
             if user and pw:
                 with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
                     with open(filePath, "wb") as fOut:
@@ -378,6 +404,10 @@ class FileUtil(object):
         chunkSize = kwargs.get("chunkSize", 1024 * 1024 * 3)
         #
         try:
+            ok = self.mkdirForFile(filePath)
+            if not ok:
+                logger.error("Failing to create target directory for file %r", filePath)
+                return False
             if user and pw:
                 with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
                     if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
@@ -411,6 +441,10 @@ class FileUtil(object):
             errors according to the input settting ('ignore', 'escape', 'xmlcharrefreplace').
         """
         try:
+            ok = self.mkdirForFile(outputFilePath)
+            if not ok:
+                logger.error("Failing to create target directory for file %r", outputFilePath)
+                return False
             chunk = []
             with io.open(inputFilePath, "r", encoding="utf-8") as rIn, io.open(outputFilePath, "w", encoding="ascii") as wOut:
                 for line in rIn:
