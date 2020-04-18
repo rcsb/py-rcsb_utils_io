@@ -55,3 +55,4 @@
 17-Feb-2020  - V0.55 Add remove methods.
 19-Feb-2020  - V0.56 Adjust failover processing for url fetches.
 14-Mar-2020  - V0.57 Change policy to always precheck and create missing paths.
+18-Apr-2020  - V0.58 Add feature to catch specified HTTP error codes in UrlRequestUtil()

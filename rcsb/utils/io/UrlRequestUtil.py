@@ -33,8 +33,14 @@ except ImportError:
     from urllib import urlencode
     from urllib2 import urlopen, Request, URLError, HTTPError
 
-
 logger = logging.getLogger(__name__)
+
+# -- retry decorator parameter default setting --
+targetException = (URLError, HTTPError, HTTPException)
+maxAttempts = 3
+delaySeconds = 5
+multiplier = 3
+defaultValue = (None, None)
 
 
 class UrlRequestUtil(object):
@@ -45,13 +51,23 @@ class UrlRequestUtil(object):
     def __init__(self, **kwargs):
         pass
 
-    @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
+    def postUnWrapped(self, url, endPoint, paramD, **kwargs):
+        return self.__post(url, endPoint, paramD, **kwargs)
+
+    @retry(
+        targetException=targetException, maxAttempts=maxAttempts, delaySeconds=delaySeconds, multiplier=multiplier, defaultValue=defaultValue, logger=logger,
+    )
     def post(self, url, endPoint, paramD, **kwargs):
+        return self.__post(url, endPoint, paramD, **kwargs)
+
+    def __post(self, url, endPoint, paramD, **kwargs):
         """
         """
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")
+        exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
+        httpCodesCatch = kwargs.get("httpCodesCatch", [])
         optD = {}
         try:
             if sslCert == "disable":
@@ -66,21 +82,36 @@ class UrlRequestUtil(object):
                 # pylint: disable=no-member
                 ret = req.read().decode("utf-8")
                 retCode = req.getcode()
-
+        #
+        except exceptionsCatch as e:
+            logger.info("status code %r", e.status)
+            retCode = e.status
+            if retCode not in httpCodesCatch:
+                raise e
         except Exception as e:
             logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
             raise e
 
         return ret, retCode
 
-    @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
+    def getUnWrapped(self, url, endPoint, paramD, **kwargs):
+        return self.__get(url, endPoint, paramD, **kwargs)
+
+    @retry(
+        targetException=targetException, maxAttempts=maxAttempts, delaySeconds=delaySeconds, multiplier=multiplier, defaultValue=defaultValue, logger=logger,
+    )
     def get(self, url, endPoint, paramD, **kwargs):
+        return self.__get(url, endPoint, paramD, **kwargs)
+
+    def __get(self, url, endPoint, paramD, **kwargs):
         """
         """
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")
         headerL = kwargs.get("headers", None)
+        exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
+        httpCodesCatch = kwargs.get("httpCodesCatch", [])
         optD = {}
         try:
             if sslCert == "disable":
@@ -100,7 +131,10 @@ class UrlRequestUtil(object):
                 # pylint: disable=no-member
                 ret = req.read().decode("utf-8")
                 retCode = req.getcode()
-
+        except exceptionsCatch as e:
+            retCode = e.status
+            if retCode not in httpCodesCatch:
+                raise e
         except Exception as e:
             logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
             raise e

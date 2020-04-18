@@ -10,10 +10,16 @@ Test cases for selected get and post requests using UrlRequestUtil wrappers -
 
 """
 
+import json
 import logging
 import os
 import time
 import unittest
+
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib2 import quote
 
 from rcsb.utils.io import __version__
 from rcsb.utils.io.UrlRequestUtil import UrlRequestUtil
@@ -249,6 +255,50 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testPubChemFetch(self):
+        """ PubChem fetch test
+        """
+        idTupList = [("JTOKYIBTLUQVQV-FGHQGBLESA-N", 404, None), ("CXHHBNMLPJOKQD-UHFFFAOYSA-N", 200, 78579)]
+        nameSpace = "inchikey"
+        domain = "compound"
+        searchType = "lookup"
+        returnType = "record"
+        requestType = "GET"
+        outputType = "JSON"
+        baseUrl = "https://pubchem.ncbi.nlm.nih.gov"
+
+        try:
+            for (identifier, testRetCode, testPcId) in idTupList:
+                for requestType in ["GET", "POST"]:
+                    response = None
+                    pD = {}
+                    hL = []
+                    if outputType == "JSON":
+                        hL.append(("Accept", "application/json"))
+                    #
+                    ureq = UrlRequestUtil()
+                    if nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "GET":
+                        uId = quote(identifier.encode("utf8"))
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, outputType])
+                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=[404])
+                    elif nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "POST":
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, outputType])
+                        pD = {nameSpace: identifier}
+                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=[404])
+                    #
+                    if ret and outputType in ["JSON"]:
+                        response = json.loads(ret)
+                        logger.debug("Result %r", response)
+                        pcId = response["PC_Compounds"][0]["id"]["id"]["cid"]
+                        self.assertEqual(pcId, testPcId)
+                    #
+                    logger.debug("Result status code %r", retCode)
+                    self.assertEqual(retCode, testRetCode)
+            #
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
 
 def suiteUniProtTests():
     suiteSelect = unittest.TestSuite()
@@ -263,6 +313,7 @@ def suiteNcbiTests():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(UrlRequestUtilTests("testNcbiFetchSummaryPost"))
     suiteSelect.addTest(UrlRequestUtilTests("testNcbiFetchEntryPost"))
+    suiteSelect.addTest(UrlRequestUtilTests("testPubChemFetch"))
     #
     return suiteSelect
 
