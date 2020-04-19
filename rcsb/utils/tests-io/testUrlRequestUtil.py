@@ -294,6 +294,7 @@ class UrlRequestUtilTests(unittest.TestCase):
                     #
                     logger.debug("Result status code %r", retCode)
                     self.assertEqual(retCode, testRetCode)
+
             #
         except Exception as e:
             logger.exception("Failing with %s", str(e))

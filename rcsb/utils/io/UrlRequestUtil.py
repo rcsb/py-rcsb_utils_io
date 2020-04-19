@@ -35,14 +35,6 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# -- retry decorator parameter default setting --
-targetException = (URLError, HTTPError, HTTPException)
-maxAttempts = 3
-delaySeconds = 5
-multiplier = 3
-defaultValue = (None, None)
-
-
 class UrlRequestUtil(object):
     """ Simple wrapper for URL request processing
 
@@ -54,9 +46,7 @@ class UrlRequestUtil(object):
     def postUnWrapped(self, url, endPoint, paramD, **kwargs):
         return self.__post(url, endPoint, paramD, **kwargs)
 
-    @retry(
-        targetException=targetException, maxAttempts=maxAttempts, delaySeconds=delaySeconds, multiplier=multiplier, defaultValue=defaultValue, logger=logger,
-    )
+    @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def post(self, url, endPoint, paramD, **kwargs):
         return self.__post(url, endPoint, paramD, **kwargs)
 
@@ -84,8 +74,8 @@ class UrlRequestUtil(object):
                 retCode = req.getcode()
         #
         except exceptionsCatch as e:
-            logger.info("status code %r", e.status)
-            retCode = e.status
+            logger.debug("status code %r", e.code)
+            retCode = e.code
             if retCode not in httpCodesCatch:
                 raise e
         except Exception as e:
@@ -97,9 +87,7 @@ class UrlRequestUtil(object):
     def getUnWrapped(self, url, endPoint, paramD, **kwargs):
         return self.__get(url, endPoint, paramD, **kwargs)
 
-    @retry(
-        targetException=targetException, maxAttempts=maxAttempts, delaySeconds=delaySeconds, multiplier=multiplier, defaultValue=defaultValue, logger=logger,
-    )
+    @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def get(self, url, endPoint, paramD, **kwargs):
         return self.__get(url, endPoint, paramD, **kwargs)
 
@@ -132,7 +120,7 @@ class UrlRequestUtil(object):
                 ret = req.read().decode("utf-8")
                 retCode = req.getcode()
         except exceptionsCatch as e:
-            retCode = e.status
+            retCode = e.code
             if retCode not in httpCodesCatch:
                 raise e
         except Exception as e:
