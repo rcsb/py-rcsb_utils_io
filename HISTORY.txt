@@ -57,3 +57,4 @@
 14-Mar-2020  - V0.57 Change policy to always precheck and create missing paths.
 18-Apr-2020  - V0.58 Add feature to catch specified HTTP error codes in UrlRequestUtil()
 18-Apr-2020  - V0.59 Adjustments for Py27 compatibility
+18-Apr-2020  - V0.60 Further adjustments for Py27 compatibility

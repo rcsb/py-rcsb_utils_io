@@ -35,6 +35,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class UrlRequestUtil(object):
     """ Simple wrapper for URL request processing
 
