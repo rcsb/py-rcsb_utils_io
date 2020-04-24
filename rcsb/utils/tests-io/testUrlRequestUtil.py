@@ -10,7 +10,6 @@ Test cases for selected get and post requests using UrlRequestUtil wrappers -
 
 """
 
-import json
 import logging
 import os
 import time
@@ -266,34 +265,105 @@ class UrlRequestUtilTests(unittest.TestCase):
         requestType = "GET"
         outputType = "JSON"
         baseUrl = "https://pubchem.ncbi.nlm.nih.gov"
+        httpCodesCatch = [404]
 
         try:
             for (identifier, testRetCode, testPcId) in idTupList:
                 for requestType in ["GET", "POST"]:
-                    response = None
+                    ret, retCode = None, None
                     pD = {}
                     hL = []
-                    if outputType == "JSON":
-                        hL.append(("Accept", "application/json"))
-                    #
                     ureq = UrlRequestUtil()
                     if nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "GET":
                         uId = quote(identifier.encode("utf8"))
                         endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, outputType])
-                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=[404])
+                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
                     elif nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "POST":
                         endPoint = "/".join(["rest", "pug", domain, nameSpace, outputType])
                         pD = {nameSpace: identifier}
-                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=[404])
+                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
                     #
-                    if ret and outputType in ["JSON"]:
-                        response = json.loads(ret)
-                        logger.debug("Result %r", response)
-                        pcId = response["PC_Compounds"][0]["id"]["id"]["cid"]
-                        self.assertEqual(pcId, testPcId)
+                    elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "GET":
+                        # Needs to be specifically targeted on a particular compound ...
+                        uId = quote(identifier.encode("utf8"))
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, returnType, outputType])
+                        pD = {"classification_type": "simple"}
+                        # pD = {nameSpace: identifier}
+                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                    #
+                    elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "POST":
+                        # Needs to be specifically targeted on a particular compound ...
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, returnType, outputType])
+                        # This is a long request return server codes may be observed 500
+                        pD = {nameSpace: identifier, "classification_type": "simple"}
+                        # pD = {nameSpace: identifier}
+                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                    #
                     #
                     logger.debug("Result status code %r", retCode)
                     self.assertEqual(retCode, testRetCode)
+                    if retCode == 200:
+                        pcId = ret["PC_Compounds"][0]["id"]["id"]["cid"]
+                        self.assertEqual(pcId, testPcId)
+
+            #
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testPubChemFetchClassification(self):
+        """ PubChem fetch test
+        """
+        idTupList = [("2244", 200, "2244", "record"), ("123631", 200, "123631", "record"), ("2244", 200, "2244", "classification"), ("123631", 200, "123631", "classification")]
+        nameSpace = "cid"
+        domain = "compound"
+        searchType = "lookup"
+        # returnType = "record"
+        requestType = "GET"
+        outputType = "JSON"
+        baseUrl = "https://pubchem.ncbi.nlm.nih.gov"
+        httpCodesCatch = [404]
+
+        try:
+            for (identifier, testRetCode, testPcId, returnType) in idTupList:
+                for requestType in ["GET", "POST"]:
+                    logger.info("namespace %r identifier %r returnType %r requestType %r", nameSpace, identifier, returnType, requestType)
+                    ret, retCode = None, None
+                    pD = {}
+                    hL = []
+                    ureq = UrlRequestUtil()
+                    if nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "GET":
+                        uId = quote(identifier.encode("utf8"))
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, outputType])
+                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                    elif nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "POST":
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, outputType])
+                        pD = {nameSpace: identifier}
+                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                    #
+                    elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "GET":
+                        # Needs to be specifically targeted on a particular compound ...
+                        uId = quote(identifier.encode("utf8"))
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, returnType, outputType])
+                        # pD = {"classification_type": "simple"}
+                        pD = {}
+                        # pD = {nameSpace: identifier}
+                        ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                    #
+                    elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "POST":
+                        # Needs to be specifically targeted on a particular compound ...
+                        endPoint = "/".join(["rest", "pug", domain, nameSpace, returnType, outputType])
+                        # This is a long request return server codes may be observed 500
+                        # pD = {nameSpace: identifier, "classification_type": "simple"}
+                        pD = {nameSpace: identifier}
+                        ret, retCode = ureq.postUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                    #
+                    #
+                    logger.debug("Result status code %r", retCode)
+                    self.assertEqual(retCode, testRetCode)
+                    if retCode == 200 and returnType == "record":
+                        pcId = str(ret["PC_Compounds"][0]["id"]["id"]["cid"])
+                        self.assertEqual(pcId, testPcId)
 
             #
         except Exception as e:
@@ -315,6 +385,7 @@ def suiteNcbiTests():
     suiteSelect.addTest(UrlRequestUtilTests("testNcbiFetchSummaryPost"))
     suiteSelect.addTest(UrlRequestUtilTests("testNcbiFetchEntryPost"))
     suiteSelect.addTest(UrlRequestUtilTests("testPubChemFetch"))
+    suiteSelect.addTest(UrlRequestUtilTests("testPubChemFetchClassification"))
     #
     return suiteSelect
 

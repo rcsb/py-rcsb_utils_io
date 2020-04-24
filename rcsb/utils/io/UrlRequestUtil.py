@@ -16,6 +16,7 @@ __license__ = "Apache 2.0"
 
 
 import contextlib
+import json
 import logging
 import ssl
 
@@ -56,9 +57,17 @@ class UrlRequestUtil(object):
         """
         ret = None
         retCode = None
+        headerL = kwargs.get("headers", [])
         sslCert = kwargs.get("sslCert", "disable")
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
+        encoding = kwargs.get("encoding", "utf-8")
+        #
+        returnContentType = kwargs.get("returnContentType", None)
+        if returnContentType == "JSON":
+            if ("Accept", "application/json") not in headerL:
+                headerL.append(("Accept", "application/json"))
+        #
         optD = {}
         try:
             if sslCert == "disable":
@@ -66,12 +75,15 @@ class UrlRequestUtil(object):
                 optD = {"context": gcontext}
             #
             urlPath = "%s/%s" % (url, endPoint)
-            requestData = urlencode(paramD).encode("utf-8")
+            requestData = urlencode(paramD).encode(encoding)
             logger.debug("Request %s with data %r", urlPath, requestData)
 
             with contextlib.closing(urlopen(urlPath, requestData, **optD)) as req:
                 # pylint: disable=no-member
-                ret = req.read().decode("utf-8")
+                #
+                # for hTup in headerL:
+                #    req.add_header(hTup[0], hTup[1])
+                ret = req.read()
                 retCode = req.getcode()
         #
         except exceptionsCatch as e:
@@ -82,8 +94,18 @@ class UrlRequestUtil(object):
         except Exception as e:
             logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
             raise e
+        #
+        try:
+            if returnContentType == "JSON":
+                return json.loads(ret.decode(encoding)), retCode
+            else:
+                return ret.decode(encoding), retCode
+        except Exception as e:
+            if ret:
+                logger.error("Decode failing %s %s %r with %s", url, endPoint, paramD, str(e))
+                logger.debug("End of return is %r", ret[-1000:])
 
-        return ret, retCode
+        return None, retCode
 
     def getUnWrapped(self, url, endPoint, paramD, **kwargs):
         return self.__get(url, endPoint, paramD, **kwargs)
@@ -98,9 +120,14 @@ class UrlRequestUtil(object):
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")
-        headerL = kwargs.get("headers", None)
+        encoding = kwargs.get("encoding", "utf-8")
+        headerL = kwargs.get("headers", [])
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
+        returnContentType = kwargs.get("returnContentType", None)
+        if returnContentType == "JSON":
+            if ("Accept", "application/json") not in headerL:
+                headerL.append(("Accept", "application/json"))
         optD = {}
         try:
             if sslCert == "disable":
@@ -109,17 +136,27 @@ class UrlRequestUtil(object):
             #
             urlPath = "%s/%s" % (url, endPoint)
             requestData = urlencode(paramD)
-            logger.debug("Request %s with data %s", urlPath, requestData)
+            logger.debug("Request %s with parameters %s", urlPath, requestData)
 
             req = Request("%s?%s" % (urlPath, requestData))
             if headerL:
                 for hTup in headerL:
                     req.add_header(hTup[0], hTup[1])
-
+            #
             with contextlib.closing(urlopen(req, **optD)) as req:
                 # pylint: disable=no-member
-                ret = req.read().decode("utf-8")
+                ret = req.read()
                 retCode = req.getcode()
+            #
+            #    req = urlopen(req, **optD)
+            #    ret = req.read()
+            #    retCode = req.getcode()
+
+            if ret is None:
+                logger.error("Return is empty - return code is %r", retCode)
+            else:
+                logger.debug("Return length %d return code %r", len(ret), retCode)
+            #
         except exceptionsCatch as e:
             retCode = e.code
             if retCode not in httpCodesCatch:
@@ -128,4 +165,14 @@ class UrlRequestUtil(object):
             logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
             raise e
 
-        return ret, retCode
+        try:
+            if returnContentType == "JSON":
+                return json.loads(ret.decode(encoding)), retCode
+            else:
+                return ret.decode(encoding), retCode
+        except Exception as e:
+            if ret:
+                logger.error("Decode failing %s %s %r with %s", url, endPoint, paramD, str(e))
+                logger.debug("End of return is %r", ret[-1000:])
+
+        return None, retCode
