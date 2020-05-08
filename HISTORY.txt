@@ -59,3 +59,4 @@
 18-Apr-2020  - V0.59 Adjustments for Py27 compatibility
 18-Apr-2020  - V0.60 Further adjustments for Py27 compatibility
 24-Apr-2020  - V0.61 Add return type processing in UrlRequestUtil() and undecorated method entry points.
+ 8-May-2020  - V0.62 Add default comment parser as a fallback for the FastaUtil()

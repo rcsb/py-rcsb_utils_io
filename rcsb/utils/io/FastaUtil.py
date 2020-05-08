@@ -26,6 +26,8 @@ class FastaUtil(object):
                 commentParser = self.__parseCommentUniProt
             elif commentStyle == "prerelease":
                 commentParser = self.__parseCommentPreRelease
+            else:
+                commentParser = self.__parseCommentDefault
 
             if filePath[-3:] == ".gz":
                 sD = self.__readFastaGz(filePath, commentParser)
@@ -115,6 +117,16 @@ class FastaUtil(object):
             entryId = ff[0].upper()
             entityId = ff[2]
             seqId = entryId + "_" + entityId
+            return seqId, {}
+            #
+        except Exception as e:
+            logger.exception("Failed to parse comment %s with %s", cmtLine, str(e))
+        return None, {}
+
+    def __parseCommentDefault(self, cmtLine):
+        try:
+            #
+            seqId = cmtLine[1:]
             return seqId, {}
             #
         except Exception as e:
