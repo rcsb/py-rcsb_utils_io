@@ -30,7 +30,8 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]-%(module)s.%(funcName)s: %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s [%(levelname)s]-%(module)s.%(funcName)s: %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -38,9 +39,11 @@ logger.setLevel(logging.INFO)
 class FileUtilTests(unittest.TestCase):
     def setUp(self):
         self.__verbose = True
-        self.__pathPdbxDictionaryFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "mmcif_pdbx_v5_next.dic")
+        self.__pathPdbxDictionaryFile = os.path.join(
+            TOPDIR, "rcsb", "mock-data", "dictionaries", "mmcif_pdbx_v5_next.dic")
 
-        self.__pathTaxonomyFile = os.path.join(TOPDIR, "rcsb", "mock-data", "NCBI", "names.dmp.gz")
+        self.__pathTaxonomyFile = os.path.join(
+            TOPDIR, "rcsb", "mock-data", "NCBI", "names.dmp.gz")
         self.__zipFileUrl = "https://inventory.data.gov/dataset/794cd3d7-4d28-4408-8f7d-84b820dbf7f2/resource/6b78ec0c-4980-4ad8-9cbd-2d6eb9eda8e7/download/myfoodapediadata.zip"
         #
         self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
@@ -49,11 +52,13 @@ class FileUtilTests(unittest.TestCase):
         self.__fileU = FileUtil()
         self.__startTime = time.time()
         logger.debug("Running tests on version %s", __version__)
-        logger.debug("Starting %s at %s", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
+        logger.debug("Starting %s at %s", self.id(), time.strftime(
+            "%Y %m %d %H:%M:%S", time.localtime()))
 
     def tearDown(self):
         endTime = time.time()
-        logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
+        logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime(
+            "%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testGetFile(self):
         """ Test case for a local files and directories
@@ -94,7 +99,8 @@ class FileUtilTests(unittest.TestCase):
             ok = self.__fileU.isLocal(remoteLocator)
             self.assertFalse(ok)
             #
-            lPath = os.path.join(self.__workPath, self.__fileU.getFileName(self.__zipFileUrl))
+            lPath = os.path.join(
+                self.__workPath, self.__fileU.getFileName(self.__zipFileUrl))
             ok = self.__fileU.get(remoteLocator, lPath)
             self.assertTrue(ok)
             ok = self.__fileU.exists(lPath)
@@ -121,7 +127,8 @@ class FileUtilTests(unittest.TestCase):
             self.assertFalse(ok)
             #
             dirPath = os.path.join(self.__workPath, "chem_comp_models")
-            lPath = os.path.join(dirPath, self.__fileU.getFileName(self.__ftpFileUrl))
+            lPath = os.path.join(
+                dirPath, self.__fileU.getFileName(self.__ftpFileUrl))
             ok = self.__fileU.get(remoteLocator, lPath)
             self.assertTrue(ok)
             ok = self.__fileU.exists(lPath)
@@ -151,7 +158,8 @@ class FileUtilTests(unittest.TestCase):
             self.assertFalse(ok)
             #
             lPath = os.path.join(self.__workPath, "db-download.zip")
-            ok = self.__fileU.get(remoteLocator, lPath, username=un, password=pw)
+            ok = self.__fileU.get(remoteLocator, lPath,
+                                  username=un, password=pw)
             self.assertTrue(ok)
             ok = self.__fileU.exists(lPath)
             self.assertTrue(ok)
@@ -169,7 +177,7 @@ class FileUtilTests(unittest.TestCase):
 def utilSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(FileUtilTests("testGetFile"))
-    suiteSelect.addTest(FileUtilTests("testGetUrl"))
+    suiteSelect.addTest(FileUtilTests("testFtpUrls"))
     return suiteSelect
 
 
