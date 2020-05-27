@@ -68,7 +68,7 @@ class UrlRequestUtil(object):
             if ("Accept", "application/json") not in headerL:
                 headerL.append(("Accept", "application/json"))
         #
-        optD = {}
+        optD = {"timeout": 5}
         try:
             if sslCert == "disable":
                 gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
@@ -92,7 +92,8 @@ class UrlRequestUtil(object):
             if retCode not in httpCodesCatch:
                 raise e
         except Exception as e:
-            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
+            logger.error("Failing %s %s %r with %s",
+                         url, endPoint, paramD, str(e))
             raise e
         #
         try:
@@ -102,7 +103,8 @@ class UrlRequestUtil(object):
                 return ret.decode(encoding), retCode
         except Exception as e:
             if ret:
-                logger.error("Decode failing %s %s %r with %s", url, endPoint, paramD, str(e))
+                logger.error("Decode failing %s %s %r with %s",
+                             url, endPoint, paramD, str(e))
                 logger.debug("End of return is %r", ret[-1000:])
 
         return None, retCode
@@ -128,7 +130,11 @@ class UrlRequestUtil(object):
         if returnContentType == "JSON":
             if ("Accept", "application/json") not in headerL:
                 headerL.append(("Accept", "application/json"))
-        optD = {}
+        #
+        headerL.append(
+            ('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'))
+        #
+        optD = {"timeout": 5}
         try:
             if sslCert == "disable":
                 gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
@@ -155,14 +161,16 @@ class UrlRequestUtil(object):
             if ret is None:
                 logger.error("Return is empty - return code is %r", retCode)
             else:
-                logger.debug("Return length %d return code %r", len(ret), retCode)
+                logger.debug("Return length %d return code %r",
+                             len(ret), retCode)
             #
         except exceptionsCatch as e:
             retCode = e.code
             if retCode not in httpCodesCatch:
                 raise e
         except Exception as e:
-            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
+            logger.error("Failing %s %s %r with %s",
+                         url, endPoint, paramD, str(e))
             raise e
 
         try:
@@ -172,7 +180,8 @@ class UrlRequestUtil(object):
                 return ret.decode(encoding), retCode
         except Exception as e:
             if ret:
-                logger.error("Decode failing %s %s %r with %s", url, endPoint, paramD, str(e))
+                logger.error("Decode failing %s %s %r with %s",
+                             url, endPoint, paramD, str(e))
                 logger.debug("End of return is %r", ret[-1000:])
 
         return None, retCode

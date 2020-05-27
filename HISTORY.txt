@@ -61,3 +61,4 @@
 24-Apr-2020  - V0.61 Add return type processing in UrlRequestUtil() and undecorated method entry points.
  8-May-2020  - V0.62 Add default comment parser as a fallback for the FastaUtil()
 13-May-2020  - V0.63 Update test cases for py 2.7.18.
+26-May-2020  - V0.64 Adding timeout and user agent for url fetchs
