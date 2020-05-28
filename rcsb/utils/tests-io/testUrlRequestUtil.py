@@ -348,7 +348,7 @@ class UrlRequestUtilTests(unittest.TestCase):
                         # pD = {"classification_type": "simple"}
                         pD = {}
                         # pD = {nameSpace: identifier}
-                        ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                        ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers={}, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
                     #
                     elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "POST":
                         # Needs to be specifically targeted on a particular compound ...
@@ -356,7 +356,7 @@ class UrlRequestUtilTests(unittest.TestCase):
                         # This is a long request return server codes may be observed 500
                         # pD = {nameSpace: identifier, "classification_type": "simple"}
                         pD = {nameSpace: identifier}
-                        ret, retCode = ureq.postUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                        ret, retCode = ureq.postUnWrapped(baseUrl, endPoint, pD, headers={}, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
                     #
                     #
                     logger.debug("Result status code %r", retCode)

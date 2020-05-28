@@ -6,6 +6,7 @@
 # Updates:
 #  17-Mar-2019 jdw adjust return value to include response error code
 #  16-Dec-2019 jdw add HTTPException to retry()
+#  28-May-2029 jdw unwrapped methods now using requests module library.
 #
 ##
 
@@ -20,6 +21,7 @@ import json
 import logging
 import ssl
 
+import requests
 from rcsb.utils.io.decorators import retry
 
 try:
@@ -46,7 +48,7 @@ class UrlRequestUtil(object):
         pass
 
     def postUnWrapped(self, url, endPoint, paramD, **kwargs):
-        return self.__post(url, endPoint, paramD, **kwargs)
+        return self.__postRequests(url, endPoint, paramD, **kwargs)
 
     @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def post(self, url, endPoint, paramD, **kwargs):
@@ -92,8 +94,7 @@ class UrlRequestUtil(object):
             if retCode not in httpCodesCatch:
                 raise e
         except Exception as e:
-            logger.error("Failing %s %s %r with %s",
-                         url, endPoint, paramD, str(e))
+            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
             raise e
         #
         try:
@@ -103,14 +104,13 @@ class UrlRequestUtil(object):
                 return ret.decode(encoding), retCode
         except Exception as e:
             if ret:
-                logger.error("Decode failing %s %s %r with %s",
-                             url, endPoint, paramD, str(e))
+                logger.error("Decode failing %s %s %r with %s", url, endPoint, paramD, str(e))
                 logger.debug("End of return is %r", ret[-1000:])
 
         return None, retCode
 
     def getUnWrapped(self, url, endPoint, paramD, **kwargs):
-        return self.__get(url, endPoint, paramD, **kwargs)
+        return self.__getRequests(url, endPoint, paramD, **kwargs)
 
     @retry((URLError, HTTPError, HTTPException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=(None, None), logger=logger)
     def get(self, url, endPoint, paramD, **kwargs):
@@ -131,8 +131,7 @@ class UrlRequestUtil(object):
             if ("Accept", "application/json") not in headerL:
                 headerL.append(("Accept", "application/json"))
         #
-        headerL.append(
-            ('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'))
+        headerL.append(("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"))
         #
         optD = {"timeout": 5}
         try:
@@ -161,16 +160,14 @@ class UrlRequestUtil(object):
             if ret is None:
                 logger.error("Return is empty - return code is %r", retCode)
             else:
-                logger.debug("Return length %d return code %r",
-                             len(ret), retCode)
+                logger.debug("Return length %d return code %r", len(ret), retCode)
             #
         except exceptionsCatch as e:
             retCode = e.code
             if retCode not in httpCodesCatch:
                 raise e
         except Exception as e:
-            logger.error("Failing %s %s %r with %s",
-                         url, endPoint, paramD, str(e))
+            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
             raise e
 
         try:
@@ -180,8 +177,103 @@ class UrlRequestUtil(object):
                 return ret.decode(encoding), retCode
         except Exception as e:
             if ret:
-                logger.error("Decode failing %s %s %r with %s",
-                             url, endPoint, paramD, str(e))
+                logger.error("Decode failing %s %s %r with %s", url, endPoint, paramD, str(e))
                 logger.debug("End of return is %r", ret[-1000:])
+
+        return None, retCode
+
+    def __getRequests(self, url, endPoint, paramD, **kwargs):
+        """
+        """
+        ret = None
+        retCode = None
+        # sslCert = kwargs.get("sslCert", "disable")
+        # encoding = kwargs.get("encoding", "utf-8")
+        headerD = kwargs.get("headers", {})
+        exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
+        httpCodesCatch = kwargs.get("httpCodesCatch", [])
+        returnContentType = kwargs.get("returnContentType", None)
+        if returnContentType == "JSON":
+            if "Accept" not in headerD:
+                headerD["Accept"] = "application/json"
+        #
+        headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
+        #
+        optD = {"timeout": 5, "allow_redirects": True}
+        try:
+            # if sslCert == "disable":
+            #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
+            #    optD = {"context": gcontext}
+            #
+            urlPath = "%s/%s" % (url, endPoint)
+            req = requests.get(urlPath, params=paramD, headers=headerD, **optD)
+            retCode = req.status_code
+            if retCode == 200:
+                if returnContentType == "JSON":
+                    ret = req.json()
+                else:
+                    ret = req.text
+            #
+            if ret is None:
+                logger.error("Return is empty - return code is %r", retCode)
+            else:
+                logger.debug("Return length %d return code %r", len(ret), retCode)
+            #
+            return ret, retCode
+        except exceptionsCatch as e:
+            retCode = e.code
+            if retCode not in httpCodesCatch:
+                raise e
+        except Exception as e:
+            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
+            raise e
+
+        return None, retCode
+
+    def __postRequests(self, url, endPoint, paramD, **kwargs):
+        """
+        """
+        ret = None
+        retCode = None
+        # sslCert = kwargs.get("sslCert", "disable")
+        # encoding = kwargs.get("encoding", "utf-8")
+        headerD = kwargs.get("headers", {})
+        exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
+        httpCodesCatch = kwargs.get("httpCodesCatch", [])
+        returnContentType = kwargs.get("returnContentType", None)
+        if returnContentType == "JSON":
+            if "Accept" not in headerD:
+                headerD["Accept"] = "application/json"
+        #
+        headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
+        #
+        optD = {"timeout": 5, "allow_redirects": True}
+        try:
+            # if sslCert == "disable":
+            #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
+            #    optD = {"context": gcontext}
+            #
+            urlPath = "%s/%s" % (url, endPoint)
+            req = requests.post(urlPath, data=paramD, headers=headerD, **optD)
+            retCode = req.status_code
+            if retCode == 200:
+                if returnContentType == "JSON":
+                    ret = req.json()
+                else:
+                    ret = req.text
+            #
+            if ret is None:
+                logger.error("Return is empty - return code is %r", retCode)
+            else:
+                logger.debug("Return length %d return code %r", len(ret), retCode)
+            #
+            return ret, retCode
+        except exceptionsCatch as e:
+            retCode = e.code
+            if retCode not in httpCodesCatch:
+                raise e
+        except Exception as e:
+            logger.error("Failing %s %s %r with %s", url, endPoint, paramD, str(e))
+            raise e
 
         return None, retCode
