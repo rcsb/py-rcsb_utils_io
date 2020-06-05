@@ -51,6 +51,7 @@ setup(
         "rcsb.utils.validation >= 0.20",
         "PyNaCl >= 1.3.0",
         'backports.tempfile; python_version < "3.0"',
+        "paramiko >=2.7",
     ],
     packages=find_packages(exclude=["rcsb.mock-data", "rcsb.utils.tests-io", "rcsb.utils.tests-*", "tests.*"]),
     package_data={

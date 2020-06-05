@@ -64,3 +64,4 @@
 26-May-2020  - V0.64 Adding timeout and user agent for url fetchs
 28-May-2020  - V0.65 Add alternative URL fetch methods using requests module
  4-Jun-2020  - V0.66 Add public bundle and unbundle tar file methods in FileUtil()
+ 5-Jun-2020  - V0.67 Add sftp client class SftpUtil() and tests.

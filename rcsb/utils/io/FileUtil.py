@@ -238,18 +238,61 @@ class FileUtil(object):
             logger.exception("For locator %r Failing with %s", locator, str(e))
         return None
 
-    def __unbundle(self, tarFilePath, dirPath="."):
+    def bundleTarfile(self, tarFilePath, dirPathList, mode="w:gz", recursive=True):
+        """Create a tar file bundle of the contents of the input directory path.
+
+        Args:
+            tarFilePath (str): output tar file path
+            dirPath (str): directory path to store in
+            mode (str, optional): the file mode for the tar file. Defaults to "w:gz".
+            recursive (bool, optional): include subdirectories recursively. Defaults to True.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        ret = True
+        curDir = os.getcwd()
+        try:
+
+            with tarfile.open(tarFilePath, mode=mode) as archive:
+                for dirPath in dirPathList:
+                    dp, tp = os.path.split(dirPath)
+                    os.chdir(dp)
+                    archive.add(tp, recursive=recursive)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            ret = False
+        os.chdir(curDir)
+        return ret
+
+    def unbundleTarfile(self, tarFilePath, dirPath="."):
+        """Unbundle input tar file.
+
+        Args:
+            tarFilePath (str): path to the input tar bundle file
+            dirPath (str, optional): directory path to write extracted data. Defaults to ".".
+
+        Returns:
+            bool: True for success or False otherwise
+        """
         #   import tarfile contents into dirPath -
-        with tarfile.open(tarFilePath) as tar:
-            tar.extractall(path=dirPath)
+        ret = True
+        try:
+
+            with tarfile.open(tarFilePath) as tar:
+                tar.extractall(path=dirPath)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            ret = False
+        return ret
 
     def __extractTarMember(self, tarFilePath, memberName, memberPath):
+        ret = True
         try:
             with tarfile.open(tarFilePath) as tar:
                 fIn = tar.extractfile(memberName)
                 with open(memberPath, "wb") as ofh:
                     ofh.write(fIn.read())
-            ret = True
         except Exception as e:
             logger.exception("Failing with %s", str(e))
             ret = False
