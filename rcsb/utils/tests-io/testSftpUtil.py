@@ -92,11 +92,9 @@ class SftpUtilTests(unittest.TestCase):
     @unittest.skip("private test")
     def testSftpLocal(self):
         """Test case - connection to a local private server -
-           1-receive
-
         """
         try:
-            userName = "transporter"
+            userName = ""
             pw = ""
             hostName = ""
             sftpU = SftpUtil()
@@ -118,7 +116,7 @@ class SftpUtilTests(unittest.TestCase):
         try:
             userName = ""
             pw = ""
-            hostName = "bl-east.rcsb.org"
+            hostName = ""
             sftpU = SftpUtil()
             ok = sftpU.connect(hostName, userName, pw=pw, port=22)
             self.assertTrue(ok)

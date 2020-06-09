@@ -65,3 +65,4 @@
 28-May-2020  - V0.65 Add alternative URL fetch methods using requests module
  4-Jun-2020  - V0.66 Add public bundle and unbundle tar file methods in FileUtil()
  5-Jun-2020  - V0.67 Add sftp client class SftpUtil() and tests.
+ 9-Jun-2020  - V0.68 Documentation updates and some additional pre-checks for path existence prior to copy operations.

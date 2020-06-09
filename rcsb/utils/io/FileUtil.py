@@ -157,12 +157,14 @@ class FileUtil(object):
             if localFlag and not tarMember:
                 rPath = self.getFilePath(remote)
                 lPath = self.getFilePath(local)
+                self.mkdirForFile(lPath)
                 shutil.copyfile(rPath, lPath)
                 ret = True
             elif localFlag and tarMember:
                 # Extract a particular member from a local tar file -
                 rPath = self.getFilePath(remote)
                 lPath = self.getFilePath(local)
+                self.mkdirForFile(lPath)
                 ret = self.__extractTarMember(rPath, tarMember, lPath)
                 logger.debug("Extract %r from %r to %r status %r", tarMember, rPath, lPath, ret)
             elif not localFlag and tarMember:
@@ -170,6 +172,7 @@ class FileUtil(object):
                 tarPath = os.path.join(self.__workPath, self.getFileName(remote))
                 ret = self.__fetchUrl(remote, tarPath, **kwargs)
                 logger.debug("Fetched %r to %r status %r", remote, tarPath, ret)
+                #
                 ret = self.__extractTarMember(tarPath, tarMember, self.getFilePath(local)) if ret else False
                 logger.debug("Extract %r from %r to %r status %r", tarMember, tarPath, self.getFilePath(local), ret)
             elif not localFlag and not tarMember:
@@ -243,7 +246,7 @@ class FileUtil(object):
 
         Args:
             tarFilePath (str): output tar file path
-            dirPath (str): directory path to store in
+            dirPathList (list): target directory path list to store
             mode (str, optional): the file mode for the tar file. Defaults to "w:gz".
             recursive (bool, optional): include subdirectories recursively. Defaults to True.
 

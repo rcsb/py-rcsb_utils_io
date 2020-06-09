@@ -20,6 +20,8 @@ import logging
 
 import paramiko
 
+from rcsb.utils.io.FileUtil import FileUtil
+
 logger = logging.getLogger(__name__)
 
 
@@ -130,6 +132,8 @@ class SftpUtil(object):
 
     def get(self, remotePath, localPath):
         try:
+            fileU = FileUtil()
+            fileU.mkdirForFile(localPath)
             self.__sftpClient.get(remotePath, localPath)
             return True
         except Exception as e:
