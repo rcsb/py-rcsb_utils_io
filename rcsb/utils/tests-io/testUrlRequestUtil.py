@@ -311,8 +311,9 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    @unittest.skip("Skip - This service is currently not reliable")
     def testPubChemFetchClassification(self):
-        """ PubChem fetch test
+        """ PubChem fetch classification test - can timeout
         """
         idTupList = [("2244", 200, "2244", "record"), ("123631", 200, "123631", "record"), ("2244", 200, "2244", "classification"), ("123631", 200, "123631", "classification")]
         nameSpace = "cid"
