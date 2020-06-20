@@ -66,3 +66,4 @@
  4-Jun-2020  - V0.66 Add public bundle and unbundle tar file methods in FileUtil()
  5-Jun-2020  - V0.67 Add sftp client class SftpUtil() and tests.
  9-Jun-2020  - V0.68 Documentation updates and some additional pre-checks for path existence prior to copy operations.
+19-Jun-2020  - V0.69 Exposing comment parsing methods in FastaUtil().

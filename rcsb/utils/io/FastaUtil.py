@@ -4,6 +4,7 @@
 #
 
 import logging
+import re
 from gzip import GzipFile
 
 logger = logging.getLogger(__name__)
@@ -14,8 +15,74 @@ class FastaUtil(object):
          specific common lines (e.g. Uniprot and PDB)
     """
 
+    aaDict3 = {
+        "ALA": "A",
+        "ARG": "R",
+        "ASN": "N",
+        "ASP": "D",
+        "ASX": "B",
+        "CYS": "C",
+        "GLN": "Q",
+        "GLU": "E",
+        "GLX": "Z",
+        "GLY": "G",
+        "HIS": "H",
+        "ILE": "I",
+        "LEU": "L",
+        "LYS": "K",
+        "MET": "M",
+        "PHE": "F",
+        "PRO": "P",
+        "SER": "S",
+        "THR": "T",
+        "TRP": "W",
+        "TYR": "Y",
+        "VAL": "V",
+        "PYL": "O",
+        "SEC": "U",
+    }
+    # aaValidCodes = "".join(sorted(FastaUtil.aaDict3.values()))
+    aaValidCodes = "ABCDEFGHIKLMNOPQRSTUVWYZX"
+    naValidCodes = "AGCTURYNWSMKBHDV"
+
     def __init__(self, **kwargs):
         pass
+
+    def __removeWhiteSpace(self, string):
+        pattern = re.compile(r"\s+")
+        return re.sub(pattern, "", string)
+
+    def cleanSequence(self, sequence, seqType="protein"):
+        """[summary]
+
+        Args:
+            sequence ([type]): raw one-letter code sequence
+            seqType (str, optional): sequence type protein or na ... Defaults to "protein".
+
+        Returns:
+            (bool, str): status, cleaned sequence (upper case w/o white space)
+        """
+        try:
+            tS = self.__removeWhiteSpace(sequence.upper())
+            if seqType == "protein":
+                allowedChars = set(FastaUtil.aaValidCodes)
+            else:
+                allowedChars = set(FastaUtil.naValidCodes)
+
+            if set(sequence).issubset(allowedChars):
+                return True, tS
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+        return False, sequence
+
+    def parseComment(self, cmtLine, commentStyle):
+        if commentStyle == "uniprot":
+            seqId, cD = self.__parseCommentUniProt(cmtLine)
+        elif commentStyle == "prerelease":
+            seqId, cD = self.__parseCommentPreRelease(cmtLine)
+        else:
+            seqId, cD = self.__parseCommentDefault(cmtLine)
+        return seqId, cD
 
     def readFasta(self, filePath, **kwargs):
         """
