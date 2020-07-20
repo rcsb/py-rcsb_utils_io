@@ -193,13 +193,14 @@ class UrlRequestUtil(object):
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
+        timeOutSeconds = kwargs.get("timeOut", 5)
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
         #
         headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
-        optD = {"timeout": 5, "allow_redirects": True}
+        optD = {"timeout": timeOutSeconds, "allow_redirects": True}
         try:
             # if sslCert == "disable":
             #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
@@ -241,13 +242,14 @@ class UrlRequestUtil(object):
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
+        timeOutSeconds = kwargs.get("timeOut", 5)
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
         #
         headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
-        optD = {"timeout": 5, "allow_redirects": True}
+        optD = {"timeout": timeOutSeconds, "allow_redirects": True}
         try:
             # if sslCert == "disable":
             #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access

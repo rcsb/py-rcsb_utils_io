@@ -148,6 +148,33 @@ class SftpUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    @unittest.skip("private test")
+    def testSftpLocalWriteRead(self):
+        """Test case -  transfer  -
+        """
+        try:
+            userName = ""
+            pw = ""
+            hostName = ""
+            sftpU = SftpUtil()
+            ok = sftpU.connect(hostName, userName, pw=pw, port=22)
+            self.assertTrue(ok)
+
+            remoteDirPath = os.path.join("4-coastal", "OE")
+            localFilePath = os.environ.get("OE_LICENSE", "oe_license.txt")
+            remoteFilePath = os.path.join(remoteDirPath, "oe_license.txt")
+            ok = sftpU.mkdir(remoteDirPath)
+            ok = sftpU.put(localFilePath, remoteFilePath)
+            sftpU.get(remoteFilePath, os.path.join(self.__workPath, "oe_license.txt"))
+            #
+            result = sftpU.listdir(remoteDirPath)
+            logger.info("listdir: %r", result)
+            ok = sftpU.close()
+            self.assertEqual(ok, True)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
 
 def suiteSftpTests():
     suiteSelect = unittest.TestSuite()
