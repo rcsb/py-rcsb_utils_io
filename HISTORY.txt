@@ -68,3 +68,4 @@
  9-Jun-2020  - V0.68 Documentation updates and some additional pre-checks for path existence prior to copy operations.
 19-Jun-2020  - V0.69 Exposing comment parsing methods in FastaUtil().
 20-Jul-2020  - V0.70 Expose request timeout as a keyword argument for unwrapped requests.
+20-Jul-2020  - V0.71 Further adjustments in logging and error handling

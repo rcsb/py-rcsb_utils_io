@@ -216,7 +216,7 @@ class UrlRequestUtil(object):
                     ret = req.text
             #
             if ret is None:
-                logger.error("Return is empty - return code is %r", retCode)
+                logger.debug("Return is empty - return code is %r", retCode)
             else:
                 logger.debug("Return length %d return code %r", len(ret), retCode)
             #
@@ -265,7 +265,7 @@ class UrlRequestUtil(object):
                     ret = req.text
             #
             if ret is None:
-                logger.error("Return is empty - return code is %r", retCode)
+                logger.debug("Return is empty - return code is %r", retCode)
             else:
                 logger.debug("Return length %d return code %r", len(ret), retCode)
             #
