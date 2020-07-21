@@ -69,3 +69,5 @@
 19-Jun-2020  - V0.69 Exposing comment parsing methods in FastaUtil().
 20-Jul-2020  - V0.70 Expose request timeout as a keyword argument for unwrapped requests.
 20-Jul-2020  - V0.71 Further adjustments in logging and error handling
+21-Jul-2020  - V0.72 Add module StashUtil() to simplify backup of and recovery of bundled directories of data
+                     from remote storage resources.
