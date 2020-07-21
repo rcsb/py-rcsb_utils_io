@@ -60,9 +60,9 @@ class StashUtilTests(unittest.TestCase):
             stU = StashUtil(self.__workPath, "testBundleFile")
             ok = stU.makeBundle(self.__testLocalDirPath, ["subdirA", "subdirB"])
             self.assertTrue(ok)
-            ok = stU.stashBundle(url, remoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
+            ok = stU.storeBundle(url, remoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
             self.assertTrue(ok)
-            ok = stU.restoreBundle(localRestoreDirPath, url, remoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
+            ok = stU.fetchBundle(localRestoreDirPath, url, remoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
             self.assertTrue(ok)
             #
         except Exception as e:

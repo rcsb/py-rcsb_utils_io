@@ -54,7 +54,7 @@ class StashUtil(object):
         okT = fileU.bundleTarfile(self.__localStashTarFilePath, dirPathList, mode="w:gz", recursive=True)
         return okT
 
-    def stashBundle(self, url, remoteDirPath, remoteStashPrefix="A", userName=None, password=None):
+    def storeBundle(self, url, remoteDirPath, remoteStashPrefix="A", userName=None, password=None):
         """ Store a copy of the bundled search dependencies remotely -
 
         Args:
@@ -89,7 +89,7 @@ class StashUtil(object):
             logger.exception("For %r %r failing with %s", url, remoteDirPath, str(e))
         return False
 
-    def restoreBundle(self, localRestoreDirPath, url, remoteDirPath, remoteStashPrefix="A", userName=None, password=None):
+    def fetchBundle(self, localRestoreDirPath, url, remoteDirPath, remoteStashPrefix="A", userName=None, password=None):
         """Restore bundled dependencies from remote storage and unbundle these in the
            current local cache directory.
 

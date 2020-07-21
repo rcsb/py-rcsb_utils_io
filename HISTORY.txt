@@ -71,3 +71,4 @@
 20-Jul-2020  - V0.71 Further adjustments in logging and error handling
 21-Jul-2020  - V0.72 Add module StashUtil() to simplify backup of and recovery of bundled directories of data
                      from remote storage resources.
+22-Jul-2020  - V0.73 Adjust api nomenclature
