@@ -256,7 +256,7 @@ class FileUtil(object):
         ret = True
         curDir = os.getcwd()
         try:
-
+            self.mkdirForFile(tarFilePath)
             with tarfile.open(tarFilePath, mode=mode) as archive:
                 for dirPath in dirPathList:
                     dp, tp = os.path.split(dirPath)

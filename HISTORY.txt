@@ -72,3 +72,4 @@
 21-Jul-2020  - V0.72 Add module StashUtil() to simplify backup of and recovery of bundled directories of data
                      from remote storage resources.
 22-Jul-2020  - V0.73 Adjust api nomenclature
+22-Jul-2020  - V0.74 Create destination directory for tarfile unbundling
