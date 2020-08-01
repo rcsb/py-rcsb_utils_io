@@ -109,7 +109,7 @@ class StashUtil(object):
                 remotePath = os.path.join(remoteDirPath, fn)
                 ok = fileU.get(remotePath, self.__localStashTarFilePath)
 
-            elif url and url.startswith("http://"):
+            elif url and (url.startswith("http://") or url.startswith("https://")):
                 remotePath = url + os.path.join("/", remoteDirPath, fn)
                 ok = fileU.get(remotePath, self.__localStashTarFilePath)
 

@@ -73,3 +73,4 @@
                      from remote storage resources.
 22-Jul-2020  - V0.73 Adjust api nomenclature
 22-Jul-2020  - V0.74 Create destination directory for tarfile unbundling
+ 1-Aug-2020  - V0.75 Add https protocol StashUtil.fetchBundle()
