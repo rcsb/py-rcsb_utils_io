@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class SftpUtil(object):
-    """ Class providing essential data transfer operations for SFTP protocol
-    """
+    """Class providing essential data transfer operations for SFTP protocol"""
 
     def __init__(self, *args, **kwargs):
         _ = args
@@ -85,7 +84,7 @@ class SftpUtil(object):
 
             return sftp
         except Exception as e:
-            logger.exception("Error occurred creating SFTP client: %s: %s", e.__class__, str(e))
+            logger.error("Error occurred creating SFTP client: %s: %s", e.__class__, str(e))
             if sftp is not None:
                 sftp.close()
             if self.__transport is not None:
@@ -106,8 +105,7 @@ class SftpUtil(object):
                 return False
 
     def stat(self, path):
-        """ sftp  stat attributes  = [ size=17 uid=0 gid=0 mode=040755 atime=1507723473 mtime=1506956503 ]
-        """
+        """sftp  stat attributes  = [ size=17 uid=0 gid=0 mode=040755 atime=1507723473 mtime=1506956503 ]"""
         try:
             sT = self.__sftpClient.stat(path)
             dD = {"mtime": sT.st_mtime, "size": sT.st_size, "mode": sT.st_mode, "uid": sT.st_uid, "gid": sT.st_gid, "atime": sT.st_atime}
