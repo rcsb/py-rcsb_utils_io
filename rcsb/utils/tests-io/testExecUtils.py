@@ -46,8 +46,7 @@ class ExecUtilsTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testSubprocessExecution(self):
-        """Test case -  subprocess execution
-        """
+        """Test case -  subprocess execution"""
         try:
             exU = ExecUtils()
             ok = exU.run("/bin/ls", execArgList=["-l", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0)

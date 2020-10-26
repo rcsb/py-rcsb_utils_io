@@ -42,7 +42,7 @@ setup(
     entry_points={"console_scripts": []},
     #
     install_requires=[
-        "numpy",
+        "numpy == 1.18.0",
         "pytz",
         "python-dateutil",
         "mmcif >= 0.54",
