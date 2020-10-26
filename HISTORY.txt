@@ -77,3 +77,4 @@
 24-Aug-2020  - V0.76 Add module ProcessStatusUtil() and related tests.
 19-Oct-2020  - V0.77 Adjust troubleshooting logging
 26-Oct-2020  - V0.78 down version numpy to 1.18.0 to solve Py3.9 macos issue
+26-Oct-2020  - V0.79 handle Py27 numpy limit in requirements
