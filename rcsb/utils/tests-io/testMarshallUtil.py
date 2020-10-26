@@ -75,8 +75,7 @@ class MarshalUtilTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testReadWriteInParts(self):
-        """ Test the case reading and writing in parts.
-        """
+        """Test the case reading and writing in parts."""
         try:
             lenL = 12013
             aL = [100, 200, 300, 400, 500]
@@ -108,8 +107,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadDictionaryFile(self):
-        """ Test the case read PDBx/mmCIF dictionary text file
-        """
+        """Test the case read PDBx/mmCIF dictionary text file"""
         try:
             cL = self.__mU.doImport(self.__pathPdbxDictionaryFile, fmt="mmcif-dict")
             logger.debug("Dictionary container list %d", len(cL))
@@ -119,8 +117,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadCifFile(self):
-        """ Test the case read PDBx/mmCIF text file
-        """
+        """Test the case read PDBx/mmCIF text file"""
         try:
             cL = self.__mU.doImport(self.__pathCifFile, fmt="mmcif")
             logger.debug("Container list %d", len(cL))
@@ -130,8 +127,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadListFile(self):
-        """ Test the case read list text file
-        """
+        """Test the case read list text file"""
         try:
             cL = self.__mU.doImport(self.__pathIndexFile, fmt="list")
             logger.debug("List length %d", len(cL))
@@ -141,8 +137,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadJsonFile(self):
-        """ Test the case read JSON file
-        """
+        """Test the case read JSON file"""
         try:
             rObj = self.__mU.doImport(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
@@ -152,8 +147,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteDictionaryFiles(self):
-        """ Test the case read and write PDBx/mmCIF dictionary text file
-        """
+        """Test the case read and write PDBx/mmCIF dictionary text file"""
         try:
             cL = self.__mU.doImport(self.__pathPdbxDictionaryFile, fmt="mmcif-dict")
             logger.debug("Dictionary container list %d", len(cL))
@@ -166,8 +160,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteCifFile(self):
-        """ Test the case read and write PDBx/mmCIF text file
-        """
+        """Test the case read and write PDBx/mmCIF text file"""
         try:
             cL = self.__mU.doImport(self.__pathCifFile, fmt="mmcif")
             logger.debug("Container list %d", len(cL))
@@ -179,8 +172,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteJsonFile(self):
-        """ Test the case read and write JSON file
-        """
+        """Test the case read and write JSON file"""
         try:
             rObj = self.__mU.doImport(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
@@ -193,8 +185,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteListFile(self):
-        """ Test the case read and write list text file
-        """
+        """Test the case read and write list text file"""
         try:
             cL = self.__mU.doImport(self.__pathIndexFile, fmt="list")
             logger.debug("List element %r length %d", cL[0], len(cL))
@@ -211,12 +202,11 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteFastaFile(self):
-        """ Test the case read and write FASTA sequence file
-        """
+        """Test the case read and write FASTA sequence file"""
         try:
             sD = self.__mU.doImport(self.__pathFastaFile, fmt="fasta", commentStyle="prerelease")
             logger.debug("Sequence length %d", len(sD))
-            self.assertGreaterEqual(len(sD), 940)
+            self.assertGreaterEqual(len(sD), 500)
             ok = self.__mU.doExport(self.__pathSaveFastaFile, sD, fmt="fasta")
             self.assertTrue(ok)
         except Exception as e:
@@ -224,8 +214,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadUrlTarfile(self):
-        """ Test the case to read URL target and extract a member
-        """
+        """Test the case to read URL target and extract a member"""
         try:
             mU = MarshalUtil(workPath=self.__workPath)
             _, fn = os.path.split(self.__urlTarget)
@@ -241,8 +230,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadUrlTddfile(self):
-        """ Test the case to read URL target of a tdd
-        """
+        """Test the case to read URL target of a tdd"""
         try:
             mU = MarshalUtil(workPath=self.__workPath)
             version = "2.07-2019-07-23"
@@ -260,8 +248,7 @@ class MarshalUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadUrlTarfileFail(self):
-        """ Test the case to read URL target and extract a member (failing case)
-        """
+        """Test the case to read URL target and extract a member (failing case)"""
         try:
             mU = MarshalUtil(workPath=self.__workPath)
             rL = mU.doImport(self.__urlTargetBad, fmt="tdd", rowFormat="list", tarMember="names.dmp")

@@ -86,8 +86,7 @@ class IoUtilTests(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info[0] < 3, "not compatible with Python 2")
     def testReadCsvIter(self):
-        """ Test returning an iterator for a large CSV file with leading comments
-        """
+        """Test returning an iterator for a large CSV file with leading comments"""
         try:
             iCount = 0
             for row in self.__ioU.deserializeCsvIter(self.__pathSiftsFile, delimiter=",", rowFormat="list", encodingErrors="ignore"):
@@ -102,8 +101,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteInParts(self):
-        """ Test the case reading and writing in parts.
-        """
+        """Test the case reading and writing in parts."""
         try:
             self.maxDiff = None
             lenL = 12483
@@ -136,9 +134,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadDictionaryFile(self):
-        """ Test the case read PDBx/mmCIF dictionary text file
-
-        """
+        """Test the case read PDBx/mmCIF dictionary text file"""
         try:
             cL = self.__ioU.deserialize(self.__pathPdbxDictionaryFile, fmt="mmcif-dict")
             logger.debug("Dictionary container list %d", len(cL))
@@ -148,8 +144,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadCifFile(self):
-        """ Test the case read PDBx/mmCIF text file
-        """
+        """Test the case read PDBx/mmCIF text file"""
         try:
             cL = self.__ioU.deserialize(self.__pathCifFile, fmt="mmcif")
             logger.debug("Container list %d", len(cL))
@@ -159,8 +154,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadListFile(self):
-        """ Test the case read list text file
-        """
+        """Test the case read list text file"""
         try:
             cL = self.__ioU.deserialize(self.__pathIndexFile, fmt="list")
             logger.debug("List length %d", len(cL))
@@ -170,8 +164,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadJsonFile(self):
-        """ Test the case read JSON file
-        """
+        """Test the case read JSON file"""
         try:
             rObj = self.__ioU.deserialize(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
@@ -181,8 +174,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteDictionaryFiles(self):
-        """ Test the case read and write PDBx/mmCIF dictionary text file
-        """
+        """Test the case read and write PDBx/mmCIF dictionary text file"""
         try:
             cL = self.__ioU.deserialize(self.__pathPdbxDictionaryFile, fmt="mmcif-dict")
             logger.debug("Dictionary container list %d", len(cL))
@@ -195,8 +187,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteCifFile(self):
-        """ Test the case read and write PDBx/mmCIF text file
-        """
+        """Test the case read and write PDBx/mmCIF text file"""
         try:
             cL = self.__ioU.deserialize(self.__pathCifFile, fmt="mmcif")
             logger.debug("Container list %d", len(cL))
@@ -208,8 +199,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteJsonFile(self):
-        """ Test the case read and write JSON file
-        """
+        """Test the case read and write JSON file"""
         try:
             rObj = self.__ioU.deserialize(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
@@ -222,8 +212,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteListFile(self):
-        """ Test the case read and write list text file
-        """
+        """Test the case read and write list text file"""
         try:
             cL = self.__ioU.deserialize(self.__pathIndexFile, fmt="list")
             logger.debug("List element %r length %d", cL[0], len(cL))
@@ -240,8 +229,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWritePickleFile(self):
-        """ Test the case read and write pickle file
-        """
+        """Test the case read and write pickle file"""
         try:
             rObj = self.__ioU.deserialize(self.__pathJsonTestFile, fmt="json")
             logger.debug("Object length %d", len(rObj))
@@ -258,8 +246,7 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteListWithEncodingFile(self):
-        """ Test the case read and write list text file with non-ascii encoding
-        """
+        """Test the case read and write list text file with non-ascii encoding"""
         try:
             cL = self.__ioU.deserialize(self.__pathInsilicoFile, fmt="list")
             logger.debug("Insilico List length %d", len(cL))
@@ -274,12 +261,11 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteFastaFile(self):
-        """ Test the case read and write FASTA sequence file
-        """
+        """Test the case read and write FASTA sequence file"""
         try:
             sD = self.__ioU.deserialize(self.__pathFastaFile, fmt="fasta", commentStyle="prerelease")
             logger.debug("Sequence length %d", len(sD.keys()))
-            self.assertGreaterEqual(len(sD), 940)
+            self.assertGreaterEqual(len(sD), 500)
             ok = self.__ioU.serialize(self.__pathSaveFastaFile, sD, fmt="fasta")
             self.assertTrue(ok)
         except Exception as e:
@@ -287,12 +273,11 @@ class IoUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWriteTaxonomyFile(self):
-        """ Test the case read and write taxonomy resource file
-        """
+        """Test the case read and write taxonomy resource file"""
         try:
             tL = self.__ioU.deserialize(self.__pathTaxonomyFile, fmt="tdd", rowFormat="list")
             logger.info("Taxonomy length %d", len(tL))
-            self.assertGreaterEqual(len(tL), 940)
+            self.assertGreaterEqual(len(tL), 500)
             tD = {}
             csvL = []
             for tV in tL:

@@ -47,8 +47,7 @@ class FastaUtilTests(unittest.TestCase):
         return "".join(sL)
 
     def testReadUniProtFasta(self):
-        """
-        """
+        """"""
         try:
             iMiss = 0
             fau = FastaUtil()
@@ -79,8 +78,7 @@ class FastaUtilTests(unittest.TestCase):
             self.fail()
 
     def testReadWritePreReleaseFasta(self):
-        """
-        """
+        """"""
         try:
             fau = FastaUtil()
             sD = fau.readFasta(self.__preReleaseFastaFilePath, commentStyle="prerelease")
@@ -88,7 +86,7 @@ class FastaUtilTests(unittest.TestCase):
                 # logger.info("%r\n" % self.__cleanString(sD[uid]['sequence']))
                 logger.debug("%r %r", uid, d["sequence"])
             logger.debug("length is %d", len(sD))
-            self.assertGreaterEqual(len(sD), 940)
+            self.assertGreaterEqual(len(sD), 500)
             ##
             ok = fau.writeFasta(self.__outputFastaFilePath, sD)
             self.assertTrue(ok)
