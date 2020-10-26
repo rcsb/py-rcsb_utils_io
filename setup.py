@@ -42,8 +42,8 @@ setup(
     entry_points={"console_scripts": []},
     #
     install_requires=[
-        'numpy == 1.18.0; sys_platform == "darwin"; python_version > "3.0"',
-        'numpy == 1.16.6; sys_platform == "darwin"; python_version < "3.0"',
+        'numpy == 1.18.0; sys_platform == "darwin" and python_version > "3.0"',
+        'numpy == 1.16.6; sys_platform == "darwin" and python_version < "3.0"',
         "numpy; sys_platform !='darwin'",
         "pytz",
         "python-dateutil",
