@@ -100,8 +100,7 @@ def getObjSize(obj, seen=None):
 
 
 class JsonTypeEncoder(json.JSONEncoder):
-    """ Helper class to handle serializing date and time objects
-    """
+    """Helper class to handle serializing date and time objects"""
 
     # pylint: disable=method-hidden,protected-access
     def default(self, o):
@@ -352,8 +351,8 @@ class IoUtil(object):
         return myDefault
 
     def __serializeJson(self, filePath, myObj, **kwargs):
-        """ Internal method to serialize the input object as JSON.  An encoding
-            helper class is included to handle selected python data types (e.g., datetime)
+        """Internal method to serialize the input object as JSON.  An encoding
+        helper class is included to handle selected python data types (e.g., datetime)
         """
         indent = kwargs.get("indent", 0)
         enforceAscii = kwargs.get("enforceAscii", True)
@@ -371,16 +370,29 @@ class IoUtil(object):
 
     def __deserializeJson(self, filePath, **kwargs):
         myDefault = kwargs.get("default", {})
+        encoding = kwargs.get("encoding", "utf-8-sig")
+        encodingErrors = kwargs.get("encodingErrors", "ignore")
         try:
-            with open(filePath, "r") as infile:
-                return json.load(infile, object_pairs_hook=OrderedDict)
+            if filePath[-3:] == ".gz":
+                if sys.version_info[0] > 2:
+                    with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as infile:
+                        return json.load(infile, object_pairs_hook=OrderedDict)
+                else:
+                    # Py2 situation non-ascii encodings is problematic
+                    # with gzip.open(filePath, "rb") as csvFile:
+                    #    oL = self.__csvReader(csvFile, rowFormat, delimiter)
+                    tPath = self.__fileU.uncompress(filePath, outputDir=None)
+                    with io.open(tPath, newline="", encoding=encoding, errors="ignore") as infile:
+                        return json.load(infile, object_pairs_hook=OrderedDict)
+            else:
+                with open(filePath, "r") as infile:
+                    return json.load(infile, object_pairs_hook=OrderedDict)
         except Exception as e:
             logger.warning("Unable to deserialize %r %r", filePath, str(e))
         return myDefault
 
     def __deserializeMmCif(self, filePath, **kwargs):
-        """
-        """
+        """"""
         try:
             containerList = []
             workPath = kwargs.get("workPath", None)
@@ -395,8 +407,7 @@ class IoUtil(object):
         return containerList
 
     def __serializeMmCif(self, filePath, containerList, **kwargs):
-        """
-        """
+        """"""
         try:
             ret = False
             workPath = kwargs.get("workPath", None)
@@ -417,8 +428,7 @@ class IoUtil(object):
         return ret
 
     def __deserializeMmCifDict(self, filePath, **kwargs):
-        """
-        """
+        """"""
         try:
             containerList = []
             workPath = kwargs.get("workPath", None)
@@ -433,8 +443,7 @@ class IoUtil(object):
         return containerList
 
     def __serializeMmCifDict(self, filePath, containerList, **kwargs):
-        """
-        """
+        """"""
         try:
             ret = False
             # workPath = kwargs.get('workPath', None)
@@ -449,8 +458,7 @@ class IoUtil(object):
         return ret
 
     def __serializeList(self, filePath, aList, enforceAscii=True, **kwargs):
-        """
-        """
+        """"""
 
         try:
             _ = kwargs
@@ -539,7 +547,7 @@ class IoUtil(object):
         return oL
 
     def deserializeCsvIter(self, filePath, delimiter=",", rowFormat="dict", encodingErrors="ignore", uncomment=True, **kwargs):
-        """ Return an iterator to input CSV format file.
+        """Return an iterator to input CSV format file.
 
         Args:
             filePath (str): input file path
@@ -605,8 +613,7 @@ class IoUtil(object):
         return oL
 
     def __serializeCsv(self, filePath, rowDictList, fieldNames=None, **kwargs):
-        """
-        """
+        """"""
         _ = kwargs
         try:
             wD = {}
@@ -630,7 +637,7 @@ class IoUtil(object):
         return ret
 
     def __csvEncoder(self, csvData, encoding="utf-8-sig", encodingErrors="ignore"):
-        """ Handle encoding issues for gzipped data in Py2. (beware of the BOM chars)
+        """Handle encoding issues for gzipped data in Py2. (beware of the BOM chars)
 
         Args:
             csvData (text lines): uncompressed data from gzip open

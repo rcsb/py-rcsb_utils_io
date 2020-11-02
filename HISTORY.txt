@@ -78,3 +78,4 @@
 19-Oct-2020  - V0.77 Adjust troubleshooting logging
 26-Oct-2020  - V0.78 down version numpy to 1.18.0 to solve Py3.9 macos issue
 26-Oct-2020  - V0.79 handle Py27 numpy limit in requirements
+ 2-Nov-2020  - V0.80 add gzip support to json deserialization method.
