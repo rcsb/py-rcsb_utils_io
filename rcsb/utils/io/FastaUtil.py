@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class FastaUtil(object):
-    """  Simple FASTA reader and writer with options to parse application
-         specific common lines (e.g. Uniprot and PDB)
+    """Simple FASTA reader and writer with options to parse application
+    specific common lines (e.g. Uniprot and PDB)
     """
 
     aaDict3 = {
@@ -85,8 +85,7 @@ class FastaUtil(object):
         return seqId, cD
 
     def readFasta(self, filePath, **kwargs):
-        """
-        """
+        """"""
         try:
             commentStyle = kwargs.get("commentStyle", "uniprot").lower()
             if commentStyle == "uniprot":
@@ -109,8 +108,7 @@ class FastaUtil(object):
         return {}
 
     def writeFasta(self, filePath, seqDict, **kwargs):
-        """
-        """
+        """"""
         maxLineLength = int(kwargs.get("maxLineLength", 70))
         with open(filePath, "w") as ofh:
             ok = self.__writeFasta(ofh, seqDict, maxLineLength=maxLineLength)
@@ -201,8 +199,7 @@ class FastaUtil(object):
         return None, {}
 
     def __readRecordFasta(self, ifh):
-        """ Return the next FASTA record in the input file handle.
-        """
+        """Return the next FASTA record in the input file handle."""
         comment, sequence = None, []
         for line in ifh:
             # handle the variety of types accross versions and open/gzipfile classes
@@ -223,9 +220,9 @@ class FastaUtil(object):
 
     def __writeFasta(self, ofh, seqDict, maxLineLength=70):
         """
-            seqDict[seqId] = 'one-letter-code sequence'
-            >seqId
-            MTVEDR....
+        seqDict[seqId] = {sequence: 'one-letter-code sequence'}
+        >seqId
+        MTVEDR....
 
         """
         try:

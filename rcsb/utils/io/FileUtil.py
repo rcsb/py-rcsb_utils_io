@@ -49,9 +49,7 @@ logger = logging.getLogger(__name__)
 
 
 class FileUtil(object):
-    """ Skeleton implementation for File I/O operations
-
-    """
+    """Skeleton implementation for File I/O operations"""
 
     def __init__(self, workPath=None, **kwargs):
         _ = kwargs
@@ -115,8 +113,7 @@ class FileUtil(object):
 
     #
     def remove(self, pth):
-        """Method to remove input file, link  or directory.
-        """
+        """Method to remove input file, link  or directory."""
         ok = False
         try:
             if pth and not self.exists(pth):
@@ -188,8 +185,7 @@ class FileUtil(object):
         return ret
 
     def put(self, local, remote, **kwargs):
-        """ Copy local file to remote location.
-        """
+        """Copy local file to remote location."""
         _ = kwargs
         try:
             ret = False
@@ -289,6 +285,26 @@ class FileUtil(object):
             ret = False
         return ret
 
+    def unbundleZipfile(self, zipFilePath, dirPath="."):
+        """Unbundle input ZIP file.
+
+        Args:
+            zipFilePath (str): path to the input tar bundle file
+            dirPath (str, optional): directory path to write extracted data. Defaults to ".".
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        #   import zipfile contents into dirPath -
+        ret = True
+        try:
+            with zipfile.ZipFile(zipFilePath, mode="r") as zObj:
+                zObj.extractall(path=dirPath)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            ret = False
+        return ret
+
     def __extractTarMember(self, tarFilePath, memberName, memberPath):
         ret = True
         try:
@@ -334,7 +350,7 @@ class FileUtil(object):
 
     @retry((myurl.URLError, myurl.HTTPError), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=False, logger=logger)
     def __fetchUrlPy(self, url, filePath, **kwargs):
-        """ Fetch data from a remote URL and store this in input filePath.
+        """Fetch data from a remote URL and store this in input filePath.
 
         Args:
             url (str): target URL to fetch
@@ -381,7 +397,7 @@ class FileUtil(object):
 
     @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=False, logger=logger)
     def __fetchUrlReqRaw(self, url, filePath, **kwargs):
-        """ Fetch data from a remote URL and store this in input filePath.
+        """Fetch data from a remote URL and store this in input filePath.
 
         Args:
             url (str): target URL to fetch
@@ -429,7 +445,7 @@ class FileUtil(object):
 
     @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=5, multiplier=3, defaultValue=False, logger=logger)
     def __fetchUrlReq(self, url, filePath, **kwargs):
-        """ Fetch data from a remote URL and store this in input filePath.
+        """Fetch data from a remote URL and store this in input filePath.
 
         Args:
             url (str): target URL to fetch
@@ -483,8 +499,8 @@ class FileUtil(object):
         return False
 
     def toAscii(self, inputFilePath, outputFilePath, chunkSize=5000, encodingErrors="ignore"):
-        """ Encode input file to Ascii and write this to the target output file.   Handle encoding
-            errors according to the input settting ('ignore', 'escape', 'xmlcharrefreplace').
+        """Encode input file to Ascii and write this to the target output file.   Handle encoding
+        errors according to the input settting ('ignore', 'escape', 'xmlcharrefreplace').
         """
         try:
             ok = self.mkdirForFile(outputFilePath)
@@ -507,9 +523,9 @@ class FileUtil(object):
         return False
 
     def uncompress(self, inputFilePath, outputDir=None):
-        """ Uncompress the input file if the path name has a recognized compression type file extension.
+        """Uncompress the input file if the path name has a recognized compression type file extension.
 
-            Return the path of the uncompressed file (in outDir) or the original input file path.
+        Return the path of the uncompressed file (in outDir) or the original input file path.
 
         """
         try:
