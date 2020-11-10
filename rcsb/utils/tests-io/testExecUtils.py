@@ -36,7 +36,9 @@ class ExecUtilsTests(unittest.TestCase):
 
     def setUp(self):
         self.__workPath = os.path.join(HERE, "test-output")
+        self.__dataPath = os.path.join(HERE, "test-data")
         self.__testFilePath = os.path.join(self.__workPath, "TEST-REMOVE-SUBPROCESS-OUT.TXT")
+        self.__testInpFilePath = os.path.join(self.__dataPath, "TEST-FILE.DAT")
         #
         self.__startTime = time.time()
         logger.debug("Starting %s at %s", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
@@ -51,6 +53,10 @@ class ExecUtilsTests(unittest.TestCase):
             exU = ExecUtils()
             ok = exU.run("/bin/ls", execArgList=["-l", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
             self.assertTrue(ok)
+            #
+            ok = exU.run("/bin/cat", execArgList=["-n"], outPath=self.__testFilePath, inpPath=self.__testInpFilePath, outAppend=True, timeOut=1.0)
+            self.assertTrue(ok)
+            #
             ok = exU.run("/bin/ls", execArgList=["-88", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
             self.assertFalse(ok)
         except Exception as e:

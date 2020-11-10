@@ -80,3 +80,4 @@
 26-Oct-2020  - V0.79 handle Py27 numpy limit in requirements
  2-Nov-2020  - V0.80 add gzip support to json deserialization method.
  9-Nov-2020  - V0.81 add zip unbundle method to FileUtil()
+ 9-Nov-2020  - V0.82 add stdin option in ExecUtil().run()
