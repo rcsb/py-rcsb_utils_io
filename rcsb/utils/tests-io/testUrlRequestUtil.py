@@ -189,11 +189,12 @@ class UrlRequestUtilTests(unittest.TestCase):
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
         try:
-            hD = {"Accept": "application/xml"}
+            # hD = {"Accept": "application/xml"}
+            hL = [("Accept", "application/xml")]
             pD = {"from": "ACC+ID", "to": "ACC", "format": "xml", "query": " ".join(idList)}
             ureq = UrlRequestUtil()
             # using unwrapped (requests) version owing to handshake issue
-            ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hD, sslCert="disable")
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, sslCert="disable")
             logger.debug("XML result %r", ret)
             nm = ret.count("<entry ")
             logger.info("Result count %d status code %r", nm, retCode)
