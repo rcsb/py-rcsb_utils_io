@@ -193,7 +193,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             pD = {"from": "ACC+ID", "to": "ACC", "format": "xml", "query": " ".join(idList)}
             ureq = UrlRequestUtil()
             # using unwrapped (requests) version owing to handshake issue
-            ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hD, sslCert="enable")
+            ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hD, sslCert="disable")
             logger.debug("XML result %r", ret)
             nm = ret.count("<entry ")
             logger.info("Result count %d status code %r", nm, retCode)

@@ -20,8 +20,10 @@ import contextlib
 import json
 import logging
 import ssl
+import warnings
 
 import requests
+
 
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
@@ -41,6 +43,7 @@ except ImportError:
     from urllib2 import urlopen, Request, URLError, HTTPError
 
 logger = logging.getLogger(__name__)
+warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 
 class UrlRequestUtil(object):
@@ -302,6 +305,7 @@ class UrlRequestUtil(object):
             connect=retries,
             backoff_factor=backoffFactor,
             status_forcelist=statusForcelist,
+            # allowed_methods=methodWhitelist,
             method_whitelist=methodWhitelist,
         )
         adapter = HTTPAdapter(max_retries=thisRetry)
