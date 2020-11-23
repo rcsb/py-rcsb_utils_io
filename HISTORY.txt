@@ -82,3 +82,4 @@
  9-Nov-2020  - V0.81 add zip unbundle method to FileUtil()
  9-Nov-2020  - V0.82 add stdin option in ExecUtil().run()
 23-Nov-2020  - V0.83 add option to turn on SSL verification in requests() package
+23-Nov-2020  - V0.84 add option to restore SSL3 ciphers to urlopen connections
