@@ -40,9 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class UrlRequestUtil(object):
-    """ Simple wrapper for URL request processing
-
-    """
+    """Simple wrapper for URL request processing"""
 
     def __init__(self, **kwargs):
         pass
@@ -55,8 +53,7 @@ class UrlRequestUtil(object):
         return self.__post(url, endPoint, paramD, **kwargs)
 
     def __post(self, url, endPoint, paramD, **kwargs):
-        """
-        """
+        """"""
         ret = None
         retCode = None
         headerL = kwargs.get("headers", [])
@@ -117,8 +114,7 @@ class UrlRequestUtil(object):
         return self.__get(url, endPoint, paramD, **kwargs)
 
     def __get(self, url, endPoint, paramD, **kwargs):
-        """
-        """
+        """"""
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")
@@ -183,11 +179,12 @@ class UrlRequestUtil(object):
         return None, retCode
 
     def __getRequests(self, url, endPoint, paramD, **kwargs):
-        """
-        """
+        """"""
         ret = None
         retCode = None
-        # sslCert = kwargs.get("sslCert", "disable")
+        sslCert = kwargs.get("sslCert", "disable")
+        verify = False if sslCert == "disable" else True
+
         # encoding = kwargs.get("encoding", "utf-8")
         headerD = kwargs.get("headers", {})
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
@@ -200,7 +197,7 @@ class UrlRequestUtil(object):
         #
         headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
-        optD = {"timeout": timeOutSeconds, "allow_redirects": True}
+        optD = {"timeout": timeOutSeconds, "allow_redirects": True, "verify": verify}
         try:
             # if sslCert == "disable":
             #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
@@ -232,11 +229,11 @@ class UrlRequestUtil(object):
         return None, retCode
 
     def __postRequests(self, url, endPoint, paramD, **kwargs):
-        """
-        """
+        """"""
         ret = None
         retCode = None
-        # sslCert = kwargs.get("sslCert", "disable")
+        sslCert = kwargs.get("sslCert", "disable")
+        verify = False if sslCert == "disable" else True
         # encoding = kwargs.get("encoding", "utf-8")
         headerD = kwargs.get("headers", {})
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
@@ -249,7 +246,7 @@ class UrlRequestUtil(object):
         #
         headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
-        optD = {"timeout": timeOutSeconds, "allow_redirects": True}
+        optD = {"timeout": timeOutSeconds, "allow_redirects": True, "verify": verify}
         try:
             # if sslCert == "disable":
             #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
