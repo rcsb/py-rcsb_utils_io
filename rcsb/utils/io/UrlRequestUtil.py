@@ -22,7 +22,11 @@ import logging
 import ssl
 
 import requests
+
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 from rcsb.utils.io.decorators import retry
+
 
 try:
     from http.client import HTTPException
@@ -199,6 +203,7 @@ class UrlRequestUtil(object):
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
         timeOutSeconds = kwargs.get("timeOut", 5)
+        retries = kwargs.get("retries", 3)
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
@@ -207,12 +212,13 @@ class UrlRequestUtil(object):
         #
         optD = {"timeout": timeOutSeconds, "allow_redirects": True, "verify": verify}
         try:
-            # if sslCert == "disable":
-            #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
-            #    optD = {"context": gcontext}
             #
             urlPath = "%s/%s" % (url, endPoint)
-            req = requests.get(urlPath, params=paramD, headers=headerD, **optD)
+            if retries:
+                session = self.__requestsRetrySession(retries=3, backoffFactor=5, statusForcelist=(429, 500, 502, 503, 504))
+                req = session.get(urlPath, params=paramD, headers=headerD, **optD)
+            else:
+                req = requests.get(urlPath, params=paramD, headers=headerD, **optD)
             retCode = req.status_code
             if retCode == 200:
                 if returnContentType == "JSON":
@@ -248,6 +254,7 @@ class UrlRequestUtil(object):
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
         timeOutSeconds = kwargs.get("timeOut", 5)
+        retries = kwargs.get("retries", 3)
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
@@ -256,12 +263,12 @@ class UrlRequestUtil(object):
         #
         optD = {"timeout": timeOutSeconds, "allow_redirects": True, "verify": verify}
         try:
-            # if sslCert == "disable":
-            #    gcontext = ssl._create_unverified_context()  # pylint: disable=protected-access
-            #    optD = {"context": gcontext}
-            #
             urlPath = "%s/%s" % (url, endPoint)
-            req = requests.post(urlPath, data=paramD, headers=headerD, **optD)
+            if retries:
+                session = self.__requestsRetrySession(retries=retries, backoffFactor=5, statusForcelist=(429, 500, 502, 504))
+                req = session.post(urlPath, data=paramD, headers=headerD, **optD)
+            else:
+                req = requests.post(urlPath, data=paramD, headers=headerD, **optD)
             retCode = req.status_code
             if retCode == 200:
                 if returnContentType == "JSON":
@@ -284,3 +291,20 @@ class UrlRequestUtil(object):
             raise e
 
         return None, retCode
+
+    def __requestsRetrySession(
+        self, retries=3, backoffFactor=5, statusForcelist=(429, 500, 502, 503, 504), methodWhitelist=("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
+    ):
+        session = requests.Session()
+        thisRetry = Retry(
+            total=retries,
+            read=retries,
+            connect=retries,
+            backoff_factor=backoffFactor,
+            status_forcelist=statusForcelist,
+            method_whitelist=methodWhitelist,
+        )
+        adapter = HTTPAdapter(max_retries=thisRetry)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        return session

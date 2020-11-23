@@ -119,8 +119,7 @@ class UrlRequestUtilTests(unittest.TestCase):
         logger.info("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testUnpBatchFetchPost(self):
-        """ UniProt batch fetch (ebi dbfetch) post test
-        """
+        """UniProt batch fetch (ebi dbfetch) post test"""
         baseUrl = "https://www.ebi.ac.uk"
         endPoint = "Tools/dbfetch/dbfetch"
         idList = self.__unpIdList1[:10]
@@ -142,8 +141,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchGet1(self):
-        """ UniProt batch fetch (proteins) get test
-        """
+        """UniProt batch fetch (proteins) get test (EBI endpoint)"""
         baseUrl = "https://www.ebi.ac.uk"
         endPoint = "proteins/api/proteins"
         idList = self.__unpIdList1[:10]
@@ -164,8 +162,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchFail(self):
-        """ UniProt batch fetch (proteins) get test (expected failure)
-        """
+        """UniProt batch fetch (proteins) get test (expected failure)"""
         baseUrl = "https://www0.ebi.ac.uk"
         endPoint = "proteins/api/proteins"
         idList = self.__unpIdList1[:10]
@@ -186,17 +183,17 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchGet2(self):
-        """ UniProt batch fetch (uploadlists) get test (test failed case)
-        """
+        """UniProt batch fetch (uploadlists) get test (test failed case)"""
 
         baseUrl = "http://www.uniprot.org"
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
         try:
-            hL = [("Accept", "application/xml")]
+            hD = {"Accept": "application/xml"}
             pD = {"from": "ACC+ID", "to": "ACC", "format": "xml", "query": " ".join(idList)}
             ureq = UrlRequestUtil()
-            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            # using unwrapped (requests) version owing to handshake issue
+            ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hD, sslCert="enable")
             logger.debug("XML result %r", ret)
             nm = ret.count("<entry ")
             logger.info("Result count %d status code %r", nm, retCode)
@@ -207,8 +204,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testNcbiFetchSummaryPost(self):
-        """ NCBI batch fetch (esummary) get test
-        """
+        """NCBI batch fetch (esummary) get test"""
         idList = ["AP012306.1", "U53879.1"]
         database = "Nucleotide"
         baseUrl = "https://eutils.ncbi.nlm.nih.gov"
@@ -231,8 +227,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testNcbiFetchEntryPost(self):
-        """ NCBI batch fetch (efetch) get test
-        """
+        """NCBI batch fetch (efetch) get test"""
         idList = ["AP012306.1", "U53879.1"]
         database = "Nucleotide"
         baseUrl = "https://eutils.ncbi.nlm.nih.gov"
@@ -255,8 +250,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testPubChemFetch(self):
-        """ PubChem fetch test
-        """
+        """PubChem fetch test"""
         idTupList = [("JTOKYIBTLUQVQV-FGHQGBLESA-N", 404, None), ("CXHHBNMLPJOKQD-UHFFFAOYSA-N", 200, 78579)]
         nameSpace = "inchikey"
         domain = "compound"
@@ -313,8 +307,7 @@ class UrlRequestUtilTests(unittest.TestCase):
 
     @unittest.skip("Skip - This service is currently not reliable")
     def testPubChemFetchClassification(self):
-        """ PubChem fetch classification test - can timeout
-        """
+        """PubChem fetch classification test - can timeout"""
         idTupList = [("2244", 200, "2244", "record"), ("123631", 200, "123631", "record"), ("2244", 200, "2244", "classification"), ("123631", 200, "123631", "classification")]
         nameSpace = "cid"
         domain = "compound"
