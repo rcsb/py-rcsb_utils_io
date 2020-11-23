@@ -82,9 +82,9 @@ class FastaUtilTests(unittest.TestCase):
         try:
             fau = FastaUtil()
             sD = fau.readFasta(self.__preReleaseFastaFilePath, commentStyle="prerelease")
-            for uid, d in sD.items():
+            for uid, dD in sD.items():
                 # logger.info("%r\n" % self.__cleanString(sD[uid]['sequence']))
-                logger.debug("%r %r", uid, d["sequence"])
+                logger.debug("%r %r", uid, dD["sequence"])
             logger.debug("length is %d", len(sD))
             self.assertGreaterEqual(len(sD), 500)
             ##
