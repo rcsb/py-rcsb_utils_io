@@ -183,7 +183,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             self.fail()
 
     def testUnpBatchFetchGet2(self):
-        """UniProt batch fetch (uploadlists) get test (test failed case)"""
+        """UniProt batch fetch (uploadlists) get test (urllib)"""
 
         baseUrl = "https://www.uniprot.org"
         # baseUrl = "https://pir3.uniprot.org"
@@ -197,6 +197,30 @@ class UrlRequestUtilTests(unittest.TestCase):
             ureq = UrlRequestUtil()
             # using wrapped version
             ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, sslCert="enable")
+            logger.debug("XML result %r", ret)
+            nm = ret.count("<entry ")
+            logger.info("Result count %d status code %r", nm, retCode)
+            self.assertGreaterEqual(nm, len(idList))
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testUnpBatchFetchGetRequests(self):
+        """UniProt batch fetch (uploadlists) get test (requests)"""
+
+        baseUrl = "https://www.uniprot.org"
+        # baseUrl = "https://pir3.uniprot.org"
+
+        endPoint = "uploadlists"
+        idList = self.__unpIdList1[:10]
+        try:
+            hD = {"Accept": "application/xml"}
+            # hL = [("Accept", "application/xml")]
+            pD = {"from": "ACC+ID", "to": "ACC", "format": "xml", "query": " ".join(idList)}
+            ureq = UrlRequestUtil()
+            # using unwrapped (requests) version
+            ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hD, sslCert="enable")
             logger.debug("XML result %r", ret)
             nm = ret.count("<entry ")
             logger.info("Result count %d status code %r", nm, retCode)
