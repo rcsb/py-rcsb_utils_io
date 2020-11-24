@@ -5,6 +5,7 @@
 # Updates:
 #  6-Aug-2019  jdw build source and binary wheels by default.
 # 13-Aug-2019  jdw export config support token prior to launching tox runner
+# 24-Nov-2020  jdw add py39 support
 #
 ##
 parameters:
@@ -130,6 +131,11 @@ jobs:
       - script: |
           export CONFIG_SUPPORT_TOKEN_ENV=$(VAR_CONFIG_SUPPORT_TOKEN_ENV)
           ${{ format('python -m tox -e {0}', parameters.tox) }}
+        displayName: 'Running tox task'
+    - ${{ if and(not(startsWith(parameters.tox, 'py')), startsWith(parameters.python, '3.9')) }}:
+      - script: |
+          export CONFIG_SUPPORT_TOKEN_ENV=$(VAR_CONFIG_SUPPORT_TOKEN_ENV)
+          ${{ format('python -m tox -e {0}-py39', parameters.tox) }}
         displayName: 'Running tox task'
     - ${{ if and(not(startsWith(parameters.tox, 'py')), startsWith(parameters.python, '3.8')) }}:
       - script: |
