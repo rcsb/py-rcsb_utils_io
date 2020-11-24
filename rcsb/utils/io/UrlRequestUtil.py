@@ -83,7 +83,7 @@ class UrlRequestUtil(object):
                 ctx.options &= ~ssl.OP_NO_SSLv3
                 # ctx = ssl._create_unverified_context()  # pylint: disable=protected-access
                 optD = {"context": ctx}
-                logger.info("Support for SSLv3 %r", ssl.HAS_SSLv3)
+            logger.info("Support for SSLv3 %r TLSv1_1 %r TLSv1_2 %r", ssl.HAS_SSLv3, ssl.HAS_TLSv1_1, ssl.HAS_TLSv1_2)
             #
             urlPath = "%s/%s" % (url, endPoint)
             requestData = urlencode(paramD).encode(encoding)
