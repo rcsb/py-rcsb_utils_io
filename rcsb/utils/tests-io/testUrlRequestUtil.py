@@ -185,7 +185,7 @@ class UrlRequestUtilTests(unittest.TestCase):
     def testUnpBatchFetchGet2(self):
         """UniProt batch fetch (uploadlists) get test (test failed case)"""
 
-        baseUrl = "http://www.uniprot.org"
+        baseUrl = "https://www.uniprot.org"
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
         try:
@@ -194,7 +194,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             pD = {"from": "ACC+ID", "to": "ACC", "format": "xml", "query": " ".join(idList)}
             ureq = UrlRequestUtil()
             # using unwrapped (requests) version owing to handshake issue
-            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, sslCert="disable")
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, sslCert="enable")
             logger.debug("XML result %r", ret)
             nm = ret.count("<entry ")
             logger.info("Result count %d status code %r", nm, retCode)

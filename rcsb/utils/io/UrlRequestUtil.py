@@ -77,12 +77,13 @@ class UrlRequestUtil(object):
         optD = {"timeout": 5}
         try:
             if sslCert == "disable":
-                ctx = ssl.create_default_context()
+                ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
                 ctx.options &= ~ssl.OP_NO_SSLv3
                 # ctx = ssl._create_unverified_context()  # pylint: disable=protected-access
                 optD = {"context": ctx}
+                logger.info("Support for SSLv3 %r", ssl.HAS_SSLv3)
             #
             urlPath = "%s/%s" % (url, endPoint)
             requestData = urlencode(paramD).encode(encoding)
@@ -143,12 +144,14 @@ class UrlRequestUtil(object):
         optD = {"timeout": 5}
         try:
             if sslCert == "disable":
-                ctx = ssl.create_default_context()
+                ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
                 ctx.options &= ~ssl.OP_NO_SSLv3
                 # ctx = ssl._create_unverified_context()  # pylint: disable=protected-access
                 optD = {"context": ctx}
+            logger.info("Support for SSLv3 %r TLSv1_1 %r TLSv1_2 %r", ssl.HAS_SSLv3, ssl.HAS_TLSv1_1, ssl.HAS_TLSv1_2)
+
             #
             urlPath = "%s/%s" % (url, endPoint)
             requestData = urlencode(paramD)
