@@ -182,6 +182,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    @unittest.skip("Skip - This service is currently not reliable on unbuntu 20.04")
     def testUnpBatchFetchGetUrllib(self):
         """UniProt batch fetch (uploadlists) get test (urllib)"""
 
@@ -206,6 +207,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    @unittest.skip("Skip - This service is currently not reliable on unbuntu 20.04")
     def testUnpBatchFetchGetRequests(self):
         """UniProt batch fetch (uploadlists) get test (requests)"""
 
