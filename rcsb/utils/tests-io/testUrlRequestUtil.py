@@ -185,8 +185,8 @@ class UrlRequestUtilTests(unittest.TestCase):
     def testUnpBatchFetchGet2(self):
         """UniProt batch fetch (uploadlists) get test (urllib)"""
 
-        baseUrl = "https://www.uniprot.org"
-        # baseUrl = "https://pir3.uniprot.org"
+        # baseUrl = "https://www.uniprot.org"
+        baseUrl = "https://pir3.uniprot.org"
 
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
@@ -209,8 +209,8 @@ class UrlRequestUtilTests(unittest.TestCase):
     def testUnpBatchFetchGetRequests(self):
         """UniProt batch fetch (uploadlists) get test (requests)"""
 
-        baseUrl = "https://www.uniprot.org"
-        # baseUrl = "https://pir3.uniprot.org"
+        # baseUrl = "https://www.uniprot.org"
+        baseUrl = "https://pir3.uniprot.org"
 
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
