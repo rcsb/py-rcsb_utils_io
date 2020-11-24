@@ -140,7 +140,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
-    def testUnpBatchFetchGet1(self):
+    def testUnpBatchFetchGetEbi(self):
         """UniProt batch fetch (proteins) get test (EBI endpoint)"""
         baseUrl = "https://www.ebi.ac.uk"
         endPoint = "proteins/api/proteins"
@@ -182,11 +182,11 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
-    def testUnpBatchFetchGet2(self):
+    def testUnpBatchFetchGetUrllib(self):
         """UniProt batch fetch (uploadlists) get test (urllib)"""
 
-        # baseUrl = "https://www.uniprot.org"
-        baseUrl = "https://pir3.uniprot.org"
+        baseUrl = "https://www.uniprot.org"
+        # baseUrl = "https://pir3.uniprot.org"
 
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
@@ -209,8 +209,8 @@ class UrlRequestUtilTests(unittest.TestCase):
     def testUnpBatchFetchGetRequests(self):
         """UniProt batch fetch (uploadlists) get test (requests)"""
 
-        # baseUrl = "https://www.uniprot.org"
-        baseUrl = "https://pir3.uniprot.org"
+        baseUrl = "https://www.uniprot.org"
+        # baseUrl = "https://pir3.uniprot.org"
 
         endPoint = "uploadlists"
         idList = self.__unpIdList1[:10]
@@ -395,8 +395,9 @@ class UrlRequestUtilTests(unittest.TestCase):
 def suiteUniProtTests():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(UrlRequestUtilTests("testUnpBatchFetchPost"))
-    suiteSelect.addTest(UrlRequestUtilTests("testUnpBatchFetchGet1"))
-    suiteSelect.addTest(UrlRequestUtilTests("testUnpBatchFetchGet2"))
+    suiteSelect.addTest(UrlRequestUtilTests("testUnpBatchFetchGetEbi"))
+    suiteSelect.addTest(UrlRequestUtilTests("testUnpBatchFetchGetRequests"))
+    suiteSelect.addTest(UrlRequestUtilTests("testUnpBatchFetchGetUrllib"))
     #
     return suiteSelect
 
