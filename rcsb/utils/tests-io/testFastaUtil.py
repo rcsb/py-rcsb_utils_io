@@ -32,6 +32,7 @@ class FastaUtilTests(unittest.TestCase):
         self.__variantFastaFilePath = os.path.join(self.__mockTopPath, "UniProt", "uniprot_sprot_varsplic.fasta.gz")
         self.__preReleaseFastaFilePath = os.path.join(self.__mockTopPath, "MOCK_EXCHANGE_SANDBOX", "sequence", "pdb_seq_prerelease.fasta")
         self.__outputFastaFilePath = os.path.join(HERE, "test-output", "test-pre-release.fasta")
+        self.__outputTaggedFastaFilePath = os.path.join(HERE, "test-output", "test-tagged.fasta")
         #
         self.__unpIdListV = ["P42284-1", "P42284-3", "P29994-2", "P29994-3", "P29994-4", "P29994-5", "P29994-6", "P29994-7"]
 
@@ -52,6 +53,8 @@ class FastaUtilTests(unittest.TestCase):
             iMiss = 0
             fau = FastaUtil()
             sD = fau.readFasta(self.__variantFastaFilePath, commentStyle="uniprot")
+            for seqId, tD in sD.items():
+                tD["seqId"] = seqId
             for uid in self.__unpIdListV:
                 if uid in sD:
                     logger.debug(
@@ -72,6 +75,11 @@ class FastaUtilTests(unittest.TestCase):
                     logger.error("Miss %r", uid)
 
             self.assertEqual(iMiss, 0)
+            logger.debug("Write tagged file %r", self.__outputTaggedFastaFilePath)
+            ok = fau.writeFasta(self.__outputTaggedFastaFilePath, sD, makeComment=True)
+            self.assertTrue(ok)
+            tagD = fau.readFasta(self.__outputTaggedFastaFilePath, commentStyle="tagged")
+            self.assertEqual(len(sD), len(tagD))
 
         except Exception as e:
             logger.exception("Failing with %s", str(e))

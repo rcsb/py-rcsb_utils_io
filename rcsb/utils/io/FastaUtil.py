@@ -80,6 +80,8 @@ class FastaUtil(object):
             seqId, cD = self.__parseCommentUniProt(cmtLine)
         elif commentStyle == "prerelease":
             seqId, cD = self.__parseCommentPreRelease(cmtLine)
+        elif commentStyle == "tagged":
+            seqId, cD = self.__parseCommentTagged(cmtLine)
         else:
             seqId, cD = self.__parseCommentDefault(cmtLine)
         return seqId, cD
@@ -92,6 +94,8 @@ class FastaUtil(object):
                 commentParser = self.__parseCommentUniProt
             elif commentStyle == "prerelease":
                 commentParser = self.__parseCommentPreRelease
+            elif commentStyle == "tagged":
+                commentParser = self.__parseCommentTagged
             else:
                 commentParser = self.__parseCommentDefault
 
@@ -110,8 +114,9 @@ class FastaUtil(object):
     def writeFasta(self, filePath, seqDict, **kwargs):
         """"""
         maxLineLength = int(kwargs.get("maxLineLength", 70))
+        makeComment = kwargs.get("makeComment", False)
         with open(filePath, "w") as ofh:
-            ok = self.__writeFasta(ofh, seqDict, maxLineLength=maxLineLength)
+            ok = self.__writeFasta(ofh, seqDict, maxLineLength=maxLineLength, makeComment=makeComment)
         return ok
 
     def __readFastaGz(self, filePath, commentParser):
@@ -175,6 +180,19 @@ class FastaUtil(object):
             logger.exception("Failed to parse comment %s with %s", cmtLine, str(e))
         return None, {}
 
+    def __parseCommentTagged(self, cmtLine):
+        try:
+            cD = {}
+            fL = cmtLine[1:].split("|")
+            for v, k in zip(fL[0::2], fL[1::2]):
+                cD[k] = v
+            seqId = cD["seqId"]
+            return seqId, cD
+            #
+        except Exception as e:
+            logger.exception("Failed to parse comment %s with %s", cmtLine, str(e))
+        return None, {}
+
     def __parseCommentPreRelease(self, cmtLine):
         try:
             #
@@ -218,20 +236,43 @@ class FastaUtil(object):
         if comment:
             yield (comment, "".join(sequence))
 
-    def __writeFasta(self, ofh, seqDict, maxLineLength=70):
+    def __writeFasta(self, ofh, seqDict, maxLineLength=70, makeComment=False):
         """
-        seqDict[seqId] = {sequence: 'one-letter-code sequence'}
-        >seqId
-        MTVEDR....
+        seqDict[seqId] = {sequence: 'one-letter-code sequence', ...}
+
+        With makeComment = False:
+
+            >seqId
+            MTVEDR....
+
+        or makeComment= True :
+
+            >{v|k|v'|k' ... for k,v in seqD.items()}
+            MTVEDR....
 
         """
         try:
             lCount = 0
             for seqId, sD in seqDict.items():
-                sequence = sD["sequence"]
                 sA = []
-                sA.append(">%s\n" % seqId)
+                if makeComment:
+                    comment = ""
+                    cL = []
+                    if "seqId" in sD:
+                        cL.append(sD["seqId"])
+                        cL.append("seqId")
+                    for k, v in sD.items():
+                        if k in ["sequence", "seqId"]:
+                            continue
+                        cL.append(v)
+                        cL.append(k)
+                    comment = "|".join(cL)
+                else:
+                    comment = seqId
+                #
+                sA.append(">%s\n" % comment)
                 lCount += 1
+                sequence = sD["sequence"]
                 for i in range(0, len(sequence), maxLineLength):
                     sA.append(sequence[i : i + maxLineLength] + "\n")
                     result = "".join(sA)
@@ -239,6 +280,7 @@ class FastaUtil(object):
                 ofh.write(result)
             return True
         except Exception as e:
+            logger.info("seqId %r sD %r", seqId, sD)
             logger.exception("Failing with %s", str(e))
 
         return False
