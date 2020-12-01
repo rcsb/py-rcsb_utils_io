@@ -1,6 +1,7 @@
 test-output/
 !test-output/.gitkeep
 LOGTOX
+exampleConfigSaveMeIgnore.py
 .vscode/
 # Byte-compiled / optimized / DLL files
 __pycache__/
