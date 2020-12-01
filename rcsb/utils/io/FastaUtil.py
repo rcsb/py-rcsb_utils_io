@@ -259,13 +259,13 @@ class FastaUtil(object):
                     comment = ""
                     cL = []
                     if "seqId" in sD:
-                        cL.append(sD["seqId"])
+                        cL.append(str(sD["seqId"]))
                         cL.append("seqId")
                     for k, v in sD.items():
                         if k in ["sequence", "seqId"]:
                             continue
-                        cL.append(v)
-                        cL.append(k)
+                        cL.append(str(v))
+                        cL.append(str(k))
                     comment = "|".join(cL)
                 else:
                     comment = seqId
