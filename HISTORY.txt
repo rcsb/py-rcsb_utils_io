@@ -86,3 +86,4 @@
 24-Nov-2020  - V0.85 disable uniprot tests for now until cert/handshake issues to work with Ubuntu 20.20
  1-Dec-2020  - V0.86 add tagged Fasta comment style and option to synthesize fasta comments
  1-Dec-2020  - V0.87 adjust documemtation and upversion
+ 1-Dec-2020  - V0.88 update dependencies and pipeline
