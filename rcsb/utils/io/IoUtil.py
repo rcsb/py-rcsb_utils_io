@@ -311,8 +311,9 @@ class IoUtil(object):
     def __serializeFasta(self, filePath, myObj, **kwargs):
         try:
             maxLineLength = int(kwargs.get("maxLineLength", 70))
+            makeComment = kwargs.get("makeComment", False)
             fau = FastaUtil()
-            ok = fau.writeFasta(filePath, myObj, maxLineLength=maxLineLength)
+            ok = fau.writeFasta(filePath, myObj, maxLineLength=maxLineLength, makeComment=makeComment)
             return ok
         except Exception as e:
             logger.error("Unable to serialize FASTA file %r  %r", filePath, str(e))
