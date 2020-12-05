@@ -295,16 +295,16 @@ class UrlRequestUtilTests(unittest.TestCase):
                 for requestType in ["GET", "POST"]:
                     ret, retCode = None, None
                     pD = {}
-                    hL = []
+                    hL = {}
                     ureq = UrlRequestUtil()
                     if nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "GET":
                         uId = quote(identifier.encode("utf8"))
                         endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, outputType])
-                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                        ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON", sslCert="enable")
                     elif nameSpace in ["cid", "name", "inchikey"] and returnType in ["record"] and searchType in ["lookup"] and requestType == "POST":
                         endPoint = "/".join(["rest", "pug", domain, nameSpace, outputType])
                         pD = {nameSpace: identifier}
-                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                        ret, retCode = ureq.postUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON", sslCert="enable")
                     #
                     elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "GET":
                         # Needs to be specifically targeted on a particular compound ...
@@ -312,7 +312,7 @@ class UrlRequestUtilTests(unittest.TestCase):
                         endPoint = "/".join(["rest", "pug", domain, nameSpace, uId, returnType, outputType])
                         pD = {"classification_type": "simple"}
                         # pD = {nameSpace: identifier}
-                        ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                        ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON", sslCert="enable")
                     #
                     elif nameSpace in ["cid"] and returnType in ["classification"] and searchType in ["lookup"] and requestType == "POST":
                         # Needs to be specifically targeted on a particular compound ...
@@ -320,7 +320,7 @@ class UrlRequestUtilTests(unittest.TestCase):
                         # This is a long request return server codes may be observed 500
                         pD = {nameSpace: identifier, "classification_type": "simple"}
                         # pD = {nameSpace: identifier}
-                        ret, retCode = ureq.post(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON")
+                        ret, retCode = ureq.postUnWrapped(baseUrl, endPoint, pD, headers=hL, httpCodesCatch=httpCodesCatch, returnContentType="JSON", sslCert="enable")
                     #
                     #
                     logger.debug("Result status code %r", retCode)

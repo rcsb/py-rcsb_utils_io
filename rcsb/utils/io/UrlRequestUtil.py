@@ -210,6 +210,9 @@ class UrlRequestUtil(object):
         returnContentType = kwargs.get("returnContentType", None)
         timeOutSeconds = kwargs.get("timeOut", 5)
         retries = kwargs.get("retries", 3)
+        statusForcelist = (429, 500, 502, 503, 504)
+        backoffFactor = 5
+        methodWhitelist = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
@@ -221,8 +224,21 @@ class UrlRequestUtil(object):
             #
             urlPath = "%s/%s" % (url, endPoint)
             if retries:
-                session = self.__requestsRetrySession(retries=3, backoffFactor=5, statusForcelist=(429, 500, 502, 503, 504))
-                req = session.get(urlPath, params=paramD, headers=headerD, **optD)
+                with requests.Session() as session:
+                    thisRetry = Retry(
+                        total=retries,
+                        read=retries,
+                        connect=retries,
+                        backoff_factor=backoffFactor,
+                        status_forcelist=statusForcelist,
+                        # allowed_methods=methodWhitelist,
+                        method_whitelist=methodWhitelist,
+                    )
+                    adapter = HTTPAdapter(max_retries=thisRetry)
+                    session.mount("http://", adapter)
+                    session.mount("https://", adapter)
+                    # session = self.__requestsRetrySession(retries=3, backoffFactor=5, statusForcelist=(429, 500, 502, 503, 504))
+                    req = session.get(urlPath, params=paramD, headers=headerD, **optD)
             else:
                 req = requests.get(urlPath, params=paramD, headers=headerD, **optD)
             retCode = req.status_code
@@ -261,6 +277,9 @@ class UrlRequestUtil(object):
         returnContentType = kwargs.get("returnContentType", None)
         timeOutSeconds = kwargs.get("timeOut", 5)
         retries = kwargs.get("retries", 3)
+        statusForcelist = (429, 500, 502, 503, 504)
+        methodWhitelist = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
+        backoffFactor = 5
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
@@ -271,8 +290,21 @@ class UrlRequestUtil(object):
         try:
             urlPath = "%s/%s" % (url, endPoint)
             if retries:
-                session = self.__requestsRetrySession(retries=retries, backoffFactor=5, statusForcelist=(429, 500, 502, 504))
-                req = session.post(urlPath, data=paramD, headers=headerD, **optD)
+                with requests.Session() as session:
+                    thisRetry = Retry(
+                        total=retries,
+                        read=retries,
+                        connect=retries,
+                        backoff_factor=backoffFactor,
+                        status_forcelist=statusForcelist,
+                        # allowed_methods=methodWhitelist,
+                        method_whitelist=methodWhitelist,
+                    )
+                    adapter = HTTPAdapter(max_retries=thisRetry)
+                    session.mount("http://", adapter)
+                    session.mount("https://", adapter)
+                    # session = self.__requestsRetrySession(retries=retries, backoffFactor=5, statusForcelist=(429, 500, 502, 504))
+                    req = session.post(urlPath, data=paramD, headers=headerD, **optD)
             else:
                 req = requests.post(urlPath, data=paramD, headers=headerD, **optD)
             retCode = req.status_code
@@ -297,21 +329,3 @@ class UrlRequestUtil(object):
             raise e
 
         return None, retCode
-
-    def __requestsRetrySession(
-        self, retries=3, backoffFactor=5, statusForcelist=(429, 500, 502, 503, 504), methodWhitelist=("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
-    ):
-        session = requests.Session()
-        thisRetry = Retry(
-            total=retries,
-            read=retries,
-            connect=retries,
-            backoff_factor=backoffFactor,
-            status_forcelist=statusForcelist,
-            # allowed_methods=methodWhitelist,
-            method_whitelist=methodWhitelist,
-        )
-        adapter = HTTPAdapter(max_retries=thisRetry)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        return session
