@@ -90,3 +90,4 @@
  1-Dec-2020  - V0.89 further output options for fasta files
  1-Dec-2020  - V0.90 Cast to string all components of fasta comment lines
  5-Dec-2020  - V0.91 Wrapped requests.Session() in a context manager.
+ 7-Dec-2020  - V0.92 Update diagnostics logging in ExecUtils()

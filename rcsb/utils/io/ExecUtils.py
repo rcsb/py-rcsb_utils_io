@@ -56,5 +56,6 @@ class ExecUtils(object):
         except Exception as e:
             logger.exception("Failing execution of %s (%s) with %s", execPath, execArgList, str(e))
         #
-        logger.info("return code is %r", subProcResult)
+        if subProcResult != 0:
+            logger.error("return code is %r", subProcResult)
         return retCode
