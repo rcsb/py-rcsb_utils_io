@@ -63,6 +63,22 @@ class ExecUtilsTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testSubprocessShellExecution(self):
+        """Test case -  subprocess execution"""
+        try:
+            exU = ExecUtils()
+            ok = exU.runShell("/bin/ls -la", outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
+            self.assertTrue(ok)
+            #
+            ok = exU.runShell("/bin/cat -n", outPath=self.__testFilePath, inpPath=self.__testInpFilePath, outAppend=True, timeOut=1.0)
+            self.assertTrue(ok)
+            #
+            ok = exU.runShell("/bin/ls -88 -a", outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
+            self.assertFalse(ok)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
 
 def suiteExecSubprocess():
     suiteSelect = unittest.TestSuite()

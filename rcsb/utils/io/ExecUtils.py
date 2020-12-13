@@ -59,3 +59,42 @@ class ExecUtils(object):
         if subProcResult != 0:
             logger.error("return code is %r", subProcResult)
         return retCode
+
+    def runShell(self, script, outPath=None, outAppend=False, timeOut=None, inpPath=None):
+        """Execute the input program as a blocking subprocess with optional timeout.
+
+        Args:
+            script (str): script
+            outPath (str, optional): redirect stdout and stderr to this file handle. Defaults to None.
+            inpPath (str, optional): redirect stdin to this file handle. Defaults to None.
+            outAppend (bool, optional): append output. Defaults to False.
+            timeOut (float, optional): timeout (seconds). Defaults to None.
+
+
+        Returns:
+            bool: true for sucess or False otherwise
+        """
+        retCode = 0
+        kwD = {}
+        subProcResult = None
+        try:
+            if sys.version_info[0] > 2 and timeOut:
+                kwD = {"timeout": timeOut}
+            #
+            if outPath and inpPath:
+                myMode = "a" if outAppend else "w"
+                with open(outPath, myMode) as ofh, open(inpPath, "r") as ifh:
+                    subProcResult = subprocess.run(script, stdout=ofh, stdin=ifh, stderr=subprocess.STDOUT, shell=True, check=False, **kwD)
+            elif outPath:
+                myMode = "a" if outAppend else "w"
+                with open(outPath, myMode) as ofh:
+                    subProcResult = subprocess.run(script, stdout=ofh, stderr=subprocess.STDOUT, shell=True, check=False, **kwD)
+            else:
+                subProcResult = subprocess.run(script, shell=True, check=False, **kwD)
+            retCode = not subProcResult.returncode
+        except Exception as e:
+            logger.exception("Failing execution of %r with %s", subProcResult, str(e))
+        #
+        if subProcResult and subProcResult.returncode != 0:
+            logger.error("return code is %r", subProcResult.returncode)
+        return retCode
