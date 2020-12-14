@@ -51,13 +51,15 @@ class ExecUtilsTests(unittest.TestCase):
         """Test case -  subprocess execution"""
         try:
             exU = ExecUtils()
-            ok = exU.run("/bin/ls", execArgList=["-l", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
+            ok = exU.run("/bin/ls", execArgList=["-l", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0, suppressStderr=True)
             self.assertTrue(ok)
             #
-            ok = exU.run("/bin/cat", execArgList=["-n"], outPath=self.__testFilePath, inpPath=self.__testInpFilePath, outAppend=True, timeOut=1.0)
+            ok = exU.run("/bin/cat", execArgList=["-n"], outPath=self.__testFilePath, inpPath=self.__testInpFilePath, outAppend=True, timeOut=1.0, suppressStderr=True)
             self.assertTrue(ok)
             #
-            ok = exU.run("/bin/ls", execArgList=["-88", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
+            ok = exU.run("/bin/ls", execArgList=["-88", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0, suppressStderr=True)
+            self.assertFalse(ok)
+            ok = exU.run("/bin/ls", execArgList=["-88", "-a"], outPath=self.__testFilePath, outAppend=True, timeOut=1.0, suppressStderr=False)
             self.assertFalse(ok)
         except Exception as e:
             logger.exception("Failing with %s", str(e))
@@ -67,13 +69,15 @@ class ExecUtilsTests(unittest.TestCase):
         """Test case -  subprocess execution"""
         try:
             exU = ExecUtils()
-            ok = exU.runShell("/bin/ls -la", outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
+            ok = exU.runShell("/bin/ls -la", outPath=self.__testFilePath, outAppend=True, timeOut=1.0, suppressStderr=True)
             self.assertTrue(ok)
             #
-            ok = exU.runShell("/bin/cat -n", outPath=self.__testFilePath, inpPath=self.__testInpFilePath, outAppend=True, timeOut=1.0)
+            ok = exU.runShell("/bin/cat -n", outPath=self.__testFilePath, inpPath=self.__testInpFilePath, outAppend=True, timeOut=1.0, suppressStderr=True)
             self.assertTrue(ok)
             #
-            ok = exU.runShell("/bin/ls -88 -a", outPath=self.__testFilePath, outAppend=True, timeOut=1.0)
+            ok = exU.runShell("/bin/ls -88 -a", outPath=self.__testFilePath, outAppend=True, timeOut=1.0, suppressStderr=True)
+            self.assertFalse(ok)
+            ok = exU.runShell("/bin/ls -88 -a", outPath=self.__testFilePath, outAppend=False, timeOut=1.0, suppressStderr=True)
             self.assertFalse(ok)
         except Exception as e:
             logger.exception("Failing with %s", str(e))

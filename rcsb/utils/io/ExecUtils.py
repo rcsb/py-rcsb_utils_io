@@ -17,7 +17,7 @@ class ExecUtils(object):
     def __init__(self):
         """Wrapper for subprocess execution"""
 
-    def run(self, execPath, execArgList=None, outPath=None, outAppend=False, timeOut=None, inpPath=None):
+    def run(self, execPath, execArgList=None, outPath=None, outAppend=False, timeOut=None, inpPath=None, suppressStderr=False):
         """Execute the input program as a blocking subprocess with optional timeout.
 
         Args:
@@ -27,6 +27,7 @@ class ExecUtils(object):
             inpPath (str, optional): redirect stdin to this file handle. Defaults to None.
             outAppend (bool, optional): append output. Defaults to False.
             timeOut (float, optional): timeout (seconds). Defaults to None.
+            suppressStderr (bool, optional): suppress stderr output (default: combined with stdout)
 
 
         Returns:
@@ -34,6 +35,10 @@ class ExecUtils(object):
         """
         retCode = False
         kwD = {}
+        if suppressStderr:
+            myStderr = subprocess.DEVNULL
+        else:
+            myStderr = subprocess.STDOUT
         try:
             if not os.path.isfile(execPath) and os.access(execPath, os.X_OK):
                 return retCode
@@ -45,11 +50,11 @@ class ExecUtils(object):
             if outPath and inpPath:
                 myMode = "a" if outAppend else "w"
                 with open(outPath, myMode) as ofh, open(inpPath, "r") as ifh:
-                    subProcResult = subprocess.call(cmdL, stdout=ofh, stdin=ifh, stderr=subprocess.STDOUT, **kwD)
+                    subProcResult = subprocess.call(cmdL, stdout=ofh, stdin=ifh, stderr=myStderr, **kwD)
             elif outPath:
                 myMode = "a" if outAppend else "w"
                 with open(outPath, myMode) as ofh:
-                    subProcResult = subprocess.call(cmdL, stdout=ofh, stderr=subprocess.STDOUT, **kwD)
+                    subProcResult = subprocess.call(cmdL, stdout=ofh, stderr=myStderr, **kwD)
             else:
                 subProcResult = subprocess.call(cmdL, **kwD)
             retCode = not subProcResult
@@ -60,7 +65,7 @@ class ExecUtils(object):
             logger.error("return code is %r", subProcResult)
         return retCode
 
-    def runShell(self, script, outPath=None, outAppend=False, timeOut=None, inpPath=None):
+    def runShell(self, script, outPath=None, outAppend=False, timeOut=None, inpPath=None, suppressStderr=False):
         """Execute the input program as a blocking subprocess with optional timeout.
 
         Args:
@@ -69,6 +74,7 @@ class ExecUtils(object):
             inpPath (str, optional): redirect stdin to this file handle. Defaults to None.
             outAppend (bool, optional): append output. Defaults to False.
             timeOut (float, optional): timeout (seconds). Defaults to None.
+            suppressStderr (bool, optional): suppress stderr output (default: combined with stdout)
 
 
         Returns:
@@ -77,6 +83,10 @@ class ExecUtils(object):
         retCode = 0
         kwD = {}
         subProcResult = None
+        if suppressStderr:
+            myStderr = subprocess.DEVNULL
+        else:
+            myStderr = subprocess.STDOUT
         try:
             if sys.version_info[0] > 2 and timeOut:
                 kwD = {"timeout": timeOut}
@@ -84,11 +94,11 @@ class ExecUtils(object):
             if outPath and inpPath:
                 myMode = "a" if outAppend else "w"
                 with open(outPath, myMode) as ofh, open(inpPath, "r") as ifh:
-                    subProcResult = subprocess.run(script, stdout=ofh, stdin=ifh, stderr=subprocess.STDOUT, shell=True, check=False, **kwD)
+                    subProcResult = subprocess.run(script, stdout=ofh, stdin=ifh, stderr=myStderr, shell=True, check=False, **kwD)
             elif outPath:
                 myMode = "a" if outAppend else "w"
                 with open(outPath, myMode) as ofh:
-                    subProcResult = subprocess.run(script, stdout=ofh, stderr=subprocess.STDOUT, shell=True, check=False, **kwD)
+                    subProcResult = subprocess.run(script, stdout=ofh, stderr=myStderr, shell=True, check=False, **kwD)
             else:
                 subProcResult = subprocess.run(script, shell=True, check=False, **kwD)
             retCode = not subProcResult.returncode
