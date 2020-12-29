@@ -106,7 +106,10 @@ class FileUtil(object):
         try:
             logger.debug("Checking target directory for file %s", filePath)
             dirPath, _ = os.path.split(filePath)
-            return self.mkdir(dirPath, mode)
+            if dirPath:
+                return self.mkdir(dirPath, mode)
+            else:
+                return True
         except Exception as e:
             logger.exception("Failing for %s with %s", filePath, str(e))
         return False

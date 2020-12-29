@@ -93,3 +93,4 @@
  7-Dec-2020  - V0.92 Update diagnostics logging in ExecUtils()
 13-Dec-2020  - V0.93 Add runShell() method to ExecUtils()
 14-Dec-2020  - V0.94 Add option to suppress stderr output in ExecUtils()
+28-Dec-2020  - V0.95 Catch empty directory in mkdirForFile()
