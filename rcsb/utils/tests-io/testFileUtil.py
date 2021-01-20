@@ -8,7 +8,7 @@
 #
 ##
 """
-Tests for file management opereations.
+Tests for file management operations.
 
 """
 
@@ -57,8 +57,7 @@ class FileUtilTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testTarBundling(self):
-        """ Test case for tarfile bundling and unbundling
-        """
+        """Test case for tarfile bundling and unbundling"""
         try:
             tP = os.path.join(self.__workPath, "t0.tar.gz")
             dirPath = os.path.join(self.__inpDirPath, "topdir")
@@ -92,8 +91,7 @@ class FileUtilTests(unittest.TestCase):
             self.fail()
 
     def testGetFile(self):
-        """ Test case for a local files and directories
-        """
+        """Test case for a local files and directories"""
         try:
             remoteLocator = self.__pathPdbxDictionaryFile
             fn = self.__fileU.getFileName(remoteLocator)
@@ -122,8 +120,7 @@ class FileUtilTests(unittest.TestCase):
             self.fail()
 
     def testZipUrl(self):
-        """ Test case for downloading remote zip file and extracting contents.
-        """
+        """Test case for downloading remote zip file and extracting contents."""
         try:
             remoteLocator = self.__zipFileUrl
             # fn = self.__fileU.getFileName(remoteLocator)
@@ -148,8 +145,7 @@ class FileUtilTests(unittest.TestCase):
             self.fail()
 
     def testFtpUrl(self):
-        """ Test case for downloading remote file ftp protocol and extracting contents.
-        """
+        """Test case for downloading remote file ftp protocol and extracting contents."""
         try:
             remoteLocator = self.__ftpFileUrl
             # fn = self.__fileU.getFileName(remoteLocator)
@@ -176,8 +172,7 @@ class FileUtilTests(unittest.TestCase):
 
     @unittest.skip("DrugBank example -- skipping")
     def testGetDrugBankUrl(self):
-        """ Test case for downloading drugbank master xml file
-        """
+        """Test case for downloading drugbank master xml file"""
         try:
             remoteLocator = "https://www.drugbank.ca/releases/latest/downloads/all-full-database"
             un = "username"
