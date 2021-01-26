@@ -34,6 +34,7 @@ class ExecUtils(object):
             bool: true for sucess or False otherwise
         """
         retCode = False
+        subProcResult = None
         kwD = {}
         if suppressStderr:
             myStderr = subprocess.DEVNULL
@@ -106,5 +107,5 @@ class ExecUtils(object):
             logger.exception("Failing execution of %r with %s", subProcResult, str(e))
         #
         if subProcResult and subProcResult.returncode != 0:
-            logger.error("return code is %r", subProcResult.returncode)
+            logger.warning("return code is %r", subProcResult.returncode)
         return retCode

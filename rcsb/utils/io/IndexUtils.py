@@ -101,6 +101,14 @@ class IndexBase(object):
             logger.info("%4d: %r", ii, dD)
         logger.info("Completed dump")
 
+    def sort(self, atName="identifier", descending=False):
+        try:
+            self._rL = sorted(self._rL, key=lambda k: k[atName], reverse=descending)
+            return True
+        except Exception:
+            pass
+        return False
+
 
 class CcdcMatchIndex(IndexBase):
     def __init__(self, indexFilePath=None, verbose=True):
@@ -132,6 +140,12 @@ class CcdcMatchIndexInst(object):
 
     def get(self):
         return self.__dObj
+
+    def getCsdVersion(self):
+        return self.__getAttribute("csd_version")
+
+    def getCsdDirectory(self):
+        return self.__getAttribute("csd_directory")
 
     def getIdentifier(self):
         return self.__getAttribute("identifier")
@@ -180,10 +194,15 @@ class CcdcMatchIndexInst(object):
     def getHasDisorder(self):
         return self.__getAttribute("has_disorder")
 
-    #
-
     def getSimilarityScore(self):
         return self.__getAttribute("similarity")
+
+    #
+    def setCsdVersion(self, v):
+        self.__dObj["csd_version"] = v
+
+    def setCsdDirectory(self, v):
+        self.__dObj["csd_directory"] = v
 
     def setIdentifier(self, v):
         self.__dObj["identifier"] = v
