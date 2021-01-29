@@ -96,3 +96,4 @@
 28-Dec-2020  - V0.95 Catch empty directory in mkdirForFile()
 20-Jan-2021  - V0.96 Adding IndexUtils() as a potentially temporary placement for this module.
 24-Jan-2021  - V0.97 Update error logging in ExecUtils(), add sort() method to IndexBase()
+29-Jan-2021  - V0.98 Update numpy/mmcif dependencies

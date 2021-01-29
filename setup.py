@@ -42,12 +42,12 @@ setup(
     entry_points={"console_scripts": []},
     #
     install_requires=[
-        'numpy == 1.18.0; sys_platform == "darwin" and python_version > "3.0"',
+        'numpy >= 1.18.0; sys_platform == "darwin" and python_version > "3.0"',
         'numpy == 1.16.6; sys_platform == "darwin" and python_version < "3.0"',
         "numpy; sys_platform !='darwin'",
         "pytz",
         "python-dateutil",
-        "mmcif >= 0.54",
+        "mmcif >= 0.61",
         "ruamel.yaml",
         "requests >= 2.25.0",
         "rcsb.utils.validation >= 0.20",
