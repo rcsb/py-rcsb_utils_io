@@ -333,7 +333,7 @@ class IoUtil(object):
 
     def __serializePickle(self, filePath, myObj, **kwargs):
         try:
-            pickleProtocol = kwargs.get("pickleProtocol", pickle.HIGHEST_PROTOCOL)
+            pickleProtocol = kwargs.get("pickleProtocol", pickle.DEFAULT_PROTOCOL)
 
             with open(filePath, "wb") as outfile:
                 pickle.dump(myObj, outfile, pickleProtocol)
