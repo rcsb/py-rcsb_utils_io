@@ -98,4 +98,5 @@
 24-Jan-2021  - V0.97 Update error logging in ExecUtils(), add sort() method to IndexBase()
 29-Jan-2021  - V0.98 Update numpy/mmcif dependencies
 29-Jan-2021  - V0.99 Documentation and installation adjustments
-26-Feb-2021  - V1.00 change pickle.HIGHEST_PROTOCOL to pickle.DEFAULT_PROTOCOL
+26-Feb-2021  - V1.00 Change pickle.HIGHEST_PROTOCOL to pickle.DEFAULT_PROTOCOL
+10-Mar-2021  - V1.01 Add noRetry argument to FileUtil.get()
