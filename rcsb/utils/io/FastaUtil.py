@@ -47,6 +47,7 @@ class FastaUtil(object):
 
     def __init__(self, **kwargs):
         self.__uniProtCommentRegex = re.compile(r"\>(\w+)\|(\w+)\|(\w+)\s(.*)\sOS=(.*)\sOX=" r"(\d+)\s(GN=(.*)\s)?PE=(\d+)\sSV=(\d+)")
+        _ = kwargs
 
     def __removeWhiteSpace(self, string):
         pattern = re.compile(r"\s+")
