@@ -5,8 +5,23 @@
 
 import multiprocessing
 import signal
+import sys
 import time
 from functools import wraps
+
+
+def quietHook(kind, message, traceback):
+    if QuietException in kind.__bases__:
+        print("{0}: {1}".format(kind.__name__, message))  # Only print Error Type and Message
+    else:
+        sys.__excepthook__(kind, message, traceback)  # Print Error Type, Message and Traceback
+
+
+sys.excepthook = quietHook
+
+
+class QuietException(Exception):
+    pass
 
 
 class TimeoutException(Exception):
@@ -87,7 +102,7 @@ def timeoutMp(seconds, forceKill=True):
 
 
 def retry(targetException, maxAttempts=3, delaySeconds=2, multiplier=3, defaultValue=None, logger=None):
-    """ Retry the method or function on exception after a delay interval which grows by a
+    """Retry the method or function on exception after a delay interval which grows by a
     multiplicative factor between attempts.  On failure after maxAttempts are exceeded then default value
     is returned.
 

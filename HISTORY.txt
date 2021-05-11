@@ -100,3 +100,4 @@
 29-Jan-2021  - V0.99 Documentation and installation adjustments
 26-Feb-2021  - V1.00 Change pickle.HIGHEST_PROTOCOL to pickle.DEFAULT_PROTOCOL
 10-Mar-2021  - V1.01 Add noRetry argument to FileUtil.get()
+10-May-2021  - V1.11 Update FASTA parser in FastaUtil()

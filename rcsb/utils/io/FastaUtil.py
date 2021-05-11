@@ -46,7 +46,7 @@ class FastaUtil(object):
     naValidCodes = "AGCTURYNWSMKBHDV"
 
     def __init__(self, **kwargs):
-        pass
+        self.__uniProtCommentRegex = re.compile(r"\>(\w+)\|(\w+)\|(\w+)\s(.*)\sOS=(.*)\sOX=" r"(\d+)\s(GN=(.*)\s)?PE=(\d+)\sSV=(\d+)")
 
     def __removeWhiteSpace(self, string):
         pattern = re.compile(r"\s+")
@@ -78,6 +78,8 @@ class FastaUtil(object):
     def parseComment(self, cmtLine, commentStyle):
         if commentStyle == "uniprot":
             seqId, cD = self.__parseCommentUniProt(cmtLine)
+        elif commentStyle == "uniprot_regex":
+            seqId, cD = self.__parseCommentUniProtRe(cmtLine)
         elif commentStyle == "prerelease":
             seqId, cD = self.__parseCommentPreRelease(cmtLine)
         elif commentStyle == "tagged":
@@ -92,6 +94,8 @@ class FastaUtil(object):
             commentStyle = kwargs.get("commentStyle", "uniprot").lower()
             if commentStyle == "uniprot":
                 commentParser = self.__parseCommentUniProt
+            elif commentStyle == "uniprot_regex":
+                commentParser = self.__parseCommentUniProtRe
             elif commentStyle == "prerelease":
                 commentParser = self.__parseCommentPreRelease
             elif commentStyle == "tagged":
@@ -140,6 +144,9 @@ class FastaUtil(object):
         return seqD
 
     def __parseCommentUniProt(self, cmtLine):
+        """
+        >sp|O00141|SGK1_HUMAN Serine/threonine-protein kinase Sgk1 OS=Homo sapiens OX=9606 GN=SGK1 PE=1 SV=2
+        """
         try:
             org = ""
             geneName = ""
@@ -174,6 +181,60 @@ class FastaUtil(object):
                         org = ff[1]
             #
             cD = {"description": description, "org": org, "gene_name": geneName, "db_accession": dbAccession, "db_name": dbName, "db_isoform": dbIsoform}
+            return seqId, cD
+            #
+        except Exception as e:
+            logger.exception("Failed to parse comment %s with %s", cmtLine, str(e))
+        return None, {}
+
+    def __parseCommentUniProtRe(self, cmtLine):
+        """
+        '>sp|O00141|SGK1_HUMAN Serine/threonine-protein kinase Sgk1 OS=Homo sapiens OX=9606 GN=SGK1 PE=1 SV=2
+        """
+        try:
+            org = ""
+            geneName = ""
+            dbName = ""
+            dbAccession = ""
+            dbIsoform = ""
+            seqId = ""
+            description = ""
+            taxId = ""
+            # proteinExistence = ""
+            # seqVersion = ""
+            #
+            match = self.__uniProtCommentRegex.match(cmtLine)
+            if match:
+                groups = match.groups()
+                dbName = groups[0]
+                seqId = groups[1]
+                tt = seqId.split("-")
+                dbAccession = seqId
+                dbIsoform = ""
+                if len(tt) > 1:
+                    dbAccession = tt[0]
+                    dbIsoform = tt[1]
+                entryName = groups[2]
+                description = groups[3]
+                org = groups[4]
+                taxId = groups[5]
+                geneName = groups[7]
+                # proteinExistence = groups[8]
+                # seqVersion = groups[9]
+            #
+            cD = {
+                "seqId": seqId,
+                "description": description,
+                "org": org,
+                "taxonomy_id": taxId,
+                "gene_name": geneName,
+                "db_accession": dbAccession,
+                "entry_name": entryName,
+                "db_name": dbName,
+                "db_isoform": dbIsoform,
+                # "protein_existence": proteinExistence,
+                # "seq_version": seqVersion,
+            }
             return seqId, cD
             #
         except Exception as e:

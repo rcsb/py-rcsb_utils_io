@@ -14,7 +14,7 @@
 #   8-Oct-2018  jdw add convenience function to test for file existence
 #  11-Oct-2018  jdw make encoding utf-8 for lists
 #  13-Oct-2018  jdw add Py27 support for explicit encoding using io.open.
-#  26-Oct-2018  jdw add additonal JSON encodings for yaml data types
+#  26-Oct-2018  jdw add additional JSON encodings for yaml data types
 #  25-Nov-2018  jdw add support for FASTA format sequence files
 #  30-Nov-2018  jdw add support CSV file formats
 #  11-Dec-2018  jdw add comment filtering on input for CSV files
@@ -253,7 +253,7 @@ class IoUtil(object):
         return ret
 
     def deserializeInParts(self, filePath, numParts, fmt="json", **kwargs):
-        """Public method to deserialize objects in supported formats from muliple parts
+        """Public method to deserialize objects in supported formats from multiple parts
 
         Args:
             filePath (str): local file path
@@ -376,18 +376,18 @@ class IoUtil(object):
         try:
             if filePath[-3:] == ".gz":
                 if sys.version_info[0] > 2:
-                    with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as infile:
-                        return json.load(infile, object_pairs_hook=OrderedDict)
+                    with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as inpFile:
+                        return json.load(inpFile, object_pairs_hook=OrderedDict)
                 else:
                     # Py2 situation non-ascii encodings is problematic
                     # with gzip.open(filePath, "rb") as csvFile:
                     #    oL = self.__csvReader(csvFile, rowFormat, delimiter)
                     tPath = self.__fileU.uncompress(filePath, outputDir=None)
-                    with io.open(tPath, newline="", encoding=encoding, errors="ignore") as infile:
-                        return json.load(infile, object_pairs_hook=OrderedDict)
+                    with io.open(tPath, newline="", encoding=encoding, errors="ignore") as inpFile:
+                        return json.load(inpFile, object_pairs_hook=OrderedDict)
             else:
-                with open(filePath, "r") as infile:
-                    return json.load(infile, object_pairs_hook=OrderedDict)
+                with open(filePath, "r") as inpFile:
+                    return json.load(inpFile, object_pairs_hook=OrderedDict)
         except Exception as e:
             logger.warning("Unable to deserialize %r %r", filePath, str(e))
         return myDefault
@@ -554,8 +554,8 @@ class IoUtil(object):
             filePath (str): input file path
             delimiter (str, optional): CSV delimiter. Defaults to ",".
             rowFormat (str, optional): format for each process row (list or dict). Defaults to "dict".
-            encodingErrors (str, optional): treatment of incoding errors. Defaults to "ignore".
-            uncomment (bool, optional): flag to ignore leading commeents. Defaults to True.
+            encodingErrors (str, optional): treatment of encoding errors. Defaults to "ignore".
+            uncomment (bool, optional): flag to ignore leading comments. Defaults to True.
 
         Returns:
             (iterator): iterator for rowwise access to processed CSV data
@@ -643,7 +643,7 @@ class IoUtil(object):
         Args:
             csvData (text lines): uncompressed data from gzip open
             encoding (str, optional): character encoding. Defaults to "utf-8-sig".
-            encodingErrors (str, optional): error treatement. Defaults to "ignore".
+            encodingErrors (str, optional): error treatment. Defaults to "ignore".
         """
         for line in csvData:
             yield line.decode("utf-8-sig", errors=encodingErrors).encode(encoding, errors=encodingErrors)

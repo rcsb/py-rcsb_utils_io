@@ -29,6 +29,14 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+@timeoutMp(10)
+def longrunner2():
+    iSeconds = 20
+    logger.info("SLEEPING FOR %d seconds", iSeconds)
+    time.sleep(iSeconds)
+    logger.info("SLEEPING COMPLETED")
+
+
 class TimeoutDecoratorTests(unittest.TestCase):
     """
     Test cases for timeout decorator
@@ -50,8 +58,7 @@ class TimeoutDecoratorTests(unittest.TestCase):
         logger.info("SLEEPING COMPLETED")
 
     def testTimeoutSignal(self):
-        """Test case - timeout decorator (signal)
-        """
+        """Test case - timeout decorator (signal)"""
         try:
             self.__longrunner1(20)
         except TimeoutException as e:
@@ -68,12 +75,11 @@ class TimeoutDecoratorTests(unittest.TestCase):
         time.sleep(iSeconds)
         logger.info("SLEEPING COMPLETED")
 
-    @unittest.skip("Python 3.8 serialization issue")
+    ### @unittest.skip("Python 3.8 serialization issue")
     def testTimeoutMulti(self):
-        """Test case - timeout decorator (multiprocessing)
-        """
+        """Test case - timeout decorator (multiprocessing)"""
         try:
-            self.__longrunner2(20)
+            longrunner2()
         except TimeoutException as e:
             logger.info("Caught timeout exception %s", str(e))
         except Exception as e:
