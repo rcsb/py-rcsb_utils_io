@@ -393,6 +393,26 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    @unittest.skip("Skip - troubleshooting test")
+    def testGetChemSearchRequests(self):
+        """ChemSearch repetition GET protocol test (using requests module)"""
+        # baseUrl = "http://132.249.213.119"
+        # baseUrl = "http://132.249.213.210"
+        baseUrl = "https://chemsearch-west.rcsb.org"
+        endPoint = "chem-match-v1/InChI"
+        resultLen = 13
+        descr = "InChI=1S/C9H15N5O3/c1-3(15)6(16)4-2-11-7-5(12-4)8(17)14-9(10)13-7/h3-4,6,12,15-16H,2H2,1H3,(H4,10,11,13,14,17)/t3-,4-,6-/m1/s1"
+        try:
+            pD = {"query": descr, "matchType": "fingerprint-similarity"}
+            for ii in range(10):
+                ureq = UrlRequestUtil()
+                ret, retCode = ureq.getUnWrapped(baseUrl, endPoint, pD, headers={}, sslCert="enable", returnContentType="JSON")
+                if len(ret["matchedIdList"]) > resultLen:
+                    logger.info(">>> %3d (%r) result length %r", ii, retCode, len(ret["matchedIdList"]))
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
 
 def suiteUniProtTests():
     suiteSelect = unittest.TestSuite()
