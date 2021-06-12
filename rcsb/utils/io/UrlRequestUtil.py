@@ -10,7 +10,7 @@
 #
 ##
 
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -60,7 +60,7 @@ class UrlRequestUtil(object):
         return self.__post(url, endPoint, paramD, **kwargs)
 
     def __post(self, url, endPoint, paramD, **kwargs):
-        """"""
+        """ """
         ret = None
         retCode = None
         headerL = kwargs.get("headers", [])
@@ -126,7 +126,7 @@ class UrlRequestUtil(object):
         return self.__get(url, endPoint, paramD, **kwargs)
 
     def __get(self, url, endPoint, paramD, **kwargs):
-        """"""
+        """ """
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")
@@ -197,7 +197,7 @@ class UrlRequestUtil(object):
         return None, retCode
 
     def __getRequests(self, url, endPoint, paramD, **kwargs):
-        """"""
+        """ """
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")
@@ -265,7 +265,7 @@ class UrlRequestUtil(object):
         return None, retCode
 
     def __postRequests(self, url, endPoint, paramD, **kwargs):
-        """"""
+        """ """
         ret = None
         retCode = None
         sslCert = kwargs.get("sslCert", "disable")

@@ -8,7 +8,7 @@
 """
  Utilities supporting encrypting and decrypting flat files and messages.
 """
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "john.westbrook@rcsb.org"
 __license__ = "Apache 2.0"
@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 class CryptUtils(object):
-    """   Utility class for encrypting and decrypting data files and messages
+    """Utility class for encrypting and decrypting data files and messages
 
-          ** This class does not yet support any stream operations so resources must be
-          available to load data sets in memory -
+    ** This class does not yet support any stream operations so resources must be
+    available to load data sets in memory -
 
     """
 

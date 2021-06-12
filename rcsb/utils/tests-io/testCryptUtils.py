@@ -9,7 +9,7 @@
 """
 Test cases for message encryption utilities
 """
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -53,8 +53,7 @@ class CryptUtilsTests(unittest.TestCase):
         logger.debug("Tests file created %s lines %d", filePath, lines)
 
     def testCryptFileRoundtrip(self):
-        """Test case -  file encryption roundtrip
-        """
+        """Test case -  file encryption roundtrip"""
         try:
             ok = True
             fp = self.__testFilePath
@@ -76,8 +75,7 @@ class CryptUtilsTests(unittest.TestCase):
             self.fail()
 
     def testCryptMessageRoundtrip(self):
-        """Test case -  message encryption roundtrip
-        """
+        """Test case -  message encryption roundtrip"""
         try:
             cu = CryptUtils()
             ky = cu.newKey()

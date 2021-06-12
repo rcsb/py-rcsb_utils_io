@@ -29,7 +29,7 @@
 #  18-Sep-2019  jdw add method deserializeCsvIter()
 ##
 
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -393,7 +393,7 @@ class IoUtil(object):
         return myDefault
 
     def __deserializeMmCif(self, filePath, **kwargs):
-        """"""
+        """ """
         try:
             containerList = []
             workPath = kwargs.get("workPath", None)
@@ -408,7 +408,7 @@ class IoUtil(object):
         return containerList
 
     def __serializeMmCif(self, filePath, containerList, **kwargs):
-        """"""
+        """ """
         try:
             ret = False
             workPath = kwargs.get("workPath", None)
@@ -429,7 +429,7 @@ class IoUtil(object):
         return ret
 
     def __deserializeMmCifDict(self, filePath, **kwargs):
-        """"""
+        """ """
         try:
             containerList = []
             workPath = kwargs.get("workPath", None)
@@ -444,7 +444,7 @@ class IoUtil(object):
         return containerList
 
     def __serializeMmCifDict(self, filePath, containerList, **kwargs):
-        """"""
+        """ """
         try:
             ret = False
             # workPath = kwargs.get('workPath', None)
@@ -459,7 +459,7 @@ class IoUtil(object):
         return ret
 
     def __serializeList(self, filePath, aList, enforceAscii=True, **kwargs):
-        """"""
+        """ """
 
         try:
             _ = kwargs
@@ -614,7 +614,7 @@ class IoUtil(object):
         return oL
 
     def __serializeCsv(self, filePath, rowDictList, fieldNames=None, **kwargs):
-        """"""
+        """ """
         _ = kwargs
         try:
             wD = {}

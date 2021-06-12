@@ -1,9 +1,7 @@
 # File: setup.py
 # Date: 6-Mar-2019
 #
-# Update:
-#
-#
+
 import re
 
 from setuptools import find_packages
@@ -15,6 +13,13 @@ thisPackage = "rcsb.utils.io"
 with open("rcsb/utils/io/__init__.py", "r") as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
 
+# Load packages from requirements*.txt
+with open("requirements.txt", "r") as ifh:
+    packagesRequired = [ln.strip() for ln in ifh.readlines()]
+
+with open("README.md", "r") as ifh:
+    longDescription = ifh.read()
+
 if not version:
     raise RuntimeError("Cannot find version information")
 
@@ -22,7 +27,8 @@ setup(
     name=thisPackage,
     version=version,
     description="RCSB Python I/O Utility Classes",
-    long_description="See:  README.md",
+    long_description_content_type="text/markdown",
+    long_description=longDescription,
     author="John Westbrook",
     author_email="john.westbrook@rcsb.org",
     url="https://github.com/rcsb/py-rcsb_utils_io",
@@ -41,21 +47,7 @@ setup(
     ],
     entry_points={"console_scripts": []},
     #
-    install_requires=[
-        'numpy >= 1.18.0; sys_platform == "darwin" and python_version > "3.0"',
-        'numpy == 1.16.6; sys_platform == "darwin" and python_version < "3.0"',
-        "numpy; sys_platform !='darwin'",
-        "pytz",
-        "python-dateutil",
-        "mmcif >= 0.61",
-        "ruamel.yaml",
-        "requests >= 2.25.0",
-        "rcsb.utils.validation >= 0.20",
-        "PyNaCl >= 1.3.0",
-        'backports.tempfile; python_version < "3.0"',
-        "paramiko >=2.7.2",
-        "psutil >= 5.7.2",
-    ],
+    install_requires=packagesRequired,
     packages=find_packages(exclude=["rcsb.mock-data", "rcsb.utils.tests-io", "rcsb.utils.tests-*", "tests.*"]),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:

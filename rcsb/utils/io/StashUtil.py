@@ -8,7 +8,7 @@
 #
 ##
 
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 class StashUtil(object):
-    """ Utilities to stash and recover a data in collection of (sub)directories to/from
-        remote sftp, http or local POSIX file storage resources.
+    """Utilities to stash and recover a data in collection of (sub)directories to/from
+    remote sftp, http or local POSIX file storage resources.
     """
 
     def __init__(self, localBundlePath, baseBundleFileName):
@@ -40,7 +40,7 @@ class StashUtil(object):
         self.__localStashTarFilePath = os.path.join(localBundlePath, self.__baseBundleFileName)
 
     def makeBundle(self, localParentPath, subDirList):
-        """ Bundle the subdirectories of the input parent directory path.
+        """Bundle the subdirectories of the input parent directory path.
 
         Args:
             localParentPath (str): local parent directory path containing the bundling targets
@@ -55,7 +55,7 @@ class StashUtil(object):
         return okT
 
     def storeBundle(self, url, remoteDirPath, remoteStashPrefix="A", userName=None, password=None):
-        """ Store a copy of the bundled search dependencies remotely -
+        """Store a copy of the bundled search dependencies remotely -
 
         Args:
             url (str): URL string for the destination host (e.g. sftp://myserver.net or None for a local file)

@@ -9,7 +9,7 @@
 """
 Test cases for process status info methods
 """
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -44,8 +44,7 @@ class ProcessStatusTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testProcessStatus(self):
-        """Test case -  process status request
-        """
+        """Test case -  process status request"""
         try:
             psU = ProcessStatusUtil()
             psD = psU.getInfo()

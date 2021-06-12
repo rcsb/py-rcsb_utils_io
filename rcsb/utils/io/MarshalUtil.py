@@ -11,7 +11,7 @@
 # For py 27 pip install backports.tempfile
 ##
 # pylint: disable=all
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -33,8 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class MarshalUtil(object):
-    """ Wrapper for serialization and deserialization methods.
-    """
+    """Wrapper for serialization and deserialization methods."""
 
     def __init__(self, **kwargs):
         self.__workPath = kwargs.get("workPath", ".")

@@ -13,7 +13,7 @@ Tests for Convenience utilities to manipulate time stamps.
 
 """
 
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
@@ -46,8 +46,7 @@ class TimeUtilTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testTimeStamps(self):
-        """ Verify time stamp operations.
-        """
+        """Verify time stamp operations."""
         try:
             tU = TimeUtil()
             tS = tU.getTimestamp(useUtc=True)

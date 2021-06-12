@@ -11,7 +11,7 @@ Test utilities to stash and recover a data in collection of directories to and f
 remote sftp, http or local POSIX file storage resources.
 """
 
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "john.westbrook@rcsb.org"
 __license__ = "Apache 2.0"
@@ -51,8 +51,7 @@ class StashUtilTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testStashOps(self):
-        """Test case - create, store and recover a stash bundle
-        """
+        """Test case - create, store and recover a stash bundle"""
         try:
             url = userName = password = remoteStashPrefix = None
             remoteDirPath = os.path.join(self.__workPath, "stash")

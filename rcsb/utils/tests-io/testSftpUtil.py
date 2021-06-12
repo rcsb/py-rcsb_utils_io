@@ -11,7 +11,7 @@ Archive data transfer operation utilities using SFTP protocol
 
 """
 
-__docformat__ = "restructuredtext en"
+__docformat__ = "google en"
 __author__ = "John Westbrook"
 __email__ = "john.westbrook@rcsb.org"
 __license__ = "Apache 2.0"
@@ -63,8 +63,7 @@ class SftpUtilTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testSftpOpsPublic(self):
-        """Test case - connection and ops to public server
-        """
+        """Test case - connection and ops to public server"""
         try:
             sftpU = SftpUtil()
             ok = sftpU.connect(self.__hostName, self.__userName, pw=self.__password, port=self.__hostPort)
@@ -91,8 +90,7 @@ class SftpUtilTests(unittest.TestCase):
 
     @unittest.skip("private test")
     def testSftpLocal(self):
-        """Test case - connection to a local private server -
-        """
+        """Test case - connection to a local private server -"""
         try:
             userName = ""
             pw = ""
@@ -111,8 +109,7 @@ class SftpUtilTests(unittest.TestCase):
 
     @unittest.skip("private test")
     def testSftpLocalTransferOps(self):
-        """Test case -  transfer and remove files and directories -
-        """
+        """Test case -  transfer and remove files and directories -"""
         try:
             userName = ""
             pw = ""
@@ -150,8 +147,7 @@ class SftpUtilTests(unittest.TestCase):
 
     @unittest.skip("private test")
     def testSftpLocalWriteRead(self):
-        """Test case -  transfer  -
-        """
+        """Test case -  transfer  -"""
         try:
             userName = ""
             pw = ""
