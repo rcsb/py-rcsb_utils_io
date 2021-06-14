@@ -102,3 +102,4 @@
 10-Mar-2021  - V1.01 Add noRetry argument to FileUtil.get()
 10-May-2021  - V1.12 Update FASTA parser in FastaUtil()
 11-Jun-2021  - V1.13 Add StashableBase() module
+14-Jun-2021  - V1.14 Add remotePrefix support to backup/restore methods in StashableBase()

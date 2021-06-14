@@ -38,12 +38,13 @@ class StashableBase(object):
         self.__dirNameL = dirNameL
         #
 
-    def restore(self, cfgOb, configName):
+    def restore(self, cfgOb, configName, remotePrefix=None):
         """Restore the target cache directory from stash storage.
 
         Args:
             cfgOb (obj): configuration object (ConfigUtil())
             configName (str): configuration section name
+            remotePrefix (str, optional): channel prefix. Defaults to None.
 
         Returns:
             bool: True for success or False otherwise
@@ -55,11 +56,11 @@ class StashableBase(object):
             userName = cfgOb.get("_STASH_AUTH_USERNAME", sectionName=configName)
             password = cfgOb.get("_STASH_AUTH_PASSWORD", sectionName=configName)
             basePath = cfgOb.get("_STASH_SERVER_BASE_PATH", sectionName=configName)
-            ok = self.__fromStash(url, basePath, userName=userName, password=password)
+            ok = self.__fromStash(url, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
             logger.info("Restored %r data file from stash (%r)", self.__dirNameL, ok)
             if not ok:
                 urlFallBack = cfgOb.get("STASH_SERVER_FALLBACK_URL", sectionName=configName)
-                ok = self.__fromStash(urlFallBack, basePath, userName=userName, password=password)
+                ok = self.__fromStash(urlFallBack, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
                 logger.info("Recovered %r data file from fallback stash (%r)", self.__dirNameL, ok)
             #
             logger.info("Completed recovery (%r) at %s (%.4f seconds)", ok, time.strftime("%Y %m %d %H:%M:%S", time.localtime()), time.time() - startTime)
@@ -68,12 +69,13 @@ class StashableBase(object):
         #
         return ok
 
-    def backup(self, cfgOb, configName):
+    def backup(self, cfgOb, configName, remotePrefix=None):
         """Backup the target cache directory to stash storage.
 
         Args:
             cfgOb (obj): configuration object (ConfigUtil())
             configName (str): configuration section name
+            remotePrefix (str, optional): channel prefix. Defaults to None.
 
         Returns:
             bool: True for success or False otherwise
@@ -86,8 +88,8 @@ class StashableBase(object):
             basePath = cfgOb.get("_STASH_SERVER_BASE_PATH", sectionName=configName)
             url = cfgOb.get("STASH_SERVER_URL", sectionName=configName)
             urlFallBack = cfgOb.get("STASH_SERVER_FALLBACK_URL", sectionName=configName)
-            ok1 = self.__toStash(url, basePath, userName=userName, password=password)
-            ok2 = self.__toStash(urlFallBack, basePath, userName=userName, password=password)
+            ok1 = self.__toStash(url, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
+            ok2 = self.__toStash(urlFallBack, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
             logger.info(
                 "Completed backup for %r data (%r/%r) at %s (%.4f seconds)",
                 self.__dirNameL,
