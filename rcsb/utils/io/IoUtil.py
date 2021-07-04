@@ -345,8 +345,14 @@ class IoUtil(object):
     def __deserializePickle(self, filePath, **kwargs):
         myDefault = kwargs.get("default", {})
         try:
-            with open(filePath, "rb") as outfile:
-                return pickle.load(outfile)
+            if sys.version_info[0] > 2:
+                encoding = kwargs.get("encoding", "ASCII")
+                errors = kwargs.get("errors", "strict")
+                with open(filePath, "rb") as outfile:
+                    return pickle.load(outfile, encoding=encoding, errors=errors)
+            else:
+                with open(filePath, "rb") as outfile:
+                    return pickle.load(outfile)
         except Exception as e:
             logger.warning("Unable to deserialize %r %r", filePath, str(e))
         return myDefault
