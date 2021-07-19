@@ -5,7 +5,7 @@
 # cache directories to stash storage.
 #
 # Updates:
-#
+# 19-Jul-2021 jdw add git push support
 ##
 
 __docformat__ = "google en"
@@ -28,7 +28,7 @@ class StashableBase(object):
     def __init__(self, cachePath, dirNameL):
         """Methods implementing backup and restore operations to and from stash storage. Remote stash
         storage is defined using the standard configuration options. Primary and fallback stash servers
-        are supported.
+        are supported. Git repositories are also supported as stash targets.
 
         Args:
             cachePath (str): path to directory containing cached directories
@@ -36,6 +36,7 @@ class StashableBase(object):
         """
         self.__cachePath = cachePath
         self.__dirNameL = dirNameL
+        self.__stU = StashUtil(os.path.join(self.__cachePath, "stash"), self.__dirNameL[0])
         #
 
     def restore(self, cfgOb, configName, remotePrefix=None):
@@ -69,7 +70,16 @@ class StashableBase(object):
         #
         return ok
 
-    def backup(self, cfgOb, configName, remotePrefix=None):
+    def backup(self, cfgOb, configName, remotePrefix=None, useGit=False):
+        ok = self.__stU.makeBundle(self.__cachePath, self.__dirNameL)
+        if ok:
+            ok1 = self.__backupToStash(cfgOb, configName, remotePrefix=remotePrefix)
+        ok2 = True
+        if ok and useGit:
+            ok2 = self.__backupToGit(cfgOb, configName, remotePrefix=remotePrefix)
+        return ok and ok1 and ok2
+
+    def __backupToStash(self, cfgOb, configName, remotePrefix=None):
         """Backup the target cache directory to stash storage.
 
         Args:
@@ -102,6 +112,38 @@ class StashableBase(object):
             logger.exception("Failing with %s", str(e))
         return ok1 & ok2
 
+    def __backupToGit(self, cfgOb, configName, remotePrefix=None):
+        """Backup the to the git stash repository.
+
+        Args:
+            cfgOb (obj): configuration object (ConfigUtil())
+            configName (str): configuration section name
+            remotePrefix (str, optional): channel prefix. Defaults to None.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        ok = False
+        try:
+            startTime = time.time()
+            accessToken = cfgOb.get("_STASH_GIT_ACCESS_TOKEN", sectionName=configName)
+            gitHost = cfgOb.get("_STASH_GIT_SERVER_HOST", sectionName=configName)
+            gitRepositoryPath = cfgOb.get("STASH_GIT_REPOSITORY_PATH", sectionName=configName)
+            gitBranch = cfgOb.get("STASH_GIT_REPOSITORY_BRANCH", sectionName=configName)
+            maxMegaBytes = cfgOb.get("STASH_GIT_REPOSITORY_MAX_SIZE_MB", sectionName=configName)
+            #
+            ok = self.__stU.pushBundle(gitRepositoryPath, accessToken, gitHost=gitHost, gitBranch=gitBranch, remoteStashPrefix=remotePrefix, maxMegaBytes=maxMegaBytes)
+            logger.info(
+                "Completed git backup for %r (%r) data at %s (%.4f seconds)",
+                self.__dirNameL,
+                ok,
+                time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
+                time.time() - startTime,
+            )
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+        return ok
+
     def __toStash(self, url, stashRemoteDirPath, userName=None, password=None, remoteStashPrefix=None):
         """Copy tar and gzipped bundled cache data to remote server/location.
 
@@ -117,10 +159,7 @@ class StashableBase(object):
         """
         ok = False
         try:
-            stU = StashUtil(os.path.join(self.__cachePath, "stash"), self.__dirNameL[0])
-            ok = stU.makeBundle(self.__cachePath, self.__dirNameL)
-            if ok:
-                ok = stU.storeBundle(url, stashRemoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
+            ok = self.__stU.storeBundle(url, stashRemoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
         except Exception as e:
             logger.error("Failing with url %r stashDirPath %r: %s", url, stashRemoteDirPath, str(e))
         return ok
@@ -140,8 +179,7 @@ class StashableBase(object):
         """
         ok = False
         try:
-            stU = StashUtil(os.path.join(self.__cachePath, "stash"), self.__dirNameL[0])
-            ok = stU.fetchBundle(self.__cachePath, url, stashRemoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
+            ok = self.__stU.fetchBundle(self.__cachePath, url, stashRemoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
         except Exception as e:
             logger.error("Failing with url %r stashDirPath %r: %s", url, stashRemoteDirPath, str(e))
         return ok

@@ -7,7 +7,7 @@
 #  5-Jun-2018 jdw add support for local copy operations using shutil.copy
 #  6-Mar-2019 jdw add previously stubbed remote access and tar file member support
 # 10-Mar-2019 jdw add exists() method
-# 11-Aug-2019 jdw incorporate compress/uncompreess and toAscii methods from IoUtil.py
+# 11-Aug-2019 jdw incorporate compress/uncompress and toAscii methods from IoUtil.py
 #                 add __extractZipMember() method.  Add retry support for __fetchUrl().
 #                 Replace urlibx version of __fetchUrl with a version that depends on
 #                 requests module to better support redirection and authentication.
@@ -72,6 +72,21 @@ class FileUtil(object):
         except Exception:
             pass
         return False
+
+    def size(self, filePath):
+        """Return the file size in bytes
+
+        Args:
+            filePath (str): file path
+
+        Returns:
+            int: approximate file size in bytes or zero
+        """
+        try:
+            st = os.stat(filePath)
+            return st.st_size
+        except Exception:
+            return 0
 
     def mkdir(self, dirPath, mode=0o755):
         """Create the input directory.

@@ -393,17 +393,15 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
-    @unittest.skip("Skip - troubleshooting test")
+    # xxnittest.skip("Skip - troubleshooting test")
     def testGetChemSearchRequests(self):
         """ChemSearch repetition GET protocol test (using requests module)"""
-        # baseUrl = "http://132.249.213.119"
-        # baseUrl = "http://132.249.213.210"
         # dev instances east
-        # baseUrl = "http://128.6.159.86"
+        # baseUrl = ["http://128.6.159.86"]
         #
         # Production west instances
         # baseUrlList = ["http://132.249.213.210", "http://132.249.213.110", "https://chemsearch-west.rcsb.org"]
-        # baseUrlList = ["http://128.6.159.86"]
+        # baseUrlList = ["http://128.6.158.85", "http://128.6.158.158", "https://chemsearch-east.rcsb.org"]
         baseUrlList = ["https://chemsearch-west.rcsb.org", "https://chemsearch-east.rcsb.org"]
         #
         endPoint = "chem-match-v1/InChI"

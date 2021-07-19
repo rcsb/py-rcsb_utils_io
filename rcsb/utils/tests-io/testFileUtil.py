@@ -64,6 +64,9 @@ class FileUtilTests(unittest.TestCase):
 
             ok = self.__fileU.bundleTarfile(tP, [dirPath], mode="w:gz", recursive=True)
             self.assertTrue(ok)
+
+            numBytes = self.__fileU.size(tP)
+            self.assertGreaterEqual(numBytes, 300)
             #
             ok = self.__fileU.unbundleTarfile(tP, dirPath=self.__workPath)
             self.assertTrue(ok)

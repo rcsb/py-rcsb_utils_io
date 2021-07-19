@@ -5,6 +5,7 @@
 # remote sftp, http or local POSIX file storage resources.
 #
 # Updates:
+# 19-Jul-2021 jdw add git push support
 #
 ##
 
@@ -17,6 +18,7 @@ import logging
 import os
 
 from rcsb.utils.io.FileUtil import FileUtil
+from rcsb.utils.io.GitUtil import GitUtil
 from rcsb.utils.io.SftpUtil import SftpUtil
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,7 @@ class StashUtil(object):
             baseBundleFileName (str): bundle file name without file extension
         """
         #
+        self.__localBundlePath = localBundlePath
         fn = baseBundleFileName
         self.__baseBundleFileName = fn + ".tar.gz"
         self.__localStashTarFilePath = os.path.join(localBundlePath, self.__baseBundleFileName)
@@ -128,6 +131,55 @@ class StashUtil(object):
             logger.exception("For %r %r Failing with %s", url, remoteDirPath, str(e))
             ok = False
         return ok
+
+    def pushBundle(self, gitRepositoryPath, accessToken, gitHost="github.com", gitBranch="master", remoteStashPrefix="A", maxMegaBytes=95):
+        """Push bundle to remote stash git repository.
+
+        Args:
+            gitRepositoryPath (str): git repository path (e.g., rcsb/py-rcsb_exdb_assets_stash)
+            accessToken (str): git repository access token
+            gitHost (str, optional): git repository host name. Defaults to github.com.
+            gitBranch (str, optional): git branch name. Defaults to master.
+            remoteStashPrefix (str, optional): optional label preppended to the stashed dependency bundle artifact (default='A')
+            maxMegaBytes (int, optional): maximum stash bundle file size that will be committed. Defaults to 95MB.
+
+        Returns:
+          bool:  True for success or False otherwise
+
+        """
+        try:
+            ok = False
+            gU = GitUtil(token=accessToken, repositoryHost=gitHost)
+            fU = FileUtil()
+            localRepositoryPath = os.path.join(self.__localBundlePath, "stash_repository")
+            fn = self.__makeBundleFileName(self.__baseBundleFileName, remoteStashPrefix=remoteStashPrefix)
+            #
+            # Update existing local repository, otherwise clone a new copy
+            if fU.exists(localRepositoryPath):
+                ok = gU.pull(localRepositoryPath, branch=gitBranch)
+                logger.info("status %r", gU.status(localRepositoryPath))
+            else:
+                ok = gU.clone(gitRepositoryPath, localRepositoryPath, branch=gitBranch)
+            #
+            # Don't store large bundles (> maxMegaBytes)
+            mbSize = fU.size(self.__localStashTarFilePath) / 10e6
+            if mbSize > maxMegaBytes:
+                logger.error("Skipping large bundle %r (%d > %d)", fn, mbSize, maxMegaBytes)
+                return False
+
+            fU.put(self.__localStashTarFilePath, os.path.join(localRepositoryPath, "stash", fn))
+            ok = gU.addAll(localRepositoryPath, branch=gitBranch)
+            ok = gU.commit(localRepositoryPath, branch=gitBranch)
+            logger.info("status %r", gU.status(localRepositoryPath))
+            #
+            if accessToken:
+                ok = gU.push(localRepositoryPath, branch=gitBranch)
+                logger.info("status %r", gU.status(localRepositoryPath))
+            #
+            return ok
+        except Exception as e:
+            logger.exception("For %r %r failing with %s", gitHost, gitRepositoryPath, str(e))
+        return False
 
     def __makeBundleFileName(self, baseBundleFileName, remoteStashPrefix="A"):
         fn = baseBundleFileName
