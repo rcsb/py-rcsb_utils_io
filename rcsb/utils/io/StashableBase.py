@@ -39,7 +39,28 @@ class StashableBase(object):
         self.__stU = StashUtil(os.path.join(self.__cachePath, "stash"), self.__dirNameL[0])
         #
 
-    def restore(self, cfgOb, configName, remotePrefix=None):
+    def restore(self, cfgOb, configName, remotePrefix=None, useStash=True, useGit=False):
+        """Restore the target cache directory from stash storage.
+
+        Args:
+            cfgOb (obj): configuration object (ConfigUtil())
+            configName (str): configuration section name
+            remotePrefix (str, optional): channel prefix. Defaults to None.
+            useStash (bool, optional): use "stash" storage services. Defaults to True.
+            useGit (bool, optional): use a git repository service. Defaults to False.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        ok = False
+        if useStash and not ok:
+            ok = self.__restoreFromStash(cfgOb, configName, remotePrefix=remotePrefix)
+        #
+        if useGit and not ok:
+            ok = self.__restoreFromGit(cfgOb, configName, remotePrefix=remotePrefix)
+        return ok
+
+    def __restoreFromStash(self, cfgOb, configName, remotePrefix=None):
         """Restore the target cache directory from stash storage.
 
         Args:
@@ -70,9 +91,55 @@ class StashableBase(object):
         #
         return ok
 
-    def backup(self, cfgOb, configName, remotePrefix=None, useGit=False):
+    def __restoreFromGit(self, cfgOb, configName, remotePrefix=None):
+        """Restore from a partitioned git stash repository via https fetches.
+
+        Args:
+            cfgOb (obj): configuration object (ConfigUtil())
+            configName (str): configuration section name
+            remotePrefix (str, optional): channel prefix. Defaults to None.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+        ok = False
+        try:
+            startTime = time.time()
+            # accessToken = cfgOb.get("_STASH_GIT_ACCESS_TOKEN", sectionName=configName)
+            gitRawHost = cfgOb.get("_STASH_GIT_RAW_SERVER_HOST", sectionName=configName)
+            gitRepositoryPath = cfgOb.get("STASH_GIT_REPOSITORY_PATH", sectionName=configName)
+            gitBranch = cfgOb.get("STASH_GIT_REPOSITORY_BRANCH", sectionName=configName)
+            # maxMegaBytes = cfgOb.get("STASH_GIT_REPOSITORY_MAX_SIZE_MB", sectionName=configName)
+            #
+            ok = self.__stU.fetchPartitionedBundle(self.__cachePath, gitRepositoryPath, gitRawHost=gitRawHost, gitBranch=gitBranch, remoteStashPrefix=remotePrefix)
+            logger.info(
+                "Completed git backup for %r (%r) data at %s (%.4f seconds)",
+                self.__dirNameL,
+                ok,
+                time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
+                time.time() - startTime,
+            )
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+        return ok
+
+    def backup(self, cfgOb, configName, remotePrefix=None, useStash=True, useGit=False):
+        """Backup the target cache directory to remote stash and/or git storage.
+
+        Args:
+            cfgOb (obj): configuration object (ConfigUtil())
+            configName (str): configuration section name
+            remotePrefix (str, optional): channel prefix. Defaults to None.
+            useStash (bool, optional): use "stash" storage services. Defaults to True.
+            useGit (bool, optional): use a git repository service. Defaults to False.
+
+        Returns:
+            bool: True for success or False otherwise
+        """
+
         ok = self.__stU.makeBundle(self.__cachePath, self.__dirNameL)
-        if ok:
+        ok1 = True
+        if ok and useStash:
             ok1 = self.__backupToStash(cfgOb, configName, remotePrefix=remotePrefix)
         ok2 = True
         if ok and useGit:
@@ -86,6 +153,7 @@ class StashableBase(object):
             cfgOb (obj): configuration object (ConfigUtil())
             configName (str): configuration section name
             remotePrefix (str, optional): channel prefix. Defaults to None.
+
 
         Returns:
             bool: True for success or False otherwise
@@ -132,7 +200,7 @@ class StashableBase(object):
             gitBranch = cfgOb.get("STASH_GIT_REPOSITORY_BRANCH", sectionName=configName)
             maxMegaBytes = cfgOb.get("STASH_GIT_REPOSITORY_MAX_SIZE_MB", sectionName=configName)
             #
-            ok = self.__stU.pushBundle(gitRepositoryPath, accessToken, gitHost=gitHost, gitBranch=gitBranch, remoteStashPrefix=remotePrefix, maxMegaBytes=maxMegaBytes)
+            ok = self.__stU.pushBundle(gitRepositoryPath, accessToken, gitHost=gitHost, gitBranch=gitBranch, remoteStashPrefix=remotePrefix, maxSizeMB=maxMegaBytes)
             logger.info(
                 "Completed git backup for %r (%r) data at %s (%.4f seconds)",
                 self.__dirNameL,
@@ -159,6 +227,9 @@ class StashableBase(object):
         """
         ok = False
         try:
+            if not url:
+                # stashing locally then do this under the cache path
+                stashRemoteDirPath = os.path.join(self.__cachePath, stashRemoteDirPath)
             ok = self.__stU.storeBundle(url, stashRemoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
         except Exception as e:
             logger.error("Failing with url %r stashDirPath %r: %s", url, stashRemoteDirPath, str(e))
@@ -179,6 +250,8 @@ class StashableBase(object):
         """
         ok = False
         try:
+            if not url:
+                stashRemoteDirPath = os.path.join(self.__cachePath, stashRemoteDirPath)
             ok = self.__stU.fetchBundle(self.__cachePath, url, stashRemoteDirPath, remoteStashPrefix=remoteStashPrefix, userName=userName, password=password)
         except Exception as e:
             logger.error("Failing with url %r stashDirPath %r: %s", url, stashRemoteDirPath, str(e))

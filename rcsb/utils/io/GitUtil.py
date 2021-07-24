@@ -50,7 +50,7 @@ class GitUtil(object):
             logger.exception("Failing for %r %r (%r) with %s", repositoryPath, localRepositoryPath, branch, str(e))
         return True
 
-    def status(self, localRepositoryPath):
+    def status(self, localRepositoryPath, branch="master"):
         """Get repository status.
 
         Args:
@@ -60,7 +60,7 @@ class GitUtil(object):
             str: status message
         """
         repo = Repo(localRepositoryPath)
-        return repo.git.status()
+        return repo.git.status(branch)
 
     def addAll(self, localRepositoryPath, branch="master", remote="origin"):
         """Add/stage any unstaged artifact(s) to the repository (git add -a).
@@ -133,7 +133,7 @@ class GitUtil(object):
             repo = Repo(localRepositoryPath)
             origin = repo.remote(name=remote)
             pushRet = origin.push(branch)[0]
-            logger.info("Push returns %s", pushRet.summary.strip())
+            logger.debug("Push returns %s", pushRet.summary.strip())
             return True
         except Exception as e:
             logger.exception("Failing push for %r (%r) with %s", localRepositoryPath, branch, str(e))

@@ -71,20 +71,20 @@ class GitUtilTests(unittest.TestCase):
             #
             ok = gU.addAll(localRepositoryPath, branch=branch)
             self.assertTrue(ok)
-            logger.info("status %r", gU.status(localRepositoryPath))
+            logger.info("status %r", gU.status(localRepositoryPath, branch=branch))
             #
             ok = gU.commit(localRepositoryPath, branch=branch)
             self.assertTrue(ok)
-            logger.info("status %r", gU.status(localRepositoryPath))
+            logger.info("status %r", gU.status(localRepositoryPath, branch=branch))
             #
             if gitToken:
                 gU.push(localRepositoryPath, branch=branch)
                 self.assertTrue(ok)
-                logger.info("status %r", gU.status(localRepositoryPath))
+                logger.info("status %r", gU.status(localRepositoryPath, branch=branch))
             #
             gU.pull(localRepositoryPath, branch=branch)
             self.assertTrue(ok)
-            logger.info("status %r", gU.status(localRepositoryPath))
+            logger.info("status %r", gU.status(localRepositoryPath, branch=branch))
             #
         except Exception as e:
             logger.exception("Failing with %s", str(e))

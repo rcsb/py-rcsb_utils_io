@@ -52,6 +52,15 @@ class UrlRequestUtil(object):
     def __init__(self, **kwargs):
         pass
 
+    def exists(self, url):
+        try:
+            response = requests.head(url)
+            if response.status_code == 200 and response.headers["content-length"] > 0:
+                return True
+            return False
+        except Exception:
+            return False
+
     def postUnWrapped(self, url, endPoint, paramD, **kwargs):
         return self.__postRequests(url, endPoint, paramD, **kwargs)
 

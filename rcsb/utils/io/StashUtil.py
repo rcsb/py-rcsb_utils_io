@@ -20,6 +20,7 @@ import os
 from rcsb.utils.io.FileUtil import FileUtil
 from rcsb.utils.io.GitUtil import GitUtil
 from rcsb.utils.io.SftpUtil import SftpUtil
+from rcsb.utils.io.SplitJoin import SplitJoin
 
 logger = logging.getLogger(__name__)
 
@@ -38,8 +39,8 @@ class StashUtil(object):
         """
         #
         self.__localBundlePath = localBundlePath
-        fn = baseBundleFileName
-        self.__baseBundleFileName = fn + ".tar.gz"
+        self.__baseBundleName = baseBundleFileName
+        self.__baseBundleFileName = self.__baseBundleName + ".tar.gz"
         self.__localStashTarFilePath = os.path.join(localBundlePath, self.__baseBundleFileName)
 
     def makeBundle(self, localParentPath, subDirList):
@@ -53,6 +54,7 @@ class StashUtil(object):
             (bool): True for success or False otherwise
         """
         fileU = FileUtil()
+        fileU.mkdir(self.__localBundlePath)
         dirPathList = [os.path.join(localParentPath, subDir) for subDir in subDirList]
         okT = fileU.bundleTarfile(self.__localStashTarFilePath, dirPathList, mode="w:gz", recursive=True)
         return okT
@@ -110,7 +112,11 @@ class StashUtil(object):
             fn = self.__makeBundleFileName(self.__baseBundleFileName, remoteStashPrefix=remoteStashPrefix)
             if not url:
                 remotePath = os.path.join(remoteDirPath, fn)
-                ok = fileU.get(remotePath, self.__localStashTarFilePath)
+                if fileU.exists(remotePath):
+                    ok = fileU.get(remotePath, self.__localStashTarFilePath)
+                else:
+                    ok = False
+                    logger.warning("Missing bundle file %r", remotePath)
 
             elif url and (url.startswith("http://") or url.startswith("https://")):
                 remotePath = url + os.path.join("/", remoteDirPath, fn)
@@ -132,7 +138,7 @@ class StashUtil(object):
             ok = False
         return ok
 
-    def pushBundle(self, gitRepositoryPath, accessToken, gitHost="github.com", gitBranch="master", remoteStashPrefix="A", maxMegaBytes=95):
+    def pushBundle(self, gitRepositoryPath, accessToken, gitHost="github.com", gitBranch="master", remoteStashPrefix="A", maxSizeMB=95):
         """Push bundle to remote stash git repository.
 
         Args:
@@ -141,7 +147,7 @@ class StashUtil(object):
             gitHost (str, optional): git repository host name. Defaults to github.com.
             gitBranch (str, optional): git branch name. Defaults to master.
             remoteStashPrefix (str, optional): optional label preppended to the stashed dependency bundle artifact (default='A')
-            maxMegaBytes (int, optional): maximum stash bundle file size that will be committed. Defaults to 95MB.
+            maxSizeMB (int, optional): maximum stash bundle file size that will be committed. Defaults to 95MB.
 
         Returns:
           bool:  True for success or False otherwise
@@ -157,29 +163,97 @@ class StashUtil(object):
             # Update existing local repository, otherwise clone a new copy
             if fU.exists(localRepositoryPath):
                 ok = gU.pull(localRepositoryPath, branch=gitBranch)
-                logger.info("status %r", gU.status(localRepositoryPath))
+                logger.debug("After pull status %r", gU.status(localRepositoryPath))
             else:
                 ok = gU.clone(gitRepositoryPath, localRepositoryPath, branch=gitBranch)
             #
-            # Don't store large bundles (> maxMegaBytes)
-            mbSize = fU.size(self.__localStashTarFilePath) / 10e6
-            if mbSize > maxMegaBytes:
-                logger.error("Skipping large bundle %r (%d > %d)", fn, mbSize, maxMegaBytes)
-                return False
+            # Split all bundles
+            mbSize = float(fU.size(self.__localStashTarFilePath)) / 1000000.0
+            logger.info("Splitting bundle %r (%.3f MB/Max %d MB)", fn, mbSize, maxSizeMB)
+            sj = SplitJoin()
+            splitDirPath = os.path.join(localRepositoryPath, "stash", fn[:-7])
+            sj.split(self.__localStashTarFilePath, splitDirPath, maxSizeMB=maxSizeMB)
+            fU.remove(self.__localStashTarFilePath)
+            # else:
+            # fU.put(self.__localStashTarFilePath, os.path.join(localRepositoryPath, "stash", fn))
 
-            fU.put(self.__localStashTarFilePath, os.path.join(localRepositoryPath, "stash", fn))
             ok = gU.addAll(localRepositoryPath, branch=gitBranch)
             ok = gU.commit(localRepositoryPath, branch=gitBranch)
-            logger.info("status %r", gU.status(localRepositoryPath))
+            logger.debug("After commit status %r", gU.status(localRepositoryPath))
             #
             if accessToken:
                 ok = gU.push(localRepositoryPath, branch=gitBranch)
-                logger.info("status %r", gU.status(localRepositoryPath))
+                logger.info("After push status %r", gU.status(localRepositoryPath))
             #
             return ok
         except Exception as e:
             logger.exception("For %r %r failing with %s", gitHost, gitRepositoryPath, str(e))
         return False
+
+    def fetchPartitionedBundle(self, localRestoreDirPath, gitRepositoryPath, gitRawHost="raw.githubusercontent.com", gitBranch="master", remoteStashPrefix="A"):
+        """Fetch bundle from a remote stash public git repository via http.
+
+        Args:
+            localRestoreDirPath (str): local restore path
+            gitRepositoryPath (str): git repository path (e.g., rcsb/py-rcsb_exdb_assets_stash)
+            gitHost (str, optional): git repository host name. Defaults to github.com.
+            gitBranch (str, optional): git branch name. Defaults to master.
+            remoteStashPrefix (str, optional): optional label preppended to the stashed dependency bundle artifact (default='A')
+
+        Returns:
+          bool:  True for success or False otherwise
+
+            https://raw.githubusercontent.com/rcsb/py-rcsb_exdb_assets_stash/master/stash/<file_or_dir>
+        """
+        try:
+            ok = False
+            fileU = FileUtil()
+            bundleFileName = self.__makeBundleFileName(self.__baseBundleFileName, remoteStashPrefix=remoteStashPrefix)
+            urlBase = "https://" + gitRawHost
+            rp = gitRepositoryPath[:-4] if gitRepositoryPath.endswith(".git") else gitRepositoryPath
+            repoDirPath = os.path.join(urlBase, rp, gitBranch, "stash")
+
+            # First fetch the manifest file
+            remoteDirPath = os.path.join(repoDirPath, bundleFileName[:-7])
+            remotePath = os.path.join(remoteDirPath, "MANIFEST")
+            logger.info("Manifest remote %r", remotePath)
+            #
+            localDirPath = os.path.join(self.__localBundlePath, bundleFileName[:-7])
+            manifestPath = os.path.join(localDirPath, "MANIFEST")
+
+            ok = fileU.get(remotePath, manifestPath)
+            if not ok:
+                logger.error("No manifest file at %r", remotePath)
+                return ok
+            # ---
+            partFileName = "part_1"
+            remotePartPath = os.path.join(repoDirPath, bundleFileName[:-7], partFileName)
+            logger.info("remotePartPath %r", remotePartPath)
+            # ---
+            partList = []
+            with open(manifestPath, "r") as mfh:
+                line = mfh.readline()
+                tf, myHash = line[:-1].split("\t")
+                logger.info("Fetched manifest for %s hash %r", tf, myHash)
+                for line in mfh:
+                    partList.append(line[:-1])
+            #
+            logger.info("Parts (%d) %r", len(partList), partList)
+            for part in partList:
+                localPath = os.path.join(localDirPath, part)
+                remotePath = os.path.join(repoDirPath, bundleFileName[:-7], part)
+                logger.info("%r %r", remotePath, localPath)
+                fileU.get(remotePath, localPath)
+            #
+            sj = SplitJoin()
+            ok = sj.join(self.__localStashTarFilePath, localDirPath)
+            if ok:
+                ok = fileU.unbundleTarfile(self.__localStashTarFilePath, dirPath=localRestoreDirPath)
+            return ok
+        except Exception as e:
+            logger.exception("Failing for %r with %s", bundleFileName, str(e))
+            ok = False
+        return ok
 
     def __makeBundleFileName(self, baseBundleFileName, remoteStashPrefix="A"):
         fn = baseBundleFileName

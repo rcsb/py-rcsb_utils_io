@@ -68,6 +68,9 @@ class FileUtilTests(unittest.TestCase):
             numBytes = self.__fileU.size(tP)
             self.assertGreaterEqual(numBytes, 250)
             #
+            md5 = self.__fileU.hash(tP, hashType="md5")
+            self.assertTrue(md5 is not None)
+            #
             ok = self.__fileU.unbundleTarfile(tP, dirPath=self.__workPath)
             self.assertTrue(ok)
             #

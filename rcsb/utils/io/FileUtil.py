@@ -22,12 +22,14 @@ __license__ = "Apache 2.0"
 import bz2
 import contextlib
 import gzip
+import hashlib
 import io
 import logging
 import os
 import shutil
 import tarfile
 import tempfile
+from threading import local
 import zipfile
 
 import requests
@@ -57,36 +59,69 @@ class FileUtil(object):
         if self.__workPath and self.__workPath != ".":
             self.mkdir(workPath)
 
-    def exists(self, filePath, mode=os.R_OK):
+    def exists(self, locator, mode=os.R_OK):
         """Return if the input file exists with optional mode settings
 
         Args:
-            filePath (string): local file path
-            mode (mode, optional): mode setting. Defaults to os.R_OK.
+            locator (string): local file path or url
+            mode (mode, optional): local mode setting. Defaults to os.R_OK.
 
         Returns:
             bool: True if file exists or False otherwise
         """
         try:
-            return os.access(filePath, mode)
+            localFlag = self.isLocal(locator)
+            if localFlag:
+                return os.access(locator, mode)
+            else:
+                response = requests.head(locator)
+                if response.status_code == 200 and response.headers["content-length"] > 0:
+                    return True
         except Exception:
             pass
         return False
 
-    def size(self, filePath):
+    def size(self, locator):
         """Return the file size in bytes
 
         Args:
-            filePath (str): file path
+            locator (str): local file path or url
 
         Returns:
             int: approximate file size in bytes or zero
         """
         try:
-            st = os.stat(filePath)
-            return st.st_size
+            localFlag = self.isLocal(locator)
+            if localFlag:
+                st = os.stat(locator)
+                return st.st_size
+            else:
+                response = requests.head(locator)
+                if response.status_code == 200:
+                    return response.headers["content-length"]
         except Exception:
             return 0
+
+    def hash(self, filePath, hashType="md5"):
+        try:
+            localFlag = self.isLocal(filePath)
+            if not localFlag:
+                return None
+            with open(filePath, "rb") as f:
+                if hashType == "md5":
+                    fileHash = hashlib.md5()
+                elif hashType == "sha256":
+                    fileHash = hashlib.sha256()
+                else:
+                    logger.error("Unsupported hash type %r", hashType)
+                    return None
+                chunk = f.read(8192)
+                while chunk:
+                    fileHash.update(chunk)
+                    chunk = f.read(8192)
+            return fileHash.hexdigest()
+        except Exception:
+            return None
 
     def mkdir(self, dirPath, mode=0o755):
         """Create the input directory.
@@ -134,6 +169,9 @@ class FileUtil(object):
         """Method to remove input file, link  or directory."""
         ok = False
         try:
+            localFlag = self.isLocal(pth)
+            if not localFlag:
+                return ok
             if pth and not self.exists(pth):
                 ok = True
             if os.path.isfile(pth) or os.path.islink(pth):

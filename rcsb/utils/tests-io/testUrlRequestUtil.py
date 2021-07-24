@@ -393,7 +393,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
-    # xxnittest.skip("Skip - troubleshooting test")
+    @unittest.skip("Skip - troubleshooting test")
     def testGetChemSearchRequests(self):
         """ChemSearch repetition GET protocol test (using requests module)"""
         # dev instances east
