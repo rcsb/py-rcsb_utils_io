@@ -29,7 +29,6 @@ import os
 import shutil
 import tarfile
 import tempfile
-from threading import local
 import zipfile
 
 import requests
