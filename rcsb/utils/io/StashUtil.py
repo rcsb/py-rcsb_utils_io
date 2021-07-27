@@ -216,7 +216,7 @@ class StashUtil(object):
             # First fetch the manifest file
             remoteDirPath = os.path.join(repoDirPath, bundleFileName[:-7])
             remotePath = os.path.join(remoteDirPath, "MANIFEST")
-            logger.info("Manifest remote %r", remotePath)
+            logger.debug("Manifest remote %r", remotePath)
             #
             localDirPath = os.path.join(self.__localBundlePath, bundleFileName[:-7])
             manifestPath = os.path.join(localDirPath, "MANIFEST")
@@ -228,21 +228,21 @@ class StashUtil(object):
             # ---
             partFileName = "part_1"
             remotePartPath = os.path.join(repoDirPath, bundleFileName[:-7], partFileName)
-            logger.info("remotePartPath %r", remotePartPath)
+            logger.debug("remotePartPath %r", remotePartPath)
             # ---
             partList = []
             with open(manifestPath, "r") as mfh:
                 line = mfh.readline()
                 tf, myHash = line[:-1].split("\t")
-                logger.info("Fetched manifest for %s hash %r", tf, myHash)
+                logger.debug("Fetched manifest for %s hash %r", tf, myHash)
                 for line in mfh:
                     partList.append(line[:-1])
             #
-            logger.info("Parts (%d) %r", len(partList), partList)
+            logger.debug("Parts (%d) %r", len(partList), partList)
             for part in partList:
                 localPath = os.path.join(localDirPath, part)
                 remotePath = os.path.join(repoDirPath, bundleFileName[:-7], part)
-                logger.info("%r %r", remotePath, localPath)
+                logger.debug("%r %r", remotePath, localPath)
                 fileU.get(remotePath, localPath)
             #
             sj = SplitJoin()

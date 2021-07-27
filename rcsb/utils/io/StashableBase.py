@@ -83,9 +83,9 @@ class StashableBase(object):
             if not ok:
                 urlFallBack = cfgOb.get("STASH_SERVER_FALLBACK_URL", sectionName=configName)
                 ok = self.__fromStash(urlFallBack, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
-                logger.info("Recovered %r data file from fallback stash (%r)", self.__dirNameL, ok)
+                logger.info("Restored %r data file from fallback stash (%r)", self.__dirNameL, ok)
             #
-            logger.info("Completed recovery (%r) at %s (%.4f seconds)", ok, time.strftime("%Y %m %d %H:%M:%S", time.localtime()), time.time() - startTime)
+            logger.info("Completed stash restore (%r) at %s (%.4f seconds)", ok, time.strftime("%Y %m %d %H:%M:%S", time.localtime()), time.time() - startTime)
         except Exception as e:
             logger.exception("Failing with %s", str(e))
         #
@@ -113,7 +113,7 @@ class StashableBase(object):
             #
             ok = self.__stU.fetchPartitionedBundle(self.__cachePath, gitRepositoryPath, gitRawHost=gitRawHost, gitBranch=gitBranch, remoteStashPrefix=remotePrefix)
             logger.info(
-                "Completed git backup for %r (%r) data at %s (%.4f seconds)",
+                "Completed git restore for %r (%r) data at %s (%.4f seconds)",
                 self.__dirNameL,
                 ok,
                 time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
