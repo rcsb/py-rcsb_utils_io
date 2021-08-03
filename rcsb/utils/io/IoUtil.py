@@ -496,7 +496,8 @@ class IoUtil(object):
             logger.error("Unable to serialize %r %r", filePath, str(e))
         return False
 
-    def __processList(self, ifh, enforceAscii=True, uncomment=True):
+    def __processList(self, ifh, enforceAscii=True, **kwargs):
+        uncomment = kwargs.get("uncomment", True)
         aList = []
         for line in ifh:
             if enforceAscii:
@@ -515,7 +516,7 @@ class IoUtil(object):
             if filePath[-3:] == ".gz":
                 if sys.version_info[0] > 2:
                     with gzip.open(filePath, "rt", encoding="utf-8-sig", errors=encodingErrors) as ifh:
-                        aList = self.__processList(ifh, enforceAscii=enforceAscii)
+                        aList = self.__processList(ifh, enforceAscii=enforceAscii, **kwargs)
                 else:
                     tPath = self.__fileU.uncompress(filePath, outputDir=None)
                     # for py2 this commented code is problematic for non-ascii data
@@ -525,7 +526,7 @@ class IoUtil(object):
                         aList = self.__processList(ifh, enforceAscii=enforceAscii)
             else:
                 with io.open(filePath, encoding="utf-8-sig", errors="ignore") as ifh:
-                    aList = self.__processList(ifh, enforceAscii=enforceAscii)
+                    aList = self.__processList(ifh, enforceAscii=enforceAscii, **kwargs)
         except Exception as e:
             logger.error("Unable to deserialize %r %s", filePath, str(e))
         #

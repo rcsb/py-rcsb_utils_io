@@ -105,3 +105,4 @@
 14-Jun-2021  - V1.14 Add remotePrefix support to backup/restore methods in StashableBase()
 19-Jul-2021  - V1.15 Add GitUtil() module and associated tests, add git support in StashableBase()
 27-Jul-2021  - V1.16 Adjust stash and git logging verbosity
+ 3-Aug-2021  - V1.17 Propagate the uncomment option properly to __processList() method in IoUtil()
