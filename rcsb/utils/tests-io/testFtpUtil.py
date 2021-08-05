@@ -130,6 +130,7 @@ class FtpUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+
 def suiteFtpTests():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(FtpUtilTests("testFtpOpsPublic"))
