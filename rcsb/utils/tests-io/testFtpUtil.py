@@ -95,8 +95,10 @@ class FtpUtilTests(unittest.TestCase):
             fL = ftpU.listdir("/pub/pdb")
             logger.info("listdir: %r", fL)
             self.assertGreater(len(fL), 2)
-            result = ftpU.stat("/pub/pdb")
+            result = ftpU.dirstat("/pub/pdb")
             logger.info("stat: %r", result)
+            result = ftpU.size("/pub/pdb/README")
+            logger.info("file size: %r", result)
             ok = ftpU.close()
             self.assertEqual(ok, True)
         except Exception as e:

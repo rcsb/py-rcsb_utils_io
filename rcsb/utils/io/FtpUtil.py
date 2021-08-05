@@ -39,8 +39,23 @@ class FtpUtil(object):
     # def getRootPath(self):
     #    return self._rootPath
 
-    def connect(self, hostName, userName, pw=None, keyFilePath=None, certFilePath=None, certFilePw=None):
+    def connect(self, hostName, userName="anonymous", pw=None, keyFilePath=None, certFilePath=None, certFilePw=None):
+        """Establish a connection to an FTP server, using ftplib (https://docs.python.org/3/library/ftplib.html).
 
+        Arguments:
+            hostName (str): hostname of FTP server (e.g., 'ftp.rcsb.org')
+            userName (str): username to login with
+            pw (str): password to login with (if required)
+            keyFilePath (str): path to a file containing the private SSL key (for TLS connections)
+            certFilePath (str): "path to a single file in PEM format containing the certificate as
+                                well as any number of CA certificates needed to establish the
+                                certificate’s authenticity" (for TLS connections)
+                                (https://docs.python.org/3/library/ssl.html)
+            certFilePw (str): password to access the certificate file (if required)
+
+        Returns:
+            bool: True for success or false otherwise
+        """
         try:
             self.__ftpClient = self.__makeFtpClient(hostName=hostName, userName=userName, pw=pw, keyFilePath=keyFilePath, certFilePath=certFilePath, certFilePw=certFilePw)
             return True
@@ -51,13 +66,25 @@ class FtpUtil(object):
                 logger.error("Failing connect for hostname %s with %s", hostName, str(e))
                 return False
 
-    def __makeFtpClient(self, hostName, userName, pw=None, keyFilePath=None, certFilePath=None, certFilePw=None):
+    def __makeFtpClient(self, hostName, userName="anonymous", pw=None, keyFilePath=None, certFilePath=None, certFilePw=None):
         """
-        Make FTP client connected to the supplied host on the supplied port authenticating as the user with
-        supplied username and supplied password or with the private key in a file with the supplied path.
+        Make an FTP client connected to the specified host using provided authentication parameters
+        (username and password for standard FTP connection, and/or certificate and private key files for FTP_TLS connection).
 
-        :rtype: ftplib FTP object.
+        Arguments:
+            hostName (str): hostname of FTP server (e.g., 'ftp.rcsb.org')
+            userName (str): username to login with
+            pw (str): password to login with (if required)
+            keyFilePath (str): path to a file containing the private SSL key (for TLS connections)
+            certFilePath (str): "path to a single file in PEM format containing the certificate as
+                                well as any number of CA certificates needed to establish the
+                                certificate’s authenticity" (for TLS connections)
+                                (https://docs.python.org/3/library/ssl.html)
+            certFilePw (str): password to access the certificate file (if required)
 
+        Returns:
+            ftplib.FTP or ftplib.FTP_TLS:   ftplib FTP connection object, as either a standard FTP connection or with FTP_TLS
+                                            (depending if an SSL certificate was provided for the connection or not).
         """
         ftp = None
         self.__context = None
@@ -85,6 +112,14 @@ class FtpUtil(object):
                 raise e
 
     def mkdir(self, path):
+        """Make a directory on a remote FTP server.
+
+        Arguments:
+            path (str): directory path
+
+        Returns:
+            bool: True for success or false otherwise
+        """
         try:
             self.__ftpClient.mkd(path)
             return True
@@ -95,9 +130,17 @@ class FtpUtil(object):
                 logger.error("mkdir failing for path %s with %s", path, str(e))
                 return False
 
-    def stat(self, path):
-        """ftp stat attributes for a given file or directory path (e.g. ["type", "size", "perm"]).
-        Only works if the FTP server supports MLSD (RFC 3659).
+    def dirstat(self, path):
+        """Return stat attributes for a given directory path (e.g. ["type", "size", "perm"]).
+
+        Only works if the FTP server supports MLSD (RFC 3659), which not all servers support.
+        For a guaranteed way of returning the size of a specific file, use the self.size() method instead.
+
+        Arguments:
+            path (str): remote directory path (NOT a file path)
+
+        Returns:
+            dict: Dictionary of files and their corresponding stat attributes.
         """
         try:
             dD = {}
@@ -111,6 +154,25 @@ class FtpUtil(object):
                 logger.error("stat failing for path %s with %s", path, str(e))
                 return {}
 
+    def size(self, filePath):
+        """Return stat attributes for a given file (NOT directory) on a remote FTP server.
+
+        Arguments:
+            filePath (str): remote file path
+
+        Returns:
+            int: Size of the file in bytes, or None if unsuccessful
+        """
+        try:
+            fSize = self.__ftpClient.size(filePath)
+            return int(fSize)
+        except Exception as e:
+            if self.__raiseExceptions:
+                raise e
+            else:
+                logger.error("stat failing for path %s with %s", filePath, str(e))
+                return None
+
     def put(self, localPath, remotePath):
         """Put a local file on a remote FTP server.
 
@@ -122,6 +184,11 @@ class FtpUtil(object):
             bool: True for success or false otherwise
         """
         try:
+            # First, make sure the provided localPath represents a file, not a directory
+            if not os.path.isfile(localPath):
+                logger.error("put failing for localPath %s - path must be to a specific file, not a directory.", localPath)
+                return False
+
             fileU = FileUtil()
             remotePathDir = fileU.getFilePath(remotePath)
             self.mkdir(remotePathDir)
@@ -147,6 +214,15 @@ class FtpUtil(object):
                 return False
 
     def get(self, remotePath, localPath):
+        """Get a file from a remote FTP server.
+
+        Arguments:
+            remotePath (str): remote file path
+            localPath (str): local file path
+
+        Returns:
+            bool: True for success or false otherwise
+        """
         try:
             fileU = FileUtil()
             fileU.mkdirForFile(localPath)
@@ -179,6 +255,13 @@ class FtpUtil(object):
                                                 '/pub/pdb/data/component-models', '/pub/pdb/data/monomers', '/pub/pdb/data/status', '/pub/pdb/data/structures']
 
         Note that not all FTP servers allow the checking of specific file existence, so must provide directory path as input.
+
+        Arguments:
+            path (str): directory path
+
+        Returns:
+            list: List of all files and directories (as full path names) for a given directory.
+
         """
         try:
             return self.__ftpClient.nlst(path)
@@ -190,6 +273,14 @@ class FtpUtil(object):
                 return False
 
     def rmdir(self, dirPath):
+        """Remove a directory from a remote FTP server.
+
+        Arguments:
+            dirPath (str): remote directory path
+
+        Returns:
+            bool: True for success or false otherwise
+        """
         try:
             self.__ftpClient.rmd(dirPath)
             return True
@@ -201,6 +292,14 @@ class FtpUtil(object):
                 return False
 
     def remove(self, filePath):
+        """Remove a file from a remote FTP server.
+
+        Arguments:
+            filePath (str): remote file path
+
+        Returns:
+            bool: True for success or false otherwise
+        """
         try:
             self.__ftpClient.delete(filePath)
             return True
@@ -212,6 +311,11 @@ class FtpUtil(object):
                 return False
 
     def close(self):
+        """Close a remote FTP connection.
+
+        Returns:
+            bool: True for success or false otherwise
+        """
         try:
             if self.__ftpClient is not None:
                 self.__ftpClient.close()
