@@ -70,7 +70,8 @@ class FtpUtil(object):
                 self.__context.load_cert_chain(certfile=certFilePath, keyfile=keyFilePath, password=certFilePw)
 
                 # Connect via FTP_TLS using supplied method of authentication.
-                ftp = ftplib.FTP_TLS(host=hostName, user=userName, passwd=pw, context=self.__context) # For TLS with certificate, host and user may need to be set to empty '' or None
+                # For TLS with certificate, host and user may need to be set to empty string '' or None
+                ftp = ftplib.FTP_TLS(host=hostName, user=userName, passwd=pw, context=self.__context)
             else:
                 # Connect via FTP using username and password authentication
                 ftp = ftplib.FTP(host=hostName, user=userName, passwd=pw)
@@ -124,7 +125,9 @@ class FtpUtil(object):
             fileU = FileUtil()
             remotePathDir = fileU.getFilePath(remotePath)
             self.mkdir(remotePathDir)
-            if (os.path.exists(remotePath) and os.path.isdir(remotePath)): # If provided remotePath already exists and is a directory, put the file on the remote server using the local filename to avoid unintentionally overwriting an entire remote directory with a single file
+            # If provided remotePath already exists and is a directory, put the file on the remote server using the local filename
+            # to avoid unintentionally overwriting an entire remote directory with a single file
+            if (os.path.exists(remotePath) and os.path.isdir(remotePath)):
                 localFileName = FileUtil().getFileName(localPath)
                 remoteFilePath = os.path.join(remotePath, localFileName)
             else:
@@ -147,7 +150,9 @@ class FtpUtil(object):
         try:
             fileU = FileUtil()
             fileU.mkdirForFile(localPath)
-            if (os.path.exists(localPath) and os.path.isdir(localPath)): # If provided localPath already exists and is a directory, retrieve the file using the name on the remote server to avoid unintentionally overwriting an entire local directory with a single retrieved file
+            # If provided localPath already exists and is a directory, retrieve the file using the name on the remote server
+            # to avoid unintentionally overwriting an entire local directory with a single retrieved file
+            if (os.path.exists(localPath) and os.path.isdir(localPath)):
                 remoteFileName = FileUtil().getFileName(remotePath)
                 localFilePath = os.path.join(localPath, remoteFileName)
             else:
@@ -170,7 +175,8 @@ class FtpUtil(object):
     def listdir(self, path):
         """Return a flat list of all files and directories (as full path names) for a given directory.
 
-        E.g., for path='/pub/pdb/data', returns ['/pub/pdb/data/.', '/pub/pdb/data/..', '/pub/pdb/data/biounit', '/pub/pdb/data/bird', '/pub/pdb/data/component-models', '/pub/pdb/data/monomers', '/pub/pdb/data/status', '/pub/pdb/data/structures']
+        E.g., for path='/pub/pdb/data', returns ['/pub/pdb/data/.', '/pub/pdb/data/..', '/pub/pdb/data/biounit', '/pub/pdb/data/bird',
+                                                '/pub/pdb/data/component-models', '/pub/pdb/data/monomers', '/pub/pdb/data/status', '/pub/pdb/data/structures']
 
         Note that not all FTP servers allow the checking of specific file existence, so must provide directory path as input.
         """
