@@ -107,3 +107,4 @@
 27-Jul-2021  - V1.16 Adjust stash and git logging verbosity
  3-Aug-2021  - V1.17 Propagate the uncomment option properly to __processList() method in IoUtil()
  5-Aug-2021  - V1.18 Add FtpUtil() class to handle FTP server operations.
+17-Aug-2021  - V1.19 Add sendContentType for postUnwrapped in UrlRequestUtil()

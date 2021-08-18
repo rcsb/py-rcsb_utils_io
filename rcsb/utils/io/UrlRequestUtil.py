@@ -70,6 +70,7 @@ class UrlRequestUtil(object):
 
     def __post(self, url, endPoint, paramD, **kwargs):
         """ """
+        # JDW note that Content-Type: application/json is not implemented yet in this method
         ret = None
         retCode = None
         headerL = kwargs.get("headers", [])
@@ -79,7 +80,7 @@ class UrlRequestUtil(object):
         encoding = kwargs.get("encoding", "utf-8")
         #
         returnContentType = kwargs.get("returnContentType", None)
-        if returnContentType == "JSON":
+        if returnContentType in ["JSON", "application/json"]:
             if ("Accept", "application/json") not in headerL:
                 headerL.append(("Accept", "application/json"))
         #
@@ -95,6 +96,7 @@ class UrlRequestUtil(object):
             logger.debug("Support for SSLv3 %r TLSv1_1 %r TLSv1_2 %r", ssl.HAS_SSLv3, ssl.HAS_TLSv1_1, ssl.HAS_TLSv1_2)
             #
             urlPath = "%s/%s" % (url, endPoint)
+
             requestData = urlencode(paramD).encode(encoding)
             logger.debug("Request %s with data %r", urlPath, requestData)
 
@@ -116,7 +118,7 @@ class UrlRequestUtil(object):
             raise e
         #
         try:
-            if returnContentType == "JSON":
+            if returnContentType in ["JSON", "application/json"]:
                 return json.loads(ret.decode(encoding)), retCode
             else:
                 return ret.decode(encoding), retCode
@@ -284,14 +286,18 @@ class UrlRequestUtil(object):
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
+        sendContentType = kwargs.get("sendContentType", None)
         timeOutSeconds = kwargs.get("timeOut", 5)
         retries = kwargs.get("retries", 3)
         statusForcelist = (429, 500, 502, 503, 504)
         methodWhitelist = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
         backoffFactor = 5
-        if returnContentType == "JSON":
+        if returnContentType in ["JSON", "application/json"]:
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
+        if sendContentType is not None:
+            if "Content-Type" not in headerD:
+                headerD["Content-Type"] = sendContentType
         #
         headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
@@ -313,12 +319,18 @@ class UrlRequestUtil(object):
                     session.mount("http://", adapter)
                     session.mount("https://", adapter)
                     # session = self.__requestsRetrySession(retries=retries, backoffFactor=5, statusForcelist=(429, 500, 502, 504))
-                    req = session.post(urlPath, data=paramD, headers=headerD, **optD)
+                    if sendContentType == "application/json":
+                        req = session.post(urlPath, json=paramD, headers=headerD, **optD)
+                    else:
+                        req = session.post(urlPath, data=paramD, headers=headerD, **optD)
             else:
-                req = requests.post(urlPath, data=paramD, headers=headerD, **optD)
+                if sendContentType == "application/json":
+                    req = requests.post(urlPath, json=paramD, headers=headerD, **optD)
+                else:
+                    req = requests.post(urlPath, data=paramD, headers=headerD, **optD)
             retCode = req.status_code
             if retCode == 200:
-                if returnContentType == "JSON":
+                if returnContentType in ["JSON", "application/json"]:
                     ret = req.json()
                 else:
                     ret = req.text
