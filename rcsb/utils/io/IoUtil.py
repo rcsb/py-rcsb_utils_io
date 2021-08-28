@@ -398,6 +398,12 @@ class IoUtil(object):
             logger.warning("Unable to deserialize %r %r", filePath, str(e))
         return myDefault
 
+    def __hasMinSize(self, pth, minSize):
+        try:
+            return os.path.getsize(pth) >= minSize
+        except Exception:
+            return False
+
     def __deserializeMmCif(self, filePath, **kwargs):
         """ """
         try:
@@ -406,6 +412,10 @@ class IoUtil(object):
             enforceAscii = kwargs.get("enforceAscii", True)
             raiseExceptions = kwargs.get("raiseExceptions", True)
             useCharRefs = kwargs.get("useCharRefs", True)
+            minSize = kwargs.get("minSize", 5)
+            #
+            if minSize >= 0 and not self.__hasMinSize(filePath, minSize):
+                logger.warning("Minimum file size not satisfied for: %r", filePath)
             #
             myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
             containerList = myIo.readFile(filePath, enforceAscii=enforceAscii, outDirPath=workPath)  # type: ignore
