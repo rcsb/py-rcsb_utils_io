@@ -209,7 +209,7 @@ class FileLockTests(unittest.TestCase):
         self.assertTrue(ok)
         numProc = 8
 
-        with multiprocessing.Pool(processes=numProc) as pool:  # pylint: disable=not-callable
+        with multiprocessing.Pool(processes=numProc) as pool:  # pylint: disable=not-callable,no-member
             ret = list(pool.imap_unordered(self.proc1, range(numProc * numProc)))
             # ret = list(pool.map(self.proc1, range(numProc*numProc)))
         for ok in ret:
