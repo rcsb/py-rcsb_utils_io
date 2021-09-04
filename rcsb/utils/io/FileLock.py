@@ -116,7 +116,7 @@ class FileLock(object):
                 else:
                     logger.debug("Lock %s not acquired on %s, waiting %s seconds ...", lockId, lockFilePath, pollInterval)
                     time.sleep(pollInterval)
-        except:
+        except Exception:
             with self.__lockCountLock:
                 self.__lockCount = max(0, self.__lockCount - 1)
 

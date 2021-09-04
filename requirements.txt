@@ -4,6 +4,7 @@ numpy; sys_platform != 'darwin'
 pytz
 python-dateutil
 ruamel.yaml
+multiprocess
 mmcif >= 0.61
 rcsb.utils.validation >= 0.20
 backports.tempfile; python_version < "3.0"
