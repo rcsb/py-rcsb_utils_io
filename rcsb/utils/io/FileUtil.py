@@ -1,7 +1,7 @@
 ##
 # File: FileUtil.py
 #
-# Skeleton implementation for File I/O
+# Skeleton implementation of common File I/O operations.
 #
 # Updates:
 #  5-Jun-2018 jdw add support for local copy operations using shutil.copy

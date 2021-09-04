@@ -109,3 +109,4 @@
  5-Aug-2021  - V1.18 Add FtpUtil() class to handle FTP server operations.
 17-Aug-2021  - V1.19 Add sendContentType for postUnwrapped in UrlRequestUtil()
 28-Aug-2021  - V1.20 Add minimum file size warning for mmCIF deserializer
+ 3-Sep-2021  - V1.21 Add FileLock() module
