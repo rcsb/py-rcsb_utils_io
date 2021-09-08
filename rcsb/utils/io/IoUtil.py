@@ -110,6 +110,9 @@ class JsonTypeEncoder(json.JSONEncoder):
         if isinstance(o, datetime.date):
             return o.isoformat()
 
+        # if isinstance(o, tuple):
+        #    return list(o)
+
         if isinstance(o, ruamel.yaml.comments.CommentedMap):
             return o._od
 
