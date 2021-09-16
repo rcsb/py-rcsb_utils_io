@@ -605,9 +605,9 @@ class FileUtil(object):
                     with io.open(outputFilePath, "wb") as outF:
                         shutil.copyfileobj(inpF, outF)
             elif inputFilePath.endswith(".xz"):
-               with lzma.open(inputFilePath, mode="rb") as inpF:
-                   with io.open(outputFilePath, "wb") as outF:
-                       shutil.copyfileobj(inpF, outF)
+                with lzma.open(inputFilePath, mode="rb") as inpF:
+                    with io.open(outputFilePath, "wb") as outF:
+                        shutil.copyfileobj(inpF, outF)
             elif inputFilePath.endswith(".zip"):
                 with zipfile.ZipFile(inputFilePath, mode="r") as zObj:
                     memberList = zObj.namelist()
