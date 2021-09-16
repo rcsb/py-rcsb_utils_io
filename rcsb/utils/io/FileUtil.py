@@ -30,6 +30,7 @@ import shutil
 import tarfile
 import tempfile
 import zipfile
+import lzma
 
 import requests
 from rcsb.utils.io.decorators import retry
@@ -603,10 +604,10 @@ class FileUtil(object):
                 with bz2.open(inputFilePath, mode="rb") as inpF:
                     with io.open(outputFilePath, "wb") as outF:
                         shutil.copyfileobj(inpF, outF)
-            # elif inputFilePath.endswith(".xz"):
-            #    with lzma.open(inputFilePath, mode="rb") as inpF:
-            #        with io.open(outputFilePath, "wb") as outF:
-            #            shutil.copyfileobj(inpF, outF)
+            elif inputFilePath.endswith(".xz"):
+               with lzma.open(inputFilePath, mode="rb") as inpF:
+                   with io.open(outputFilePath, "wb") as outF:
+                       shutil.copyfileobj(inpF, outF)
             elif inputFilePath.endswith(".zip"):
                 with zipfile.ZipFile(inputFilePath, mode="r") as zObj:
                     memberList = zObj.namelist()

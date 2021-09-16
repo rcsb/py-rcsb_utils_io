@@ -111,3 +111,4 @@
 28-Aug-2021  - V1.20 Add minimum file size warning for mmCIF deserializer
  3-Sep-2021  - V1.21 Add FileLock() module
  8-Sep-2021  - V1.22 Add LogUtil() structured logging formatter module
+16-Sep-2021  - V1.23 Add '.xz' file uncompression capability to FileUtil()
