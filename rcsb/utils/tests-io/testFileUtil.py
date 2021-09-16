@@ -42,6 +42,7 @@ class FileUtilTests(unittest.TestCase):
 
         self.__pathTaxonomyFile = os.path.join(TOPDIR, "rcsb", "mock-data", "NCBI", "names.dmp.gz")
         self.__zipFileUrl = "https://inventory.data.gov/dataset/794cd3d7-4d28-4408-8f7d-84b820dbf7f2/resource/6b78ec0c-4980-4ad8-9cbd-2d6eb9eda8e7/download/myfoodapediadata.zip"
+        self.__xzFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_MODBASE_MODELS", "NP_001030614.1_1.pdb.xz")
         #
         self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
         #
@@ -202,11 +203,34 @@ class FileUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testXzFile(self):
+        """Test case for extracting contents from xz file"""
+        try:
+            remoteLocator = self.__xzFile
+            fn = self.__fileU.getFileName(remoteLocator)
+            lPath = os.path.join(self.__workPath, fn)
+            ok = self.__fileU.get(remoteLocator, lPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.exists(lPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.isLocal(lPath)
+            self.assertTrue(ok)
+            tPath = self.__fileU.getFilePath(lPath)
+            self.assertEqual(lPath, tPath)
+            fp = self.__fileU.uncompress(lPath, outputDir=self.__workPath)
+            ok = fp.endswith(".pdb")
+            self.assertTrue(ok)
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
 
 def utilSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(FileUtilTests("testGetFile"))
-    suiteSelect.addTest(FileUtilTests("testFtpUrls"))
+    suiteSelect.addTest(FileUtilTests("testFtpUrl"))
+    suiteSelect.addTest(FileUtilTests("testXzFile"))
     return suiteSelect
 
 
