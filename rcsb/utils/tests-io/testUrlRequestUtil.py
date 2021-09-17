@@ -33,6 +33,8 @@ logger.setLevel(logging.INFO)
 
 
 class UrlRequestUtilTests(unittest.TestCase):
+    doTroubleshooting = False
+
     def setUp(self):
         self.__mockTopPath = os.path.join(TOPDIR, "rcsb", "mock-data")
         self.__unpIdListV = ["P42284-1", "P42284-3", "P29994-2", "P29994-3", "P29994-4", "P29994-5", "P29994-6", "P29994-7"]
@@ -393,7 +395,7 @@ class UrlRequestUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
-    @unittest.skip("Skip - troubleshooting test")
+    @unittest.skipUnless(doTroubleshooting, "Skip - troubleshooting test")
     def testGetChemSearchRequests(self):
         """ChemSearch repetition GET protocol test (using requests module)"""
         # dev instances east

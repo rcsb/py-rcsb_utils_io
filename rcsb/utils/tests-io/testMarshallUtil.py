@@ -51,6 +51,7 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathJsonTestFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__pathIndexFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "update-lists", "all-pdb-list")
         self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_BIRD_CC_REPO", "0", "PRDCC_000010.cif")
+        self.__locatorCifFile = "http://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100d.cif.gz"
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__pathSaveDictionaryFile = os.path.join(self.__workPath, "mmcif_pdbx_v5_next.dic")
@@ -122,6 +123,18 @@ class MarshalUtilTests(unittest.TestCase):
             cL = self.__mU.doImport(self.__pathCifFile, fmt="mmcif")
             logger.debug("Container list %d", len(cL))
             self.assertGreaterEqual(len(cL), 1)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testReadRemoteCifFile(self):
+        """Test the case read remote PDBx/mmCIF text file"""
+        try:
+            cL = self.__mU.doImport(self.__locatorCifFile, fmt="mmcif")
+            logger.debug("Container list %d", len(cL))
+            self.assertGreaterEqual(len(cL), 1)
+            nL = cL[0].getObjNameList()
+            self.assertGreaterEqual(len(nL), 55)
         except Exception as e:
             logger.exception("Failing with %s", str(e))
             self.fail()

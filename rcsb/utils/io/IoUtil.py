@@ -407,7 +407,7 @@ class IoUtil(object):
         except Exception:
             return False
 
-    def __deserializeMmCif(self, filePath, **kwargs):
+    def __deserializeMmCif(self, locator, **kwargs):
         """ """
         try:
             containerList = []
@@ -417,13 +417,17 @@ class IoUtil(object):
             useCharRefs = kwargs.get("useCharRefs", True)
             minSize = kwargs.get("minSize", 5)
             #
-            if minSize >= 0 and not self.__hasMinSize(filePath, minSize):
-                logger.warning("Minimum file size not satisfied for: %r", filePath)
-            #
-            myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
-            containerList = myIo.readFile(filePath, enforceAscii=enforceAscii, outDirPath=workPath)  # type: ignore
+            if self.__fileU.isLocal(locator):
+                if minSize >= 0 and not self.__hasMinSize(locator, minSize):
+                    logger.warning("Minimum file size not satisfied for: %r", locator)
+                myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
+                containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)  # type: ignore
+            else:
+                myIo = IoAdapterPy(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
+                containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)
+
         except Exception as e:
-            logger.error("Failing for %s with %s", filePath, str(e))
+            logger.error("Failing for %s with %s", locator, str(e))
         return containerList
 
     def __serializeMmCif(self, filePath, containerList, **kwargs):

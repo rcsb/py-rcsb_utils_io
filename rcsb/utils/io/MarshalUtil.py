@@ -94,7 +94,8 @@ class MarshalUtil(object):
             locator (str): path or URI to input data
             fmt (str, optional): format for deserialization (mmcif, tdd, csv, list). Defaults to "list".
             marshalHelper (method, optional): post-processor method applied to deserialized data object. Defaults to None.
-            numParts (int, optional): serialize the data in parts. Defaults to None. (json and pickle formats)
+            numParts (int, optional): deserialize the data in parts. Defaults to None. (json and pickle formats)
+            tarMember (str, optional): name of a member of tar file bundle. Defaults to None. (tar file format)
 
         Returns:
             Any: format specific return type
@@ -112,17 +113,21 @@ class MarshalUtil(object):
                 ret = self.__ioU.deserialize(filePath, fmt=fmt, workPath=self.__workPath, **kwargs)
             else:
                 #
-                with tempfile.TemporaryDirectory(suffix=self.__workDirSuffix, prefix=self.__workDirPrefix, dir=self.__workPath) as tmpDirName:
-                    #
-                    # Fetch first then read a local copy -
-                    #
-                    if tarMember:
-                        localFilePath = os.path.join(self.__workPath, tmpDirName, tarMember)
-                    else:
-                        localFilePath = os.path.join(self.__workPath, tmpDirName, self.__fileU.getFileName(locator))
-                    #
-                    self.__fileU.get(locator, localFilePath, **kwargs)
-                    ret = self.__ioU.deserialize(localFilePath, fmt=fmt, workPath=self.__workPath, **kwargs)
+                if fmt == "mmcif":
+                    ret = self.__ioU.deserialize(locator, fmt=fmt, workPath=self.__workPath, **kwargs)
+                else:
+                    with tempfile.TemporaryDirectory(suffix=self.__workDirSuffix, prefix=self.__workDirPrefix, dir=self.__workPath) as tmpDirName:
+                        #
+                        # Fetch first then read a local copy -
+                        #
+                        if tarMember:
+                            localFilePath = os.path.join(self.__workPath, tmpDirName, tarMember)
+                        else:
+                            localFilePath = os.path.join(self.__workPath, tmpDirName, self.__fileU.getFileName(locator))
+
+                        # ---  Local copy approach ---
+                        self.__fileU.get(locator, localFilePath, **kwargs)
+                        ret = self.__ioU.deserialize(localFilePath, fmt=fmt, workPath=self.__workPath, **kwargs)
 
             if marshalHelper:
                 ret = marshalHelper(ret, **kwargs)
