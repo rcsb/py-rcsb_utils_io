@@ -71,14 +71,19 @@ class FileUtil(object):
         """
         try:
             localFlag = self.isLocal(locator)
+            logger.info("local (%r): %r", localFlag, locator)
             if localFlag:
                 return os.access(locator, mode)
             else:
-                response = requests.head(locator)
-                if response.status_code == 200 and response.headers["content-length"] > 0:
-                    return True
-        except Exception:
-            pass
+                if locator.startswith("ftp:"):
+                    logger.warning("ftp:// protocol not supported.")
+                else:
+                    response = requests.head(locator)
+                    logger.debug("response code %r", response.status_code)
+                    if response.status_code == 200 and int(response.headers["content-length"]) > 0:
+                        return True
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
         return False
 
     def size(self, locator):
@@ -96,9 +101,12 @@ class FileUtil(object):
                 st = os.stat(locator)
                 return st.st_size
             else:
-                response = requests.head(locator)
-                if response.status_code == 200:
-                    return response.headers["content-length"]
+                if locator.startswith("ftp:"):
+                    logger.warning("ftp:// protocol not supported.")
+                else:
+                    response = requests.head(locator)
+                    if response.status_code == 200:
+                        return int(response.headers["content-length"])
         except Exception:
             return 0
 
@@ -107,7 +115,7 @@ class FileUtil(object):
             localFlag = self.isLocal(filePath)
             if not localFlag:
                 return None
-            with open(filePath, "rb") as f:
+            with open(filePath, "rb") as ifh:
                 if hashType == "md5":
                     fileHash = hashlib.md5()
                 elif hashType == "sha256":
@@ -115,10 +123,10 @@ class FileUtil(object):
                 else:
                     logger.error("Unsupported hash type %r", hashType)
                     return None
-                chunk = f.read(8192)
+                chunk = ifh.read(8192)
                 while chunk:
                     fileHash.update(chunk)
-                    chunk = f.read(8192)
+                    chunk = ifh.read(8192)
             return fileHash.hexdigest()
         except Exception:
             return None

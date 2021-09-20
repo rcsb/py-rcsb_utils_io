@@ -45,6 +45,7 @@ class FileUtilTests(unittest.TestCase):
         self.__xzFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_MODBASE_MODELS", "NP_001030614.1_1.pdb.xz")
         #
         self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
+        self.__httpsFileUrl = "https://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__inpDirPath = os.path.join(HERE, "test-data")
@@ -172,6 +173,22 @@ class FileUtilTests(unittest.TestCase):
             fp = self.__fileU.uncompress(lPath, outputDir=dirPath)
             ok = fp.endswith("chem_comp_model.cif")
             self.assertTrue(ok)
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testRemote(self):
+        """Test case remote status"""
+        try:
+            remoteLocator = self.__httpsFileUrl
+            ok = self.__fileU.isLocal(remoteLocator)
+            self.assertFalse(ok)
+            #
+            ok = self.__fileU.exists(remoteLocator)
+            self.assertTrue(ok)
+            size = self.__fileU.size(remoteLocator)
+            self.assertGreaterEqual(size, 1000)
 
         except Exception as e:
             logger.exception("Failing with %s", str(e))

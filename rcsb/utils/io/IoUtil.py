@@ -27,6 +27,7 @@
 #  10-Aug-2019  jdw add XML/ElementTree reader
 #  13-Aug-2019  jdw add serialization/deserialization in parts
 #  18-Sep-2019  jdw add method deserializeCsvIter()
+#  17-Sep-2021  jdw add an explicit file test for gzip compression to avoid problems with uncompressed files.
 ##
 
 __docformat__ = "google en"
@@ -699,6 +700,18 @@ class IoUtil(object):
         #
         return tree
 
+    def __testGzip(self, filePath):
+        ok = True
+        with gzip.open(filePath, "r") as fh:
+            try:
+                fh.read(1)
+            except gzip.BadGzipFile:
+                ok = False
+            except Exception:
+                ok = False
+        logger.debug("Gzip file check %r", ok)
+        return ok
+
     def __deserializeXml(self, filePath, **kwargs):
         """Read the input XML file path and return an ElementTree data object instance.
 
@@ -715,7 +728,7 @@ class IoUtil(object):
         #
         try:
             logger.debug("Parsing XML path %s", filePath)
-            if filePath[-3:] == ".gz":
+            if filePath[-3:] == ".gz" and self.__testGzip(filePath):
                 if sys.version_info[0] > 2:
                     with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as ifh:
                         tV = time.time()

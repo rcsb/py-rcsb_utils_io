@@ -113,3 +113,5 @@
  8-Sep-2021  - V1.22 Add LogUtil() structured logging formatter module
 16-Sep-2021  - V1.23 Add '.xz' file uncompression capability to FileUtil()
 16-Sep-2021  - V1.24 Add support for zero copy http mmCIF access.
+17-Sep-2021  - V1.25 Add explicit test for gzip compression in IoUtil.__deserializeXML()
+17-Sep-2021  - V1.26 Fix protocol issue in remote FileUtil.exists() and size() methods
