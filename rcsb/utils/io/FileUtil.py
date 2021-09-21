@@ -79,10 +79,10 @@ class FileUtil(object):
                 else:
                     response = requests.head(locator)
                     logger.debug("response code %r", response.status_code)
-                    if response.status_code == 200 and int(response.headers["content-length"]) > 0:
+                    if response.status_code == 200 and "content-length" in response.headers and int(response.headers["content-length"]) > 0:
                         return True
         except Exception as e:
-            logger.exception("Failing with %s", str(e))
+            logger.exception("Failing for %r with %s", locator, str(e))
         return False
 
     def size(self, locator):
@@ -104,7 +104,7 @@ class FileUtil(object):
                     logger.warning("ftp:// protocol not supported.")
                 else:
                     response = requests.head(locator)
-                    if response.status_code == 200:
+                    if response.status_code == 200 and "content-length" in response.headers:
                         return int(response.headers["content-length"])
         except Exception:
             return 0
