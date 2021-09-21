@@ -71,7 +71,6 @@ class FileUtil(object):
         """
         try:
             localFlag = self.isLocal(locator)
-            logger.info("local (%r): %r", localFlag, locator)
             if localFlag:
                 return os.access(locator, mode)
             else:

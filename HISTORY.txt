@@ -115,3 +115,4 @@
 16-Sep-2021  - V1.24 Add support for zero copy http mmCIF access.
 17-Sep-2021  - V1.25 Add explicit test for gzip compression in IoUtil.__deserializeXML()
 17-Sep-2021  - V1.26 Fix protocol issue in remote FileUtil.exists() and size() methods
+20-Sep-2021  - V1.27 Suppress logging of protocol errors in FileUtil()
