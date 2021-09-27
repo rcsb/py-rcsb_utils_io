@@ -52,7 +52,7 @@ class GitUtilTests(unittest.TestCase):
         """Test case - git clone"""
         try:
             branch = "test-branch"
-            repositoryPath = "rcsb/py-rcsb_exdb_assets_stash.git"
+            repositoryPath = "rcsb/py-rcsb_exdb_assets_stash_test.git"
             localRepositoryPath = os.path.join(self.__workPath, "test-stash")
             fU = FileUtil()
             fU.remove(localRepositoryPath)

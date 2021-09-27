@@ -66,7 +66,7 @@ class LogUtilTests(unittest.TestCase):
                 rD = {}
                 rD["b"] = rD["a"]
             except Exception as e:
-                myLogger.exception("Failing with %s", str(e), extra={"q1": 1, "q2": (1, 1)})
+                myLogger.exception("Expected failure with %s", str(e), extra={"q1": 1, "q2": (1, 1)})
 
             mU = MarshalUtil()
             tSL = mU.doImport(self.__testLogFileMin, fmt="list")
@@ -94,7 +94,7 @@ class LogUtilTests(unittest.TestCase):
                 rD = {}
                 rD["b"] = rD["a"]
             except Exception as e:
-                myLogger.exception("Failing with %s", str(e), extra={"q1": 1, "q2": (1, 1)})
+                myLogger.exception("Expected failure with %s", str(e), extra={"q1": 1, "q2": (1, 1)})
             #
             mU = MarshalUtil()
             tSL = mU.doImport(self.__testLogFileDetailed, fmt="list")
