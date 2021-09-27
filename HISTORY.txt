@@ -118,3 +118,4 @@
 20-Sep-2021  - V1.27 Suppress logging of protocol errors in FileUtil()
 21-Sep-2021  - V1.28 Protect against missing response headers in FileUtil.exists() and size() methods
 21-Sep-2021  - V1.29 Add retry decorator for remote mmCIF deserialization method
+27-Sep-2021  - V1.30 For Macos make the example multiprocessing test method a function (new serialization issues)

@@ -39,6 +39,26 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+def procFunc(numTimes):
+    """ """
+    workPath = os.path.join(HERE, "test-output")
+    lockPath = os.path.join(workPath, "shared-locks")
+    testFilePath = os.path.join(HERE, "test-data", "TEST-FILE.DAT")
+    hD = CryptUtils().getFileHash(testFilePath, "MD5")
+    lock1 = FileLock(os.path.join(lockPath, "simple.lock"))
+    fp1 = os.path.join(lockPath, "simple")
+    ok = True
+    for _ in range(numTimes):
+        with lock1:
+            # unittest.assertTrue(lock1.isLocked())
+            with open(fp1, "wb") as ofh:
+                with open(testFilePath, "rb") as ifh:
+                    ofh.write(ifh.read())
+            thD = CryptUtils().getFileHash(fp1, "MD5")
+            ok = ok and hD == thD
+    return ok
+
+
 class ExecuteThread(threading.Thread):
     def __init__(self, *args, **kwargs):
         threading.Thread.__init__(self, *args, **kwargs)
@@ -206,13 +226,13 @@ class FileLockTests(unittest.TestCase):
     def testMultiprocessLocking(self):
         """Test case:  locking accross multiple processors"""
         # NOTE: unexplained problems running this inside of vscode ide
-        ok = self.proc1(2)
+        ok = procFunc(2)
         self.assertTrue(ok)
-        numProc = 8
+        numProc = 4
 
         with multiprocessing.Pool(processes=numProc) as pool:  # pylint: disable=not-callable,no-member
-            ret = list(pool.imap_unordered(self.proc1, range(numProc * numProc)))
-            # ret = list(pool.map(self.proc1, range(numProc*numProc)))
+            ret = list(pool.imap_unordered(procFunc, range(numProc * numProc)))
+            # ret = list(pool.map(self.proc1, range(numProc * numProc)))
         for ok in ret:
             self.assertTrue(ok)
         return None
