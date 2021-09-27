@@ -205,6 +205,7 @@ class FileLockTests(unittest.TestCase):
 
     def testMultiprocessLocking(self):
         """Test case:  locking accross multiple processors"""
+        # NOTE: unexplained problems running this inside of vscode ide
         ok = self.proc1(2)
         self.assertTrue(ok)
         numProc = 8

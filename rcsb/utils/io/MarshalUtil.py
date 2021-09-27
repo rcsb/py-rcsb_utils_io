@@ -58,7 +58,6 @@ class MarshalUtil(object):
         """
         try:
             ret = False
-            cacheLocalFlag = kwargs.get("cacheLocal", False)
             localFlag = self.__fileU.isLocal(locator)
             if marshalHelper:
                 myObj = marshalHelper(obj, **kwargs)
@@ -68,7 +67,7 @@ class MarshalUtil(object):
             if localFlag and numParts and fmt in ["json", "pickle"]:
                 localFilePath = self.__fileU.getFilePath(locator)
                 ret = self.__ioU.serializeInParts(localFilePath, myObj, numParts, fmt=fmt, **kwargs)
-            elif localFlag and not cacheLocalFlag:
+            elif localFlag:
                 localFilePath = self.__fileU.getFilePath(locator)
                 ret = self.__ioU.serialize(localFilePath, myObj, fmt=fmt, workPath=self.__workPath, **kwargs)
             else:
@@ -101,14 +100,13 @@ class MarshalUtil(object):
             Any: format specific return type
         """
         try:
-            cacheLocalFlag = kwargs.get("cacheLocal", False)
             tarMember = kwargs.get("tarMember", None)
             localFlag = self.__fileU.isLocal(locator) and not tarMember
             #
             if localFlag and numParts and fmt in ["json", "pickle"]:
                 filePath = self.__fileU.getFilePath(locator)
                 ret = self.__ioU.deserializeInParts(filePath, numParts, fmt=fmt, **kwargs)
-            elif localFlag and not cacheLocalFlag:
+            elif localFlag:
                 filePath = self.__fileU.getFilePath(locator)
                 ret = self.__ioU.deserialize(filePath, fmt=fmt, workPath=self.__workPath, **kwargs)
             else:

@@ -117,3 +117,4 @@
 17-Sep-2021  - V1.26 Fix protocol issue in remote FileUtil.exists() and size() methods
 20-Sep-2021  - V1.27 Suppress logging of protocol errors in FileUtil()
 21-Sep-2021  - V1.28 Protect against missing response headers in FileUtil.exists() and size() methods
+21-Sep-2021  - V1.29 Add retry decorator for remote mmCIF deserialization method

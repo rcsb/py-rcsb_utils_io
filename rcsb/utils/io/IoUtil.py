@@ -35,6 +35,7 @@ __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 
+from cmath import e
 import csv
 import datetime
 import glob
@@ -53,11 +54,14 @@ import time
 from collections import OrderedDict
 
 import numpy
+import requests
 import ruamel.yaml
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+from rcsb.utils.io.decorators import retry
 from rcsb.utils.io.FastaUtil import FastaUtil
 from rcsb.utils.io.FileUtil import FileUtil
+
 
 try:
     from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter  # pylint: disable=ungrouped-imports
@@ -424,11 +428,22 @@ class IoUtil(object):
                 myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
                 containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)  # type: ignore
             else:
-                myIo = IoAdapterPy(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
-                containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)
+                # myIo = IoAdapterPy(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
+                # containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)
+                containerList = self.__deserializeMmCifRemote(locator, useCharRefs, enforceAscii, workPath)
 
         except Exception as e:
             logger.error("Failing for %s with %s", locator, str(e))
+        return containerList
+
+    @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=1, multiplier=2, defaultValue=[], logger=logger)
+    def __deserializeMmCifRemote(self, locator, useCharRefs, enforceAscii, workPath):
+        containerList = []
+        try:
+            myIo = IoAdapterPy(raiseExceptions=True, useCharRefs=useCharRefs)
+            containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)
+        except Exception as e:
+            raise e
         return containerList
 
     def __serializeMmCif(self, filePath, containerList, **kwargs):
