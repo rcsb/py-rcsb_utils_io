@@ -29,6 +29,7 @@ import os
 import shutil
 import tarfile
 import tempfile
+import traceback
 import zipfile
 import lzma
 
@@ -70,6 +71,9 @@ class FileUtil(object):
             bool: True if file exists or False otherwise
         """
         try:
+            if not locator:
+                logger.warning("Null locator: %s", "".join(traceback.format_stack()))
+                return False
             localFlag = self.isLocal(locator)
             if localFlag:
                 return os.access(locator, mode)
@@ -95,6 +99,9 @@ class FileUtil(object):
             int: approximate file size in bytes or zero
         """
         try:
+            if not locator:
+                logger.warning("Null locator: %s", "".join(traceback.format_stack()))
+                return False
             localFlag = self.isLocal(locator)
             if localFlag:
                 st = os.stat(locator)
