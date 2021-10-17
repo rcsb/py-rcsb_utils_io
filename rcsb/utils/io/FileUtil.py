@@ -200,6 +200,21 @@ class FileUtil(object):
         #
         return ok
 
+    def replace(self, srcPath, dstPath):
+        """Method to replace input file or directory (local only method)."""
+        ok = False
+        try:
+            localFlag = self.isLocal(srcPath)
+            if not localFlag:
+                return ok
+            if srcPath and dstPath and self.exists(srcPath):
+                os.replace(srcPath, dstPath)
+        except Exception as e:
+            logger.error("Failing for %r -> %r with %s", srcPath, dstPath, str(e))
+            ok = False
+        #
+        return ok
+
     #
     def get(self, remote, local, **kwargs):
         """Fetch remote file to a local path.
