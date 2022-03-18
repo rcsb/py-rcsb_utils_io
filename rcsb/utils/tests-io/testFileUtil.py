@@ -127,6 +127,48 @@ class FileUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testMoveAndCopyFile(self):
+        """Test case for copying ("put") and moving ("replace") local files"""
+        try:
+            remoteLocator = self.__pathPdbxDictionaryFile
+            fn = self.__fileU.getFileName(remoteLocator)
+            # _, fn = os.path.split(remoteLocator)
+            lPath = os.path.join(self.__workPath, fn)
+            ok = self.__fileU.get(remoteLocator, lPath)
+            self.assertTrue(ok)
+            # Test copy file
+            dPath2 = os.path.join(self.__workPath, "tdir")
+            ok = self.__fileU.mkdir(dPath2)
+            self.assertTrue(ok)
+            lPath2 = os.path.join(dPath2, fn)
+            ok = self.__fileU.put(lPath, lPath2)
+            self.assertTrue(ok)
+            ok = self.__fileU.exists(lPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.exists(lPath2)
+            self.assertTrue(ok)
+            # Remove copied file (to test moving file next)
+            ok = self.__fileU.remove(lPath2)
+            self.assertTrue(ok)
+            ok = self.__fileU.exists(lPath2)
+            self.assertFalse(ok)
+            # Test move file
+            ok = self.__fileU.replace(lPath, lPath2)
+            self.assertTrue(ok)
+            ok = self.__fileU.exists(lPath)
+            self.assertFalse(ok)
+            ok = self.__fileU.exists(lPath2)
+            self.assertTrue(ok)
+            # Now clean up files and dirs
+            ok = self.__fileU.remove(lPath)
+            self.assertTrue(ok)
+            ok = self.__fileU.remove(dPath2)
+            self.assertTrue(ok)
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
     def testZipUrl(self):
         """Test case for downloading remote zip file and extracting contents."""
         try:
@@ -246,6 +288,7 @@ class FileUtilTests(unittest.TestCase):
 def utilSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(FileUtilTests("testGetFile"))
+    suiteSelect.addTest(FileUtilTests("testMoveAndCopyFile"))
     suiteSelect.addTest(FileUtilTests("testFtpUrl"))
     suiteSelect.addTest(FileUtilTests("testXzFile"))
     return suiteSelect

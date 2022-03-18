@@ -209,6 +209,7 @@ class FileUtil(object):
                 return ok
             if srcPath and dstPath and self.exists(srcPath):
                 os.replace(srcPath, dstPath)
+                ok = True
         except Exception as e:
             logger.error("Failing for %r -> %r with %s", srcPath, dstPath, str(e))
             ok = False
