@@ -121,3 +121,4 @@
 27-Sep-2021  - V1.30 For Macos make the example multiprocessing test method a function (new serialization issues)
 28-Sep-2021  - V1.31 Add diagnostic logging for FileUtil.exists/size methods for null locators
 17-Oct-2021  - V1.32 Add local replace() method in FileUtil()
+18-Mar-2022  - V1.33 Update replace() method in FileUtil() to return True when successful
