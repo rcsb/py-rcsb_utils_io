@@ -28,6 +28,7 @@
 #  13-Aug-2019  jdw add serialization/deserialization in parts
 #  18-Sep-2019  jdw add method deserializeCsvIter()
 #  17-Sep-2021  jdw add an explicit file test for gzip compression to avoid problems with uncompressed files.
+#  28-Mar-2022  dwp remove deprecated xml.etree.cElementTree module
 ##
 
 __docformat__ = "google en"
@@ -55,6 +56,7 @@ from collections import OrderedDict
 import numpy
 import requests
 import ruamel.yaml
+import xml.etree.ElementTree as ET
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from rcsb.utils.io.decorators import retry
@@ -67,10 +69,6 @@ try:
 except Exception:
     from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter  # pylint: disable=reimported,ungrouped-imports
 
-try:
-    import xml.etree.cElementTree as ET
-except ImportError:
-    import xml.etree.ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +219,7 @@ class IoUtil(object):
         if len(myList) % mc:
             chunkSize += 1
         for i in range(0, len(myList), chunkSize):
-            yield myList[i : i + chunkSize]
+            yield myList[i:i+chunkSize]
 
     def serializeInParts(self, filePath, myObj, numParts, fmt="json", **kwargs):
         """Public method to serialize format appropriate (json, pickle) objects in multiple parts
