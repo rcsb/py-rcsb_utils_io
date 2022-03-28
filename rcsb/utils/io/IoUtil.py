@@ -219,7 +219,7 @@ class IoUtil(object):
         if len(myList) % mc:
             chunkSize += 1
         for i in range(0, len(myList), chunkSize):
-            yield myList[i:i+chunkSize]
+            yield myList[i:i + chunkSize]
 
     def serializeInParts(self, filePath, myObj, numParts, fmt="json", **kwargs):
         """Public method to serialize format appropriate (json, pickle) objects in multiple parts
