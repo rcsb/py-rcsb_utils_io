@@ -46,7 +46,7 @@ class FastaUtil(object):
     naValidCodes = "AGCTURYNWSMKBHDV"
 
     def __init__(self, **kwargs):
-        self.__uniProtCommentRegex = re.compile(r"\>(\w+)\|(\w+)\|(\w+)\s(.*)\sOS=(.*)\sOX=" r"(\d+)\s(GN=(.*)\s)?PE=(\d+)\sSV=(\d+)")
+        self.__uniProtCommentRegex = re.compile(r"\>(\w+)\|(\w+)\|(\w+)\s(.*)\sOS=(.*)\sOX=(\d+)\s(GN=(.*)\s)?PE=(\d+)\sSV=(\d+)")
         _ = kwargs
 
     def __removeWhiteSpace(self, string):
@@ -336,7 +336,7 @@ class FastaUtil(object):
                 lCount += 1
                 sequence = sD["sequence"]
                 for i in range(0, len(sequence), maxLineLength):
-                    sA.append(sequence[i : i + maxLineLength] + "\n")
+                    sA.append(sequence[i: i + maxLineLength] + "\n")
                     result = "".join(sA)
                     lCount += 1
                 ofh.write(result)
