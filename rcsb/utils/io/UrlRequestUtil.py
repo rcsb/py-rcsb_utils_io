@@ -50,11 +50,12 @@ class UrlRequestUtil(object):
     """Simple wrapper for URL request processing"""
 
     def __init__(self, **kwargs):
-        pass
+        _ = kwargs
+        self.__timeout = None
 
     def exists(self, url):
         try:
-            response = requests.head(url)
+            response = requests.head(url, timeout=self.__timeout)
             if response.status_code == 200 and response.headers["content-length"] > 0:
                 return True
             return False

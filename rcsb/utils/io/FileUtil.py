@@ -57,6 +57,7 @@ class FileUtil(object):
     def __init__(self, workPath=None, **kwargs):
         _ = kwargs
         self.__workPath = workPath
+        self.__timeout = None
         if self.__workPath and self.__workPath != ".":
             self.mkdir(workPath)
 
@@ -81,7 +82,7 @@ class FileUtil(object):
                 if locator.startswith("ftp:"):
                     logger.warning("ftp:// protocol not supported.")
                 else:
-                    response = requests.head(locator)
+                    response = requests.head(locator, timeout=self.__timeout)
                     logger.debug("response code %r", response.status_code)
                     if response.status_code == 200 and "content-length" in response.headers and int(response.headers["content-length"]) > 0:
                         return True
@@ -110,7 +111,7 @@ class FileUtil(object):
                 if locator.startswith("ftp:"):
                     logger.warning("ftp:// protocol not supported.")
                 else:
-                    response = requests.head(locator)
+                    response = requests.head(locator, timeout=self.__timeout)
                     if response.status_code == 200 and "content-length" in response.headers:
                         return int(response.headers["content-length"])
         except Exception:
@@ -517,12 +518,12 @@ class FileUtil(object):
                 logger.error("Failing to create target directory for file %r", filePath)
                 return False
             if user and pw:
-                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
+                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True, timeout=self.__timeout) as rIn:
                     with open(filePath, "wb") as fOut:
                         shutil.copyfileobj(rIn.raw, fOut)
 
             else:
-                with requests.get(url, stream=True, allow_redirects=True) as rIn:
+                with requests.get(url, stream=True, allow_redirects=True, timeout=self.__timeout) as rIn:
                     with open(filePath, "wb") as fOut:
                         shutil.copyfileobj(rIn.raw, fOut)
 
@@ -564,7 +565,7 @@ class FileUtil(object):
                 logger.error("Failing to create target directory for file %r", filePath)
                 return False
             if user and pw:
-                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True) as rIn:
+                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True, timeout=self.__timeout) as rIn:
                     if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
                         with open(filePath, "wb") as fOut:
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
@@ -574,7 +575,7 @@ class FileUtil(object):
                         rIn.raise_for_status()
                         return False
             else:
-                with requests.get(url, stream=True, allow_redirects=True) as rIn:
+                with requests.get(url, stream=True, allow_redirects=True, timeout=self.__timeout) as rIn:
                     if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
                         with open(filePath, "wb") as fOut:
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
