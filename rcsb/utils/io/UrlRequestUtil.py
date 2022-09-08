@@ -50,8 +50,8 @@ class UrlRequestUtil(object):
     """Simple wrapper for URL request processing"""
 
     def __init__(self, **kwargs):
+        _ = kwargs
         self.__timeout = None
-        pass
 
     def exists(self, url):
         try:
