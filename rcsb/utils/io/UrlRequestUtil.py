@@ -6,7 +6,8 @@
 # Updates:
 #  17-Mar-2019 jdw adjust return value to include response error code
 #  16-Dec-2019 jdw add HTTPException to retry()
-#  28-May-2029 jdw unwrapped methods now using requests module library.
+#  28-May-2019 jdw unwrapped methods now using requests module library.
+#   3-Oct-2022 dwp add flag to allow option of overwriting of User-Agent or not
 #
 ##
 
@@ -217,6 +218,7 @@ class UrlRequestUtil(object):
 
         # encoding = kwargs.get("encoding", "utf-8")
         headerD = kwargs.get("headers", {})
+        overwriteUserAgent = kwargs.get("overwriteUserAgent", True)
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
@@ -229,7 +231,8 @@ class UrlRequestUtil(object):
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
         #
-        headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
+        if overwriteUserAgent:
+            headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
         optD = {"timeout": timeOutSeconds, "allow_redirects": True, "verify": verify}
         try:
