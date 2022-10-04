@@ -218,7 +218,7 @@ class UrlRequestUtil(object):
 
         # encoding = kwargs.get("encoding", "utf-8")
         headerD = kwargs.get("headers", {})
-        overwriteUserAgent = kwargs.get("addUserAgent", True)
+        overwriteUserAgent = kwargs.get("overwriteUserAgent", True)
         exceptionsCatch = kwargs.get("exceptionsCatch", (HTTPError))
         httpCodesCatch = kwargs.get("httpCodesCatch", [])
         returnContentType = kwargs.get("returnContentType", None)
@@ -231,6 +231,7 @@ class UrlRequestUtil(object):
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
         #
+        logger.info("Overwrite User agent? %r", overwriteUserAgent)
         if overwriteUserAgent:
             headerD.update({"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"})
         #
