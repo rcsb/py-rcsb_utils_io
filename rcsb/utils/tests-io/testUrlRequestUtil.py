@@ -145,19 +145,16 @@ class UrlRequestUtilTests(unittest.TestCase):
     def testUnpBatchFetchGetEbi(self):
         """UniProt batch fetch (proteins) get test"""
         baseUrl = "https://rest.uniprot.org"
-        # endPoint = "proteins/api/proteins"
         idList = self.__unpIdList1[:10]
         idListStr = "%2C%20".join(idList)
         endPoint = "uniprotkb/accessions?accessions=" + idListStr
         try:
-            hL = [("Accept", "application/xml")]
-            # pD = {}
-            # pD["size"] = "-1"
-            # pD["accession"] = ",".join(idList)
+            hL = []
+            pD = {}
             ureq = UrlRequestUtil()
-            ret, retCode = ureq.get(baseUrl, endPoint, None, headers=hL)
-            logger.debug("XML result %r", ret)
-            nm = ret.count("<entry ")
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            logger.debug("returned result %r", ret)
+            nm = ret.count("entryType")
             logger.info("Result count %d status code %r", nm, retCode)
             self.assertGreaterEqual(nm, len(idList) - 1)
 
@@ -168,19 +165,16 @@ class UrlRequestUtilTests(unittest.TestCase):
     def testUnpBatchFetchFail(self):
         """UniProt batch fetch (proteins) get test (expected failure)"""
         baseUrl = "https://rest0.uniprot.org"
-        # endPoint = "proteins/api/proteins"
         idList = self.__unpIdList1[:10]
         idListStr = "%2C%20".join(idList)
         endPoint = "uniprotkb/accessions?accessions=" + idListStr
         try:
-            hL = [("Accept", "application/xml")]
-            # pD = {}
-            # pD["size"] = "-1"
-            # pD["accession"] = ",".join(idList)
+            hL = []
+            pD = {}
             ureq = UrlRequestUtil()
-            ret, retCode = ureq.get(baseUrl, endPoint, None, headers=hL)
-            logger.debug("XML result %r", ret)
-            logger.debug("Result status code %r", retCode)
+            ret, retCode = ureq.get(baseUrl, endPoint, pD, headers=hL)
+            logger.info("returned result %r", ret)
+            logger.info("Result status code %r", retCode)
             self.assertEqual(ret, None)
             self.assertEqual(retCode, None)
 
