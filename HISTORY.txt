@@ -127,3 +127,4 @@
  8-Sep-2022  - V1.36 Resolve pylint issues
  3-Oct-2022  - V1.37 Add options to UrlRequestUtil
  5-Dec-2022  - V1.38 Update UniProt fetching tests
+23-Dec-2022  - V1.39 Configuration changes to support tox 4
