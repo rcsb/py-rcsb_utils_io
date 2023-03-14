@@ -56,9 +56,11 @@ class FileUtil(object):
     """Skeleton implementation for File I/O operations"""
 
     def __init__(self, workPath=None, **kwargs):
-        _ = kwargs
         self.__workPath = workPath
+        #
+        # Number of seconds over which request will timeout if no bytes received during that duration
         self.__timeout = kwargs.get("timeout", None)
+        #
         if self.__workPath and self.__workPath != ".":
             self.mkdir(workPath)
 
