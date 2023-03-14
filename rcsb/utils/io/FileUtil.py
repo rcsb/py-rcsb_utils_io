@@ -11,6 +11,7 @@
 #                 add __extractZipMember() method.  Add retry support for __fetchUrl().
 #                 Replace urlibx version of __fetchUrl with a version that depends on
 #                 requests module to better support redirection and authentication.
+# 14-Mar-2023 dwp make 'timeout' parameter a keyword argument for instantiating FileUtil object
 ##
 
 __docformat__ = "google en"
@@ -57,7 +58,7 @@ class FileUtil(object):
     def __init__(self, workPath=None, **kwargs):
         _ = kwargs
         self.__workPath = workPath
-        self.__timeout = None
+        self.__timeout = kwargs.get("timeout", None)
         if self.__workPath and self.__workPath != ".":
             self.mkdir(workPath)
 

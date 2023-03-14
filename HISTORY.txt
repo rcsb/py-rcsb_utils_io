@@ -129,3 +129,4 @@
  5-Dec-2022  - V1.38 Update UniProt fetching tests
 23-Dec-2022  - V1.39 Configuration changes to support tox 4
 13-Feb-2023  - V1.40 Resolve pylint issues
+14-Mar-2023  - V1.41 Make 'timeout' parameter a keyword argument for instantiating FileUtil object
