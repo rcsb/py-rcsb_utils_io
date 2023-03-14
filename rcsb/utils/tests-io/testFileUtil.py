@@ -46,6 +46,7 @@ class FileUtilTests(unittest.TestCase):
         #
         self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
         self.__httpsFileUrl = "https://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
+        self.__largeHttpsFileUrl = "https://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/j3/3j3q.cif.gz"
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__inpDirPath = os.path.join(HERE, "test-data")
@@ -122,6 +123,21 @@ class FileUtilTests(unittest.TestCase):
             self.assertTrue(ok)
             ok = self.__fileU.remove(";lakdjf")
             self.assertTrue(ok)
+
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testGetFileTimeout(self):
+        """Test case for a local files and directories"""
+        try:
+            # Test to make sure get request times out
+            fU = FileUtil(timeout=0.00001)
+            remoteLocator = self.__largeHttpsFileUrl
+            fn = fU.getFileName(remoteLocator)
+            lPath = os.path.join(self.__workPath, fn)
+            ok = fU.get(remoteLocator, lPath)
+            self.assertFalse(ok)
 
         except Exception as e:
             logger.exception("Failing with %s", str(e))
@@ -288,6 +304,7 @@ class FileUtilTests(unittest.TestCase):
 def utilSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(FileUtilTests("testGetFile"))
+    suiteSelect.addTest(FileUtilTests("testGetFileTimeout"))
     suiteSelect.addTest(FileUtilTests("testMoveAndCopyFile"))
     suiteSelect.addTest(FileUtilTests("testFtpUrl"))
     suiteSelect.addTest(FileUtilTests("testXzFile"))
