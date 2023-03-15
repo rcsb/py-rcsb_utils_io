@@ -5,6 +5,7 @@
 # Simple git utilities to perform status, clone, add, push and pull operations.
 #
 # Updates:
+# 15-Mar-2023 aae Fix checking for remote branches by name
 #
 ##
 
@@ -77,7 +78,7 @@ class GitUtil(object):
         """
         try:
             repo = Repo(localRepositoryPath)
-            remoteBranches = list(repo.branches)
+            remoteBranches = [b.name for b in repo.branches]
             if branch not in remoteBranches:
                 origin = repo.remote(name=remote)
                 repo.head.reference = repo.create_head(branch)
