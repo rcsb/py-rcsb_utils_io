@@ -8,6 +8,7 @@
 #  16-Dec-2019 jdw add HTTPException to retry()
 #  28-May-2019 jdw unwrapped methods now using requests module library.
 #   3-Oct-2022 dwp add flag to allow option of overwriting of User-Agent or not
+#   8-May-2023 aae Use allowed_methods instead of deprecated param
 #
 ##
 
