@@ -8,6 +8,7 @@
 #  16-Dec-2019 jdw add HTTPException to retry()
 #  28-May-2019 jdw unwrapped methods now using requests module library.
 #   3-Oct-2022 dwp add flag to allow option of overwriting of User-Agent or not
+#   8-May-2023 aae Use allowed_methods instead of deprecated param
 #
 ##
 
@@ -226,7 +227,7 @@ class UrlRequestUtil(object):
         retries = kwargs.get("retries", 3)
         statusForcelist = (429, 500, 502, 503, 504)
         backoffFactor = 5
-        methodWhitelist = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
+        allowedMethods = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
         if returnContentType == "JSON":
             if "Accept" not in headerD:
                 headerD["Accept"] = "application/json"
@@ -246,8 +247,7 @@ class UrlRequestUtil(object):
                         connect=retries,
                         backoff_factor=backoffFactor,
                         status_forcelist=statusForcelist,
-                        # allowed_methods=methodWhitelist,
-                        method_whitelist=methodWhitelist,
+                        allowed_methods=allowedMethods,
                     )
                     adapter = HTTPAdapter(max_retries=thisRetry)
                     session.mount("http://", adapter)
@@ -294,7 +294,7 @@ class UrlRequestUtil(object):
         timeOutSeconds = kwargs.get("timeOut", 5)
         retries = kwargs.get("retries", 3)
         statusForcelist = (429, 500, 502, 503, 504)
-        methodWhitelist = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
+        allowedMethods = ("HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE", "POST")
         backoffFactor = 5
         if returnContentType in ["JSON", "application/json"]:
             if "Accept" not in headerD:
@@ -316,8 +316,7 @@ class UrlRequestUtil(object):
                         connect=retries,
                         backoff_factor=backoffFactor,
                         status_forcelist=statusForcelist,
-                        # allowed_methods=methodWhitelist,
-                        method_whitelist=methodWhitelist,
+                        allowed_methods=allowedMethods,
                     )
                     adapter = HTTPAdapter(max_retries=thisRetry)
                     session.mount("http://", adapter)

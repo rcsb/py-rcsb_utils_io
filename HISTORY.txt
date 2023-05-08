@@ -131,3 +131,4 @@
 13-Feb-2023  - V1.40 Resolve pylint issues
 14-Mar-2023  - V1.41 Make 'timeout' parameter a keyword argument for instantiating FileUtil object
 15-Mar-2023  - V1.42 Fix checking for remote branches by name in GitUtil()
+ 8-May-2023  - V1.43 Use allowed_methods instead of deprecated param in UrlRequestUtil()
