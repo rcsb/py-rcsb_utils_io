@@ -246,8 +246,7 @@ class UrlRequestUtil(object):
                         connect=retries,
                         backoff_factor=backoffFactor,
                         status_forcelist=statusForcelist,
-                        # allowed_methods=methodWhitelist,
-                        method_whitelist=methodWhitelist,
+                        allowed_methods=methodWhitelist,
                     )
                     adapter = HTTPAdapter(max_retries=thisRetry)
                     session.mount("http://", adapter)
@@ -316,8 +315,7 @@ class UrlRequestUtil(object):
                         connect=retries,
                         backoff_factor=backoffFactor,
                         status_forcelist=statusForcelist,
-                        # allowed_methods=methodWhitelist,
-                        method_whitelist=methodWhitelist,
+                        allowed_methods=methodWhitelist,
                     )
                     adapter = HTTPAdapter(max_retries=thisRetry)
                     session.mount("http://", adapter)
