@@ -51,10 +51,10 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathJsonTestFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__pathIndexFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "update-lists", "all-pdb-list")
         self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_BIRD_CC_REPO", "0", "PRDCC_000010.cif")
-        # self.__locatorCifFile = "https://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100d.cif.gz"
-        self.__locatorCifFileBad = "https://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100dx.cif.gz"
+        # self.__locatorCifFile = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100d.cif.gz"
+        self.__locatorCifFileBad = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100dx.cif.gz"
 
-        self.__locatorCifFile = "https://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/hr/6hrg.cif.gz"
+        self.__locatorCifFile = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/hr/6hrg.cif.gz"
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__pathSaveDictionaryFile = os.path.join(self.__workPath, "mmcif_pdbx_v5_next.dic")

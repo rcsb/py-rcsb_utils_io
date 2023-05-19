@@ -45,8 +45,8 @@ class FileUtilTests(unittest.TestCase):
         self.__xzFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_MODBASE_MODELS", "NP_001030614.1_1.pdb.xz")
         #
         self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
-        self.__httpsFileUrl = "https://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
-        self.__largeHttpsFileUrl = "https://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/j3/3j3q.cif.gz"
+        self.__httpsFileUrl = "https://files.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
+        self.__largeHttpsFileUrl = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/j3/3j3q.cif.gz"
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__inpDirPath = os.path.join(HERE, "test-data")
