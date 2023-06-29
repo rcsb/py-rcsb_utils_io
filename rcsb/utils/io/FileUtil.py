@@ -33,6 +33,7 @@ import tempfile
 import traceback
 import zipfile
 import lzma
+from tqdm import tqdm
 
 import requests
 from rcsb.utils.io.decorators import retry
@@ -578,11 +579,14 @@ class FileUtil(object):
                         rIn.raise_for_status()
                         return False
             else:
-                with requests.get(url, stream=True, allow_redirects=True, timeout=self.__timeout) as rIn:
+                with requests.get(url, stream=True, allow_redirects=True, timeout=(self.__timeout, 10)) as rIn:
                     if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
+                        progress_bar = tqdm(unit='iB', unit_scale=True)
                         with open(filePath, "wb") as fOut:
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
+                                progress_bar.update(len(chunk))
                                 fOut.write(chunk)
+                        progress_bar.close()
                     else:
                         logger.error("Fetch %r fails with status %r", url, rIn.status_code)
                         rIn.raise_for_status()
