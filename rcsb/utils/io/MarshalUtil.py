@@ -7,6 +7,7 @@
 #       6-Mar-2019 jdw add previously stubbed remote access and tar file member support
 #       9-Mar-2019 jdw add exists()
 #      13-Aug-2019 jdw add multipart support for json/pickle
+#       5-Dec-2023 dwp add support for BCIF import and export
 #
 # For py 27 pip install backports.tempfile
 ##
@@ -50,7 +51,7 @@ class MarshalUtil(object):
         Args:
             locator (str): target path or URI
             obj (object): data to be serialized
-            fmt (str, optional): format for serialization (mmcif, tdd, csv, list). Defaults to "list".
+            fmt (str, optional): format for serialization (mmcif, bcif, tdd, csv, list). Defaults to "list".
             marshalHelper (method, optional): pre-processor method applied to input data object. Defaults to None.
             numParts (int, optional): serialize the data in parts. Defaults to None. (json and pickle formats)
         Returns:
@@ -91,7 +92,7 @@ class MarshalUtil(object):
 
         Args:
             locator (str): path or URI to input data
-            fmt (str, optional): format for deserialization (mmcif, tdd, csv, list). Defaults to "list".
+            fmt (str, optional): format for deserialization (mmcif, bcif, tdd, csv, list). Defaults to "list".
             marshalHelper (method, optional): post-processor method applied to deserialized data object. Defaults to None.
             numParts (int, optional): deserialize the data in parts. Defaults to None. (json and pickle formats)
             tarMember (str, optional): name of a member of tar file bundle. Defaults to None. (tar file format)
@@ -111,7 +112,7 @@ class MarshalUtil(object):
                 ret = self.__ioU.deserialize(filePath, fmt=fmt, workPath=self.__workPath, **kwargs)
             else:
                 #
-                if fmt == "mmcif":
+                if fmt in ["mmcif", "bcif"]:
                     ret = self.__ioU.deserialize(locator, fmt=fmt, workPath=self.__workPath, **kwargs)
                 else:
                     with tempfile.TemporaryDirectory(suffix=self.__workDirSuffix, prefix=self.__workDirPrefix, dir=self.__workPath) as tmpDirName:
