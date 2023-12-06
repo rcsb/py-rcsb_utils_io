@@ -131,8 +131,18 @@ class JsonTypeEncoder(json.JSONEncoder):
 
 class IoUtil(object):
     def __init__(self, **kwargs):
+        """Initialize IoUtil object.
+
+        **kwargs [partial list]:
+            workPath (str, optional): Directory to work in. Defaults to current working directory.
+            dictionaryApi (obj, optional): DictionaryApi instance to use for BCIF encoding (when trying to export BCIF files).
+                                           Defaults to None, in which case it will try to create one using 'dictFilePath'.
+            dictFilePath (str, optional): Dictionary file to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
+                                              Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
+        """
         self.__fileU = FileUtil(**kwargs)
-        self.__pathPdbxDictFile = kwargs.get("pathPdbxDictFile", "https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic")
+        self.__dictionaryApi = kwargs.get("dictionaryApi", None)
+        self.__dictFilePath = kwargs.get("dictFilePath", "https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic")
 
     def serialize(self, filePath, myObj, fmt="pickle", **kwargs):
         """Public method to serialize format appropriate objects
@@ -470,14 +480,27 @@ class IoUtil(object):
             workPath = kwargs.get("workPath", None)
             raiseExceptions = kwargs.get("raiseExceptions", True)
             applyTypes = kwargs.get("applyTypes", True)
-            dictFilePath = kwargs.get("dictFilePath", self.__pathPdbxDictFile)
             useFloat64 = kwargs.get("useFloat64", True)
             useStringTypes = kwargs.get("useStringTypes", False)
             copyInputData = kwargs.get("copyInputData", False)
             #
+            # DictionaryApi object - can provide as input args to IoUtil() or MarshalUtil() up front,
+            # or to the individual methods IoUtil.serialize() or MarshalUtil.doExport().
+            # Note that doing this significantly speeds up performance when trying to serialize a lot of files,
+            # as opposed to forcing this method to create a new DictionaryApi instance every call.
+            dictionaryApi = kwargs.get("dictionaryApi", self.__dictionaryApi)
+            # Alternatively, you can provide just the path to a dictionary file and let the utility create
+            # the DictionaryApi object for you. Can provide as input args to IoUtil() or MarshalUtil() up front as well.
+            # However, be aware that providing it as input at this method here (instead of up front at the class level)
+            # will result in slower performance when exporting a lot of files in a row.
+            dictFilePath = kwargs.get("dictFilePath", self.__dictFilePath)
+            #
             myIo = IoAdapter(raiseExceptions=raiseExceptions)
-            dApiContainerList = myIo.readFile(inputFilePath=dictFilePath)
-            dApi = DictionaryApi(containerList=dApiContainerList, consolidate=True)
+            if applyTypes and not dictionaryApi:
+                logger.warning("No DictionaryApi object provided to arg 'dictionaryApi'. Will try to instantiate one with dictionary file at 'dictFilePath': %r", dictFilePath)
+                dApiContainerList = myIo.readFile(inputFilePath=dictFilePath)
+                dictionaryApi = DictionaryApi(containerList=dApiContainerList, consolidate=True)
+            #
             if filePath.endswith(".gz") and workPath:
                 rfn = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
                 tPath = os.path.join(workPath, rfn)
@@ -486,7 +509,7 @@ class IoUtil(object):
                     containerList=containerList,
                     fmt="bcif",
                     applyTypes=applyTypes,
-                    dictionaryApi=dApi,
+                    dictionaryApi=dictionaryApi,
                     useFloat64=useFloat64,
                     useStringTypes=useStringTypes,
                     copyInputData=copyInputData
@@ -498,7 +521,7 @@ class IoUtil(object):
                     containerList=containerList,
                     fmt="bcif",
                     applyTypes=applyTypes,
-                    dictionaryApi=dApi,
+                    dictionaryApi=dictionaryApi,
                     useFloat64=useFloat64,
                     useStringTypes=useStringTypes,
                     copyInputData=copyInputData
