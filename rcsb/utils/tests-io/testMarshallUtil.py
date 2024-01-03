@@ -208,7 +208,7 @@ class MarshalUtilTests(unittest.TestCase):
             # Now write it out as a BCIF and BCIF.gz files
             ok = self.__mU.doExport(self.__pathSaveBcifFile, cL1, fmt="bcif")
             self.assertTrue(ok)
-            ok = self.__mU.doExport(self.__pathSaveBcifFileGz, cL1, fmt="bcif", dictFilePath=self.__pathPdbxDictionaryFile)
+            ok = self.__mU.doExport(self.__pathSaveBcifFileGz, cL1, fmt="bcif", dictFilePathL=[self.__pathPdbxDictionaryFile])
             self.assertTrue(ok)
             # Also try writing it out using a pre-instantiated DictionaryApi object
             myIo = IoAdapter(raiseExceptions=True)

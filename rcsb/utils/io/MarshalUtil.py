@@ -36,24 +36,24 @@ logger = logging.getLogger(__name__)
 class MarshalUtil(object):
     """Wrapper for serialization and deserialization methods."""
 
-    def __init__(self, workPath=None, dictionaryApi=None, dictFilePath=None, **kwargs):
+    def __init__(self, workPath=None, dictionaryApi=None, dictFilePathL=None, **kwargs):
         """Initialize MarshalUtil object.
 
         Args:
             workPath (str, optional): Directory to work in. Defaults to current working directory.
             dictionaryApi (obj, optional): DictionaryApi instance to use for BCIF encoding (when trying to export BCIF files).
-                                           Defaults to None, in which case it will try to create one using 'dictFilePath'.
-            dictFilePath (str, optional): Dictionary file to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
-                                              Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
+                                           Defaults to None, in which case it will try to create one using 'dictFilePathL'.
+            dictFilePathL (str, optional): List of dictionary files to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
+                                           Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
         """
         self.__workPath = workPath if workPath else "."
         self.__workDirSuffix = kwargs.get("workDirSuffix", "marshall_")
         self.__workDirPrefix = kwargs.get("workDirSuffix", "_tempdir")
         self.__dictionaryApi = dictionaryApi
-        self.__dictFilePath = dictFilePath if dictFilePath else "https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic"
+        self.__dictFilePathL = dictFilePathL if dictFilePathL else ["https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic"]
         #
         self.__fileU = FileUtil(workPath=self.__workPath)
-        self.__ioU = IoUtil(dictFilePath=self.__dictFilePath, dictionaryApi=self.__dictionaryApi)
+        self.__ioU = IoUtil(dictFilePathL=self.__dictFilePathL, dictionaryApi=self.__dictionaryApi)
 
     def doExport(self, locator, obj, fmt="list", marshalHelper=None, numParts=None, **kwargs):
         """Serialize the input object at locator path in specified format.  The

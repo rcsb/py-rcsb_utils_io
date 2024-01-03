@@ -136,13 +136,13 @@ class IoUtil(object):
         **kwargs [partial list]:
             workPath (str, optional): Directory to work in. Defaults to current working directory.
             dictionaryApi (obj, optional): DictionaryApi instance to use for BCIF encoding (when trying to export BCIF files).
-                                           Defaults to None, in which case it will try to create one using 'dictFilePath'.
-            dictFilePath (str, optional): Dictionary file to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
-                                              Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
+                                           Defaults to None, in which case it will try to create one using 'dictFilePathL'.
+            dictFilePathL (str, optional): List of dictionary files to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
+                                           Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
         """
         self.__fileU = FileUtil(**kwargs)
         self.__dictionaryApi = kwargs.get("dictionaryApi", None)
-        self.__dictFilePath = kwargs.get("dictFilePath", "https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic")
+        self.__dictFilePathL = kwargs.get("dictFilePathL", ["https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic"])
 
     def serialize(self, filePath, myObj, fmt="pickle", **kwargs):
         """Public method to serialize format appropriate objects
@@ -489,16 +489,18 @@ class IoUtil(object):
             # Note that doing this significantly speeds up performance when trying to serialize a lot of files,
             # as opposed to forcing this method to create a new DictionaryApi instance every call.
             dictionaryApi = kwargs.get("dictionaryApi", self.__dictionaryApi)
-            # Alternatively, you can provide just the path to a dictionary file and let the utility create
+            # Alternatively, you can provide just the path(s) to a list of dictionary file(s) and let the utility create
             # the DictionaryApi object for you. Can provide as input args to IoUtil() or MarshalUtil() up front as well.
             # However, be aware that providing it as input at this method here (instead of up front at the class level)
             # will result in slower performance when exporting a lot of files in a row.
-            dictFilePath = kwargs.get("dictFilePath", self.__dictFilePath)
+            dictFilePathL = kwargs.get("dictFilePathL", self.__dictFilePathL)
             #
             myIo = IoAdapter(raiseExceptions=raiseExceptions)
             if applyTypes and not dictionaryApi:
-                logger.warning("No DictionaryApi object provided to arg 'dictionaryApi'. Will try to instantiate one with dictionary file at 'dictFilePath': %r", dictFilePath)
-                dApiContainerList = myIo.readFile(inputFilePath=dictFilePath)
+                logger.warning("No DictionaryApi object provided to arg 'dictionaryApi'. Will try to instantiate one with dictionary file(s) 'dictFilePathL': %r", dictFilePathL)
+                dApiContainerList = []
+                for dictFilePath in dictFilePathL:
+                    dApiContainerList += myIo.readFile(inputFilePath=dictFilePath)
                 dictionaryApi = DictionaryApi(containerList=dApiContainerList, consolidate=True)
             #
             if filePath.endswith(".gz") and workPath:
