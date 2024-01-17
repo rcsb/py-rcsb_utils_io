@@ -29,6 +29,7 @@
 #  18-Sep-2019  jdw add method deserializeCsvIter()
 #  17-Sep-2021  jdw add an explicit file test for gzip compression to avoid problems with uncompressed files.
 #  28-Mar-2022  dwp remove deprecated xml.etree.cElementTree module
+#   5-Dec-2023  dwp add support for BCIF serialization and deserialization
 ##
 
 __docformat__ = "google en"
@@ -58,16 +59,11 @@ import requests
 import ruamel.yaml
 import xml.etree.ElementTree as ET
 
-from mmcif.io.IoAdapterPy import IoAdapterPy
+from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter
+from mmcif.api.DictionaryApi import DictionaryApi
 from rcsb.utils.io.decorators import retry
 from rcsb.utils.io.FastaUtil import FastaUtil
 from rcsb.utils.io.FileUtil import FileUtil
-
-
-try:
-    from mmcif.io.IoAdapterCore import IoAdapterCore as IoAdapter  # pylint: disable=ungrouped-imports
-except Exception:
-    from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter  # pylint: disable=reimported,ungrouped-imports
 
 
 logger = logging.getLogger(__name__)
@@ -135,7 +131,18 @@ class JsonTypeEncoder(json.JSONEncoder):
 
 class IoUtil(object):
     def __init__(self, **kwargs):
+        """Initialize IoUtil object.
+
+        **kwargs [partial list]:
+            workPath (str, optional): Directory to work in. Defaults to current working directory.
+            dictionaryApi (obj, optional): DictionaryApi instance to use for BCIF encoding (when trying to export BCIF files).
+                                           Defaults to None, in which case it will try to create one using 'dictFilePathL'.
+            dictFilePathL (str, optional): List of dictionary files to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
+                                           Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
+        """
         self.__fileU = FileUtil(**kwargs)
+        self.__dictionaryApi = kwargs.get("dictionaryApi", None)
+        self.__dictFilePathL = kwargs.get("dictFilePathL", ["https://raw.githubusercontent.com/wwpdb-dictionaries/mmcif_pdbx/master/dist/mmcif_pdbx_v5_next.dic"])
 
     def serialize(self, filePath, myObj, fmt="pickle", **kwargs):
         """Public method to serialize format appropriate objects
@@ -157,6 +164,8 @@ class IoUtil(object):
             return ret
         if fmt in ["mmcif"]:
             ret = self.__serializeMmCif(filePath, myObj, **kwargs)
+        if fmt in ["bcif"]:
+            ret = self.__serializeBCif(filePath, myObj, **kwargs)
         elif fmt in ["json"]:
             ret = self.__serializeJson(filePath, myObj, **kwargs)
         elif fmt in ["pickle"]:
@@ -189,8 +198,8 @@ class IoUtil(object):
 
         """
         fmt = str(fmt).lower()
-        if fmt in ["mmcif"]:
-            ret = self.__deserializeMmCif(filePath, **kwargs)  # type: ignore
+        if fmt in ["mmcif", "bcif"]:
+            ret = self.__deserializeCif(filePath, fmt=fmt, **kwargs)  # type: ignore
         elif fmt in ["json"]:
             ret = self.__deserializeJson(filePath, **kwargs)  # type: ignore
         elif fmt in ["pickle"]:
@@ -409,7 +418,7 @@ class IoUtil(object):
         except Exception:
             return False
 
-    def __deserializeMmCif(self, locator, **kwargs):
+    def __deserializeCif(self, locator, fmt, **kwargs):
         """ """
         try:
             containerList = []
@@ -423,22 +432,22 @@ class IoUtil(object):
                 if minSize >= 0 and not self.__hasMinSize(locator, minSize):
                     logger.warning("Minimum file size not satisfied for: %r", locator)
                 myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
-                containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)  # type: ignore
+                containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath, fmt=fmt)  # type: ignore
             else:
-                # myIo = IoAdapterPy(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
+                # myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
                 # containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)
-                containerList = self.__deserializeMmCifRemote(locator, useCharRefs, enforceAscii, workPath)
+                containerList = self.__deserializeCifRemote(locator, useCharRefs, enforceAscii, workPath, fmt)
 
         except Exception as e:
             logger.error("Failing for %s with %s", locator, str(e))
         return containerList
 
     @retry((requests.exceptions.RequestException), maxAttempts=3, delaySeconds=1, multiplier=2, defaultValue=[], logger=logger)
-    def __deserializeMmCifRemote(self, locator, useCharRefs, enforceAscii, workPath):
+    def __deserializeCifRemote(self, locator, useCharRefs, enforceAscii, workPath, fmt):
         containerList = []
         try:
-            myIo = IoAdapterPy(raiseExceptions=True, useCharRefs=useCharRefs)
-            containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath)
+            myIo = IoAdapter(raiseExceptions=True, useCharRefs=useCharRefs)
+            containerList = myIo.readFile(locator, enforceAscii=enforceAscii, outDirPath=workPath, fmt=fmt)
         except Exception as e:
             raise e
         return containerList
@@ -464,6 +473,65 @@ class IoUtil(object):
             logger.error("Failing for %s with %s", filePath, str(e))
         return ret
 
+    def __serializeBCif(self, filePath, containerList, **kwargs):
+        """ """
+        try:
+            ret = False
+            workPath = kwargs.get("workPath", None)
+            raiseExceptions = kwargs.get("raiseExceptions", True)
+            applyTypes = kwargs.get("applyTypes", True)
+            useFloat64 = kwargs.get("useFloat64", True)
+            useStringTypes = kwargs.get("useStringTypes", False)
+            copyInputData = kwargs.get("copyInputData", False)
+            #
+            # DictionaryApi object - can provide as input args to IoUtil() or MarshalUtil() up front,
+            # or to the individual methods IoUtil.serialize() or MarshalUtil.doExport().
+            # Note that doing this significantly speeds up performance when trying to serialize a lot of files,
+            # as opposed to forcing this method to create a new DictionaryApi instance every call.
+            dictionaryApi = kwargs.get("dictionaryApi", self.__dictionaryApi)
+            # Alternatively, you can provide just the path(s) to a list of dictionary file(s) and let the utility create
+            # the DictionaryApi object for you. Can provide as input args to IoUtil() or MarshalUtil() up front as well.
+            # However, be aware that providing it as input at this method here (instead of up front at the class level)
+            # will result in slower performance when exporting a lot of files in a row.
+            dictFilePathL = kwargs.get("dictFilePathL", self.__dictFilePathL)
+            #
+            myIo = IoAdapter(raiseExceptions=raiseExceptions)
+            if applyTypes and not dictionaryApi:
+                logger.warning("No DictionaryApi object provided to arg 'dictionaryApi'. Will try to instantiate one with dictionary file(s) 'dictFilePathL': %r", dictFilePathL)
+                dApiContainerList = []
+                for dictFilePath in dictFilePathL:
+                    dApiContainerList += myIo.readFile(inputFilePath=dictFilePath)
+                dictionaryApi = DictionaryApi(containerList=dApiContainerList, consolidate=True)
+            #
+            if filePath.endswith(".gz") and workPath:
+                rfn = "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+                tPath = os.path.join(workPath, rfn)
+                ret = myIo.writeFile(
+                    tPath,
+                    containerList=containerList,
+                    fmt="bcif",
+                    applyTypes=applyTypes,
+                    dictionaryApi=dictionaryApi,
+                    useFloat64=useFloat64,
+                    useStringTypes=useStringTypes,
+                    copyInputData=copyInputData
+                )
+                ret = self.__fileU.compress(tPath, filePath, compressType="gzip")
+            else:
+                ret = myIo.writeFile(
+                    filePath,
+                    containerList=containerList,
+                    fmt="bcif",
+                    applyTypes=applyTypes,
+                    dictionaryApi=dictionaryApi,
+                    useFloat64=useFloat64,
+                    useStringTypes=useStringTypes,
+                    copyInputData=copyInputData
+                )
+        except Exception as e:
+            logger.error("Failing for %s with %s", filePath, str(e))
+        return ret
+
     def __deserializeMmCifDict(self, filePath, **kwargs):
         """ """
         try:
@@ -473,7 +541,7 @@ class IoUtil(object):
             raiseExceptions = kwargs.get("raiseExceptions", True)
             useCharRefs = kwargs.get("useCharRefs", True)
             #
-            myIo = IoAdapterPy(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
+            myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
             containerList = myIo.readFile(filePath, enforceAscii=enforceAscii, outDirPath=workPath)
         except Exception as e:
             logger.error("Failing for %s with %s", filePath, str(e))
@@ -488,7 +556,7 @@ class IoUtil(object):
             raiseExceptions = kwargs.get("raiseExceptions", True)
             useCharRefs = kwargs.get("useCharRefs", True)
             #
-            myIo = IoAdapterPy(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
+            myIo = IoAdapter(raiseExceptions=raiseExceptions, useCharRefs=useCharRefs)
             ret = myIo.writeFile(filePath, containerList=containerList, enforceAscii=enforceAscii)
         except Exception as e:
             logger.error("Failing for %s with %s", filePath, str(e))

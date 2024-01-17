@@ -32,6 +32,9 @@ import time
 import unittest
 from collections import OrderedDict
 
+from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter
+from mmcif.api.DictionaryApi import DictionaryApi
+
 from rcsb.utils.io import __version__
 from rcsb.utils.io.MarshalUtil import MarshalUtil
 
@@ -51,6 +54,7 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathJsonTestFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__pathIndexFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "update-lists", "all-pdb-list")
         self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_BIRD_CC_REPO", "0", "PRDCC_000010.cif")
+        self.__pathPdbxCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_PDBX_SANDBOX", "du", "1dul", "1dul.cif.gz")
         # self.__locatorCifFile = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100d.cif.gz"
         self.__locatorCifFileBad = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/00/100dx.cif.gz"
 
@@ -61,6 +65,8 @@ class MarshalUtilTests(unittest.TestCase):
         self.__pathSaveJsonTestFile = os.path.join(self.__workPath, "json-content.json")
         self.__pathSaveIndexFile = os.path.join(self.__workPath, "all-pdb-list")
         self.__pathSaveCifFile = os.path.join(self.__workPath, "cif-content.cif")
+        self.__pathSaveBcifFile = os.path.join(self.__workPath, "bcif-content.bcif")
+        self.__pathSaveBcifFileGz = os.path.join(self.__workPath, "bcif-content.bcif.gz")
         #
         self.__pathFastaFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "sequence", "pdb_seq_prerelease.fasta")
         self.__pathSaveFastaFile = os.path.join(self.__workPath, "test-pre-release.fasta")
@@ -190,6 +196,49 @@ class MarshalUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testReadWriteBcifFile(self):
+        """Test the case read and write binary PDBx/mmCIF (BCIF) file"""
+        try:
+            # First read in a normal mmCIF file
+            cL1 = self.__mU.doImport(self.__pathPdbxCifFile, fmt="mmcif")
+            cName1 = cL1[0].getName()
+            logger.info("Container list length %d and name %s", len(cL1), cName1)
+            self.assertGreaterEqual(len(cL1), 1)
+            #
+            # Now write it out as a BCIF and BCIF.gz files
+            ok = self.__mU.doExport(self.__pathSaveBcifFile, cL1, fmt="bcif")
+            self.assertTrue(ok)
+            ok = self.__mU.doExport(self.__pathSaveBcifFileGz, cL1, fmt="bcif", dictFilePathL=[self.__pathPdbxDictionaryFile])
+            self.assertTrue(ok)
+            # Also try writing it out using a pre-instantiated DictionaryApi object
+            myIo = IoAdapter(raiseExceptions=True)
+            dApiContainerList = myIo.readFile(inputFilePath=self.__pathPdbxDictionaryFile)
+            dictionaryApi = DictionaryApi(containerList=dApiContainerList, consolidate=True)
+            ok = self.__mU.doExport(self.__pathSaveBcifFileGz, cL1, fmt="bcif", dictionaryApi=dictionaryApi)
+            self.assertTrue(ok)
+            # Also try creating the MarshalUtil() instance with the DictionaryApi object up front
+            mU2 = MarshalUtil(dictionaryApi=dictionaryApi)
+            ok = mU2.doExport(self.__pathSaveBcifFileGz, cL1, fmt="bcif")
+            self.assertTrue(ok)
+            #
+            # Now try reading them back in
+            cL2 = self.__mU.doImport(self.__pathSaveBcifFile, fmt="bcif")
+            cName2 = cL2[0].getName()
+            logger.info("Container list length %d and name %s", len(cL2), cName2)
+            cL3 = self.__mU.doImport(self.__pathSaveBcifFileGz, fmt="bcif")
+            cName3 = cL3[0].getName()
+            logger.info("Container list length %d and name %s", len(cL3), cName3)
+            self.assertGreaterEqual(len(cL3), 1)
+            #
+            # Confirm data all there and retained
+            ok = cName1 == cName2 == cName3
+            self.assertTrue(ok)
+            ok = cL1[0].getObjNameList() == cL2[0].getObjNameList() == cL3[0].getObjNameList()
+            self.assertTrue(ok)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
     def testReadWriteJsonFile(self):
         """Test the case read and write JSON file"""
         try:
@@ -293,6 +342,7 @@ def utilReadWriteSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(MarshalUtilTests("testReadWriteDictionaryFiles"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteCifFile"))
+    suiteSelect.addTest(MarshalUtilTests("testReadWriteBcifFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteJsonFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteListFile"))
     suiteSelect.addTest(MarshalUtilTests("testReadWriteFastaFile"))

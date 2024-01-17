@@ -52,12 +52,15 @@ class IoUtilTests(unittest.TestCase):
         self.__pathJsonTestFile = os.path.join(TOPDIR, "rcsb", "mock-data", "dictionaries", "vrpt_dictmap.json")
         self.__pathIndexFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_EXCHANGE_SANDBOX", "update-lists", "all-pdb-list")
         self.__pathCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_BIRD_CC_REPO", "0", "PRDCC_000010.cif")
+        self.__pathPdbxCifFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_PDBX_SANDBOX", "du", "1dul", "1dul.cif.gz")
         #
         self.__workPath = os.path.join(HERE, "test-output")
         self.__pathSaveDictionaryFile = os.path.join(self.__workPath, "mmcif_pdbx_v5_next.dic")
         self.__pathSaveJsonTestFile = os.path.join(self.__workPath, "json-content.json")
         self.__pathSaveIndexFile = os.path.join(self.__workPath, "all-pdb-list")
         self.__pathSaveCifFile = os.path.join(self.__workPath, "cif-content.cif")
+        self.__pathSaveBcifFile = os.path.join(self.__workPath, "bcif-content.bcif")
+        self.__pathSaveBcifFileGz = os.path.join(self.__workPath, "bcif-content.bcif.gz")
         self.__pathSavePickleFile = os.path.join(self.__workPath, "json-content.pic")
         self.__pathSaveTextFile = os.path.join(self.__workPath, "json-content.txt")
         #
@@ -198,6 +201,39 @@ class IoUtilTests(unittest.TestCase):
             logger.exception("Failing with %s", str(e))
             self.fail()
 
+    def testReadWriteBcifFile(self):
+        """Test the case read and write binary PDBx/mmCIF (BCIF) file"""
+        try:
+            # First read in a normal mmCIF file
+            cL1 = self.__ioU.deserialize(self.__pathPdbxCifFile, fmt="mmcif")
+            cName1 = cL1[0].getName()
+            logger.info("Container list length %d and name %s", len(cL1), cName1)
+            self.assertGreaterEqual(len(cL1), 1)
+            #
+            # Now write it out as a BCIF and BCIF.gz files
+            ok = self.__ioU.serialize(self.__pathSaveBcifFile, cL1, fmt="bcif")
+            self.assertTrue(ok)
+            ok = self.__ioU.serialize(self.__pathSaveBcifFileGz, cL1, fmt="bcif", workPath=self.__workPath)
+            self.assertTrue(ok)
+            #
+            # Now try reading them back in
+            cL2 = self.__ioU.deserialize(self.__pathSaveBcifFile, fmt="bcif")
+            cName2 = cL2[0].getName()
+            logger.info("Container list length %d and name %s", len(cL2), cName2)
+            cL3 = self.__ioU.deserialize(self.__pathSaveBcifFileGz, fmt="bcif")
+            cName3 = cL3[0].getName()
+            logger.info("Container list length %d and name %s", len(cL3), cName3)
+            self.assertGreaterEqual(len(cL3), 1)
+            #
+            # Confirm data all there and retained
+            ok = cName1 == cName2 == cName3
+            self.assertTrue(ok)
+            ok = cL1[0].getObjNameList() == cL2[0].getObjNameList() == cL3[0].getObjNameList()
+            self.assertTrue(ok)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
     def testReadWriteJsonFile(self):
         """Test the case read and write JSON file"""
         try:
@@ -324,6 +360,7 @@ def utilReadWriteSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(IoUtilTests("testReadWriteDictionaryFiles"))
     suiteSelect.addTest(IoUtilTests("testReadWriteCifFile"))
+    suiteSelect.addTest(IoUtilTests("testReadWriteBcifFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteJsonFile"))
     suiteSelect.addTest(IoUtilTests("testReadWritePickleFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteListFile"))
