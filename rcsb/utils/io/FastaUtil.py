@@ -201,6 +201,7 @@ class FastaUtil(object):
             seqId = ""
             description = ""
             taxId = ""
+            entryName = ""
             # proteinExistence = ""
             # seqVersion = ""
             #

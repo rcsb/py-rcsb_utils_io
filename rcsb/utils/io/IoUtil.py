@@ -668,6 +668,7 @@ class IoUtil(object):
         encoding = kwargs.get("encoding", "utf-8-sig")
         maxInt = sys.maxsize
         csv.field_size_limit(maxInt)
+        reader = None
         try:
             if filePath[-3:] == ".gz":
                 with gzip.open(filePath, "rt", encoding=encoding, errors=encodingErrors) as csvFile:

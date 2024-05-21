@@ -173,6 +173,7 @@ class CryptUtils(object):
             (dict): {"hashDigest": xxxx , "hashType": 'SHA1|MD5|SHA256'}
         """
         rD = {}
+        hashObj = None
         if hashType not in ["MD5", "SHA1", "SHA256"]:
             return rD
         try:
