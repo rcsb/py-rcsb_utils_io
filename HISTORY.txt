@@ -135,3 +135,4 @@
 15-May-2023  - V1.44 Update urllib3 requirements
 19-May-2023  - V1.45 Update DNS to PDB archive
 17-Jan-2024  - V1.46 Add BCIF import and export support to IoUtil and MarshalUtil
+21-May-2024  - V1.47 Fix pylinting
