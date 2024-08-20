@@ -6,6 +6,7 @@
 #
 # Updates:
 # 19-Jul-2021 jdw add git push support
+# 20-Aug-2024 dwp disable backup to fallback location by default
 ##
 
 __docformat__ = "google en"
@@ -123,7 +124,7 @@ class StashableBase(object):
             logger.exception("Failing with %s", str(e))
         return ok
 
-    def backup(self, cfgOb, configName, remotePrefix=None, useStash=True, useGit=False):
+    def backup(self, cfgOb, configName, remotePrefix=None, useStash=True, useGit=False, backupToFallback=False):
         """Backup the target cache directory to remote stash and/or git storage.
 
         Args:
@@ -132,6 +133,7 @@ class StashableBase(object):
             remotePrefix (str, optional): channel prefix. Defaults to None.
             useStash (bool, optional): use "stash" storage services. Defaults to True.
             useGit (bool, optional): use a git repository service. Defaults to False.
+            backupToFallback (bool, optional): whether to also backup to fallback stash server. Defaults to False.
 
         Returns:
             bool: True for success or False otherwise
@@ -140,20 +142,20 @@ class StashableBase(object):
         ok = self.__stU.makeBundle(self.__cachePath, self.__dirNameL)
         ok1 = True
         if ok and useStash:
-            ok1 = self.__backupToStash(cfgOb, configName, remotePrefix=remotePrefix)
+            ok1 = self.__backupToStash(cfgOb, configName, remotePrefix=remotePrefix, backupToFallback=backupToFallback)
         ok2 = True
         if ok and useGit:
             ok2 = self.__backupToGit(cfgOb, configName, remotePrefix=remotePrefix)
         return ok and ok1 and ok2
 
-    def __backupToStash(self, cfgOb, configName, remotePrefix=None):
+    def __backupToStash(self, cfgOb, configName, remotePrefix=None, backupToFallback=False):
         """Backup the target cache directory to stash storage.
 
         Args:
             cfgOb (obj): configuration object (ConfigUtil())
             configName (str): configuration section name
             remotePrefix (str, optional): channel prefix. Defaults to None.
-
+            backupToFallback (bool, optional): whether to also backup to fallback stash server. Defaults to False.
 
         Returns:
             bool: True for success or False otherwise
@@ -165,9 +167,12 @@ class StashableBase(object):
             password = cfgOb.get("_STASH_AUTH_PASSWORD", sectionName=configName)
             basePath = cfgOb.get("_STASH_SERVER_BASE_PATH", sectionName=configName)
             url = cfgOb.get("STASH_SERVER_URL", sectionName=configName)
-            urlFallBack = cfgOb.get("STASH_SERVER_FALLBACK_URL", sectionName=configName)
             ok1 = self.__toStash(url, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
-            ok2 = self.__toStash(urlFallBack, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
+            if backupToFallback:
+                urlFallBack = cfgOb.get("STASH_SERVER_FALLBACK_URL", sectionName=configName)
+                ok2 = self.__toStash(urlFallBack, basePath, userName=userName, password=password, remoteStashPrefix=remotePrefix)
+            else:
+                ok2 = True
             logger.info(
                 "Completed backup for %r data (%r/%r) at %s (%.4f seconds)",
                 self.__dirNameL,
