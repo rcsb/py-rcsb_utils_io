@@ -6,6 +6,7 @@
 #
 # Updates:
 # 19-Jul-2021 jdw add git push support
+# 20-Aug-2024 dwp disable backup to fallback location by default
 ##
 
 __docformat__ = "google en"
