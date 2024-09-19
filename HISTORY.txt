@@ -137,3 +137,4 @@
 17-Jan-2024  - V1.46 Add BCIF import and export support to IoUtil and MarshalUtil
 21-May-2024  - V1.47 Fix pylinting
 20-Aug-2024  - V1.48 Disable default backup to fallback setting in StashableBase
+19-Sep-2024  - V1.49 Allowed local dir url's for storeBundle and fetchBundle
