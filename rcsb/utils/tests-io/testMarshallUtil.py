@@ -301,11 +301,13 @@ class MarshalUtilTests(unittest.TestCase):
         """Test the case to read URL target of a tdd"""
         try:
             mU = MarshalUtil(workPath=self.__workPath)
-            # https://scop.berkeley.edu/downloads/parse/dir.des.scope.2.08-stable.txt
-            version = "2.08-stable"
-            urlTarget = "https://scop.berkeley.edu/downloads/parse"
+            # https://scop.berkeley.edu/downloads/parse/dir.des.scope.2.08-stable.txt  # this started presenting SSL cert issues beg. Oct. 2024
+            # version = "2.08-stable"
+            # urlTarget = "https://scop.berkeley.edu/downloads/parse"
+            # fn = "dir.des.scope.%s.txt" % version  # see above comment regarding SSL isues
+            urlTarget = "https://github.com/rcsb/py-rcsb_exdb_assets/raw/master/fall_back/Pfam"
             encoding = "utf-8-sig" if sys.version_info[0] > 2 else "ascii"
-            fn = "dir.des.scope.%s.txt" % version
+            fn = "Pfam-A.clans.tsv.gz"
             url = os.path.join(urlTarget, fn)
             logger.info("Fetch url %r", url)
             desL = mU.doImport(url, fmt="tdd", rowFormat="list", uncomment=True, encoding=encoding)
