@@ -5,6 +5,7 @@
 #       9-Jul-2019 jdw add publish jobs
 #      21-Jul-2019 jdw update to Py38
 #      24-Nov-2020 jdw update to py39 remove py27
+#      10-Oct-2024 mjt update to py310 remove py39
 #
 name: $(BuildDefinitionName)_$(Date:yyyyMMdd)$(Rev:.rr)
 
@@ -24,26 +25,26 @@ schedules:
 
 jobs:
   - template: azure-template-tox-job.yml
-    parameters: {tox: 'format_pep8', python: '3.9', os: 'linux'}
+    parameters: {tox: 'format_pep8', python: '3.10', os: 'linux'}
   - template: azure-template-tox-job.yml
-    parameters: {tox: 'lint_pylint', python: '3.9', os: 'linux'}
+    parameters: {tox: 'lint_pylint', python: '3.10', os: 'linux'}
   - template: azure-template-tox-job.yml
-    parameters: {tox: 'test_coverage', python: '3.9', os: 'linux'}
+    parameters: {tox: 'test_coverage', python: '3.10', os: 'linux'}
     #
   - template: azure-template-tox-job.yml
-    parameters: {tox: 'py39', python: '3.9', os: 'linux'}
+    parameters: {tox: 'py310', python: '3.10', os: 'linux'}
   #- template: azure-template-tox-job.yml
   #  parameters: {tox: 'py27', python: '2.7', os: 'linux'}
   #
   - template: azure-template-tox-job.yml
-    parameters: {tox: 'py39', python: '3.9', os: 'macos'}
+    parameters: {tox: 'py310', python: '3.10', os: 'macos'}
   #- template: azure-template-tox-job.yml
   #  parameters: {tox: 'py27', python: '2.7', os: 'macos'}
   #
   #- template: azure-template-publish-job.yml
   #  parameters: {tox: 'py39', python: '3.9', os: 'macos'}
   - template: azure-template-publish-job.yml
-    parameters: {tox: 'py39', python: '3.9', os: 'linux'}
+    parameters: {tox: 'py310', python: '3.10', os: 'linux'}
   #
   #- template: azure-template-publish-job.yml
   #  parameters: {tox: 'py27', python: '2.7', os: 'macos'}
