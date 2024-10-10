@@ -90,7 +90,7 @@ class UrlRequestUtil(object):
         optD = {"timeout": 5}
         try:
             if sslCert == "disable":
-                ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
                 ctx.options &= ~ssl.OP_NO_SSLv3  # this does not seem to work has expected
@@ -158,7 +158,7 @@ class UrlRequestUtil(object):
         optD = {"timeout": 5}
         try:
             if sslCert == "disable":
-                ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
                 ctx.options &= ~ssl.OP_NO_SSLv3  # this does not seem to work has expected

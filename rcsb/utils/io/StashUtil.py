@@ -63,7 +63,7 @@ class StashUtil(object):
         """Store a copy of the bundled search dependencies remotely -
 
         Args:
-            url (str): URL string for the destination host (e.g. sftp://myserver.net or None for a local file)
+            url (str): URL string for the destination host (e.g. sftp://myserver.net or None, /, or file:// for a local file)
             remoteDirPath (str): remote directory path on the remote resource
             remoteStashPrefix (str, optional): optional label preppended to the stashed dependency bundle artifact (default='A')
             userName (str, optional): optional access information. Defaults to None.
@@ -87,6 +87,10 @@ class StashUtil(object):
                 fileU = FileUtil()
                 remotePath = os.path.join(remoteDirPath, fn)
                 ok = fileU.put(self.__localStashTarFilePath, remotePath)
+            elif url.startswith("/") or url.startswith("file://"):
+                fileU = FileUtil()
+                remotePath = os.path.join(url, remoteDirPath, fn)
+                ok = fileU.put(self.__localStashTarFilePath, remotePath)
             else:
                 logger.error("Unsupported stash protocol %r", url)
             return ok
@@ -100,7 +104,7 @@ class StashUtil(object):
 
         Args:
             localRestoreDirPath (str): local restore path
-            url (str): remote URL
+            url (str): remote URL or local dir (None if Cache is the local dir)
             remoteDirPath (str): remote directory path on the remote resource
             remoteStashPrefix (str, optional): optional label preppended to the stashed dependency bundle artifact (default='A')
             userName (str, optional): optional access information. Defaults to None.
@@ -112,6 +116,13 @@ class StashUtil(object):
             fn = self.__makeBundleFileName(self.__baseBundleFileName, remoteStashPrefix=remoteStashPrefix)
             if not url:
                 remotePath = os.path.join(remoteDirPath, fn)
+                if fileU.exists(remotePath):
+                    ok = fileU.get(remotePath, self.__localStashTarFilePath)
+                else:
+                    ok = False
+                    logger.warning("Missing bundle file %r", remotePath)
+            elif url.startswith("/") or url.startswith("file://"):
+                remotePath = os.path.join(url, remoteDirPath, fn)
                 if fileU.exists(remotePath):
                     ok = fileU.get(remotePath, self.__localStashTarFilePath)
                 else:
