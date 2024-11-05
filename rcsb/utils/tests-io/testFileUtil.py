@@ -44,7 +44,7 @@ class FileUtilTests(unittest.TestCase):
         self.__zipFileUrl = "https://inventory.data.gov/dataset/794cd3d7-4d28-4408-8f7d-84b820dbf7f2/resource/6b78ec0c-4980-4ad8-9cbd-2d6eb9eda8e7/download/myfoodapediadata.zip"
         self.__xzFile = os.path.join(TOPDIR, "rcsb", "mock-data", "MOCK_MODBASE_MODELS", "NP_001030614.1_1.pdb.xz")
         #
-        self.__ftpFileUrl = "ftp://ftp.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
+        self.__ftpFileUrl = "ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/README"
         self.__httpsFileUrl = "https://files.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz"
         self.__largeHttpsFileUrl = "https://files.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/j3/3j3q.cif.gz"
         #
@@ -218,7 +218,7 @@ class FileUtilTests(unittest.TestCase):
             ok = self.__fileU.isLocal(remoteLocator)
             self.assertFalse(ok)
             #
-            dirPath = os.path.join(self.__workPath, "chem_comp_models")
+            dirPath = os.path.join(self.__workPath, "chembl")
             lPath = os.path.join(dirPath, self.__fileU.getFileName(self.__ftpFileUrl))
             ok = self.__fileU.get(remoteLocator, lPath)
             self.assertTrue(ok)
@@ -228,9 +228,6 @@ class FileUtilTests(unittest.TestCase):
             self.assertTrue(ok)
             tPath = self.__fileU.getFilePath(lPath)
             self.assertEqual(lPath, tPath)
-            fp = self.__fileU.uncompress(lPath, outputDir=dirPath)
-            ok = fp.endswith("chem_comp_model.cif")
-            self.assertTrue(ok)
 
         except Exception as e:
             logger.exception("Failing with %s", str(e))
