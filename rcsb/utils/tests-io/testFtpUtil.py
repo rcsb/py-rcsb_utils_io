@@ -86,18 +86,18 @@ class FtpUtilTests(unittest.TestCase):
     def testFtpRemote(self):
         """Test case - connection to a remote public server -"""
         try:
-            hostName = "ftp.rcsb.org"
+            hostName = "ftp.ebi.ac.uk"
             userName = "anonymous"
             pw = ""
             ftpU = FtpUtil()
             ok = ftpU.connect(hostName, userName, pw=pw)
             self.assertTrue(ok)
-            fL = ftpU.listdir("/pub/pdb")
+            fL = ftpU.listdir("/pub/databases/chembl/ChEMBLdb/")
             logger.info("listdir: %r", fL)
             self.assertGreater(len(fL), 2)
-            result = ftpU.dirstat("/pub/pdb")
+            result = ftpU.dirstat("/pub/databases/chembl/ChEMBLdb/")
             logger.info("stat: %r", result)
-            result = ftpU.size("/pub/pdb/README")
+            result = ftpU.size("/pub/databases/chembl/ChEMBLdb/README")
             logger.info("file size: %r", result)
             ok = ftpU.close()
             self.assertEqual(ok, True)
@@ -109,22 +109,22 @@ class FtpUtilTests(unittest.TestCase):
     def testFtpRemoteReadOps(self):
         """Test case -  list directories and retrieve files -"""
         try:
-            hostName = "ftp.rcsb.org"
+            hostName = "ftp.ebi.ac.uk"
             userName = "anonymous"
             pw = ""
             ftpU = FtpUtil()
             ok = ftpU.connect(hostName, userName, pw=pw)
             self.assertTrue(ok)
 
-            testDirPath = os.path.join("/pub", "pdb")
+            testDirPath = "/pub/databases/chembl/ChEMBLdb"
             testFilePath1 = os.path.join(testDirPath, "README")
-            testFilePath2 = os.path.join(testDirPath, "welcome.msg")
+            testFilePath2 = os.path.join(testDirPath, "latest", "checksums.txt")
             #
             result = ftpU.listdir(testDirPath)
             logger.info("listdir: %r", result)
             #
             ftpU.get(testFilePath1, os.path.join(self.__workPath, "README"))
-            ftpU.get(testFilePath2, os.path.join(self.__workPath, "welcome.msg"))
+            ftpU.get(testFilePath2, os.path.join(self.__workPath, "checksums.txt"))
             #
             ok = ftpU.close()
             self.assertEqual(ok, True)
