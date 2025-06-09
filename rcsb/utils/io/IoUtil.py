@@ -517,6 +517,8 @@ class IoUtil(object):
                     copyInputData=copyInputData
                 )
                 ret = self.__fileU.compress(tPath, filePath, compressType="gzip")
+                if os.path.exists(tPath):
+                    os.unlink(tPath)
             else:
                 ret = myIo.writeFile(
                     filePath,
