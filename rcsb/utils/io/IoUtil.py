@@ -30,6 +30,7 @@
 #  17-Sep-2021  jdw add an explicit file test for gzip compression to avoid problems with uncompressed files.
 #  28-Mar-2022  dwp remove deprecated xml.etree.cElementTree module
 #   5-Dec-2023  dwp add support for BCIF serialization and deserialization
+#  12-Jun-2025  js delete temp files
 ##
 
 __docformat__ = "google en"
