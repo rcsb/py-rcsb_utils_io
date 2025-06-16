@@ -138,3 +138,4 @@
 21-May-2024  - V1.47 Fix pylinting
 20-Aug-2024  - V1.48 Disable default backup to fallback setting in StashableBase
 10-Oct-2024  - v1.49 Allow local stash dir and replaced client_auth purpose with server_auth in ssl context creation for python 10 update
+12-Jun-2025  - v1.50 Delete temp BCIF files during gzip compression
