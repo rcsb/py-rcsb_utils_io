@@ -66,12 +66,11 @@ class SftpUtil(object):
         try:
             if keyFilePath is not None:
                 # Get private key used to authenticate user.
-                if keyFileType == "DSA":
-                    # The private key is a DSA type key.
-                    key = paramiko.DSSKey.from_private_key_file(keyFilePath)
-                else:
-                    # The private key is a RSA type key.
+                if keyFileType == "RSA":
+                    # The private key is a RSA type key. ("DSA" support dropped in paramiko 4.0 because of outdated security issues)
                     key = paramiko.RSAKey.from_private_key_file(keyFilePath)
+                else:
+                    raise ValueError("Support not added for keyFileType %s" % keyFileType)
 
             # Create Transport object using supplied method of authentication.
             self.__transport = paramiko.Transport((hostName, port))
