@@ -9,7 +9,6 @@
 #      13-Aug-2019 jdw add multipart support for json/pickle
 #       5-Dec-2023 dwp add support for BCIF import and export
 #
-# For py 27 pip install backports.tempfile
 ##
 # pylint: disable=all
 __docformat__ = "google en"
@@ -19,15 +18,10 @@ __license__ = "Apache 2.0"
 
 import logging
 import os
-import sys
+import tempfile
 
 from rcsb.utils.io.FileUtil import FileUtil
 from rcsb.utils.io.IoUtil import IoUtil
-
-if sys.version_info[0] == 2:
-    from backports import tempfile
-else:
-    import tempfile
 
 
 logger = logging.getLogger(__name__)
