@@ -140,3 +140,6 @@
 10-Oct-2024  - v1.49 Allow local stash dir and replaced client_auth purpose with server_auth in ssl context creation for python 10 update
 12-Jun-2025  - v1.50 Delete temp BCIF files during gzip compression
 11-Aug-2025  - v1.51 Remove support for DSA SFTP connection type (outdated and insecure)
+21-Oct-2025  - v1.52 Enforce closure of pre-existing FTP connections before establishing a new connection;
+                     Switch to 'pyproject.toml' file and update test pipelines to python 3.13;
+                     Remove support for Python 2
