@@ -143,3 +143,4 @@
 21-Oct-2025  - v1.52 Enforce closure of pre-existing FTP connections before establishing a new connection;
                      Switch to 'pyproject.toml' file and update test pipelines to python 3.13;
                      Remove support for Python 2
+ 2-Dec-2025  - V1.53 Switch from setuptools to hatch build system

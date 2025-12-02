@@ -31,12 +31,14 @@ import sys
 import time
 import unittest
 from collections import OrderedDict
+from importlib.metadata import version as get_package_version
 
 from mmcif.io.IoAdapterPy import IoAdapterPy as IoAdapter
 from mmcif.api.DictionaryApi import DictionaryApi
 
-from rcsb.utils.io import __version__
 from rcsb.utils.io.MarshalUtil import MarshalUtil
+
+__version__ = get_package_version("rcsb.utils.io")
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))

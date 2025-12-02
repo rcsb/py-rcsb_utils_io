@@ -33,8 +33,10 @@ import time
 import unittest
 from collections import OrderedDict
 
-from rcsb.utils.io import __version__
+from importlib.metadata import version as get_package_version
 from rcsb.utils.io.IoUtil import IoUtil
+
+__version__ = get_package_version("rcsb.utils.io")
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))

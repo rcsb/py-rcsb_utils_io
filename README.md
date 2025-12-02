@@ -17,7 +17,7 @@ git clone --recurse-submodules https://github.com/rcsb/py-rcsb_utils_io.git
 
 ```
 
-Optionally, run test suite (Python versions 2.7, and 3.9) using
+Optionally, run test suite (Python versions 3.9) using
 [tox](http://tox.readthedocs.io/en/latest/example/platform.html):
 
 ```bash

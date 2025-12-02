@@ -63,7 +63,8 @@ jobs:
             displayName: "Installing OS dependencies"
           - script: apt-cache policy | grep http | awk '{print $2 $3}' | sort -u
             displayName: "Checking for repos"
-          #
+          - script: sudo apt-get update
+            displayName: 'update apt'
           - script: sudo apt-get install flex
             displayName: "Install flex"
           - script: sudo apt-get install bison
@@ -104,9 +105,10 @@ jobs:
       - ? ${{ if and(contains(parameters.fixtures, 'mongodb'), startsWith(parameters.os, 'linux')) }}
         : # Mongo install
           - script: |
-              sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
+              sudo apt-get install gnupg curl
+              curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
               sudo apt list --installed | grep mongodb
-              echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list
+              echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
               sudo apt-get update
               sudo apt-get install -y mongodb-org
               sudo apt list --installed | grep mongo
@@ -141,21 +143,15 @@ jobs:
       #  Build artifacts if this is a test target (i.e. labeled as py##)
       #
       - ${{ if startsWith(parameters.tox, 'py') }}:
-          - script: pip install --upgrade pip build twine
+          - script: pip install --upgrade pip build twine hatch
             displayName: "Acquire build tools"
           - script: python -m build --sdist --wheel --outdir "$(System.DefaultWorkingDirectory)/dist"
             displayName: "Build source and wheel distributions"
-          - script: python -m build --sdist --outdir "$(System.DefaultWorkingDirectory)/udist"
-            displayName: "Build source distribution to udist"
-
           #
           # Check the install artifacts
-          - script: ls -lR "$(System.DefaultWorkingDirectory)/dist" "$(System.DefaultWorkingDirectory)/udist"
+          - script: ls -lR "$(System.DefaultWorkingDirectory)/dist"
             displayName: "Listing of installed software"
           #
           - publish: $(System.DefaultWorkingDirectory)/dist
             artifact: ${{ format('sw_{0}_{1}', parameters.tox, parameters.os) }}
-          #
-          - publish: $(System.DefaultWorkingDirectory)/udist
-            artifact: ${{ format('sw_u_{0}_{1}', parameters.tox, parameters.os) }}
         #
