@@ -1,9 +1,10 @@
 # File: azure-template-publish-job.yml
-# Date: 8-Jul-2019 jdw split out from original pipeline
 #
 # Update:
-# 6-Aug-2019 jdw push source wheels (universal) for linux
-# 10-Oct-2024 mjt macos 12->13, ubuntu 20->22
+#   8-Jul-2019 jdw split out from original pipeline
+#   6-Aug-2019 jdw push source wheels (universal) for linux
+#  10-Oct-2024 mjt macos 12->13, ubuntu 20->22
+#   2-Dec-2025 dwp publish wheel to PyPI
 ##
 parameters:
   tox: ""

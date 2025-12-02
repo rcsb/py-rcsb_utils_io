@@ -40,11 +40,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-tests = ["tox", "pylint", "black>=21.5b1", "flake8", "coverage"]
+tests = ["tox", "pylint", "black>=21.5b1", "flake8", "coverage", "check-manifest"]
 
 [project.urls]
 Homepage = "https://github.com/rcsb/py-rcsb_utils_io"
-
 
 # ----------------  hatch configuration ----------------
 [tool.hatch.build.targets.sdist]
@@ -69,7 +68,6 @@ exclude = [
 
 [tool.hatch.envs.default]
 skip-install = true
-
 
 # ----------------  test configuration ----------------
 [tool.hatch.envs.hatch-test]
