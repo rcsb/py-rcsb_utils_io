@@ -2,10 +2,11 @@
 # File: StashUtil.py
 #
 # Utilities to stash and recover a data in collection of directories to and from
-# remote sftp, http or local POSIX file storage resources.
+# remote sftp, http, s3 or local POSIX file storage resources.
 #
 # Updates:
 # 19-Jul-2021 jdw add git push support
+# 10-Aug-2026 mjt add s3 (MinIO) support
 #
 ##
 
@@ -19,6 +20,7 @@ import os
 
 from rcsb.utils.io.FileUtil import FileUtil
 from rcsb.utils.io.GitUtil import GitUtil
+from rcsb.utils.io.S3Util import S3Util
 from rcsb.utils.io.SftpUtil import SftpUtil
 from rcsb.utils.io.SplitJoin import SplitJoin
 
@@ -83,6 +85,15 @@ class StashUtil(object):
                 if ok:
                     remotePath = os.path.join("/", remoteDirPath, fn)
                     ok = sftpU.put(self.__localStashTarFilePath, remotePath)
+            elif url and url.startswith("s3://"):
+                # Credentials/endpoint are supplied via the standard AWS environment variables
+                s3U = S3Util()
+                ok = s3U.connect()
+                if ok:
+                    bucketName, keyPrefix = S3Util.parseUrl(url)
+                    objectKey = self.__makeObjectKey(keyPrefix, remoteDirPath, fn)
+                    ok = s3U.put(self.__localStashTarFilePath, bucketName, objectKey)
+                    s3U.close()
             elif not url:
                 fileU = FileUtil()
                 remotePath = os.path.join(remoteDirPath, fn)
@@ -139,6 +150,20 @@ class StashUtil(object):
                 if ok:
                     remotePath = os.path.join(remoteDirPath, fn)
                     ok = sftpU.get(remotePath, self.__localStashTarFilePath)
+
+            elif url and url.startswith("s3://"):
+                # Credentials/endpoint are supplied via the standard AWS environment variables
+                s3U = S3Util()
+                ok = s3U.connect()
+                if ok:
+                    bucketName, keyPrefix = S3Util.parseUrl(url)
+                    objectKey = self.__makeObjectKey(keyPrefix, remoteDirPath, fn)
+                    if s3U.exists(bucketName, objectKey):
+                        ok = s3U.get(bucketName, objectKey, self.__localStashTarFilePath)
+                    else:
+                        ok = False
+                        logger.warning("Missing bundle object %r in bucket %r", objectKey, bucketName)
+                    s3U.close()
             else:
                 logger.error("Unsupported protocol %r", url)
             if ok:
@@ -265,6 +290,13 @@ class StashUtil(object):
             logger.exception("Failing for %r with %s", bundleFileName, str(e))
             ok = False
         return ok
+
+    def __makeObjectKey(self, keyPrefix, remoteDirPath, fn):
+        """Assemble an S3 object key from the URL key prefix, remote directory path and bundle file name.
+
+        S3 keys are '/' delimited and must not begin with '/'.
+        """
+        return "/".join([tS.strip("/") for tS in [keyPrefix, remoteDirPath, fn] if tS and tS.strip("/")])
 
     def __makeBundleFileName(self, baseBundleFileName, remoteStashPrefix="A"):
         fn = baseBundleFileName

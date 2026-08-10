@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "rcsb.utils.io"
 description = "RCSB Python I/O Utility Classes"
-version = "1.53"
+version = "1.54"
 readme = "README.md"
 authors = [
     { name="John Westbrook", email="john.westbrook@rcsb.org" }
@@ -37,6 +37,7 @@ dependencies = [
     "psutil >= 5.7.2",
     "GitPython >= 3.1.18",
     "urllib3 >= 1.26.15",
+    "boto3 >= 1.26.0",
 ]
 
 [project.optional-dependencies]
