@@ -205,6 +205,79 @@ class S3Util(object):
             logger.error("Close failing with %s", str(e))
             return False
 
+    def storeBundle(self, url, localFilePath, remoteDirPath, bundleFileName, accessKey=None, secretKey=None):
+        """Upload a local bundle file to the s3 URL, connecting and releasing the client in the process.
+
+        Args:
+            url (str): s3 style URL (e.g. s3://my-bucket or s3://my-bucket/some/prefix)
+            localFilePath (str): local source bundle file path
+            remoteDirPath (str): remote directory path used as an object key prefix
+            bundleFileName (str): bundle file name
+            accessKey (str, optional): access key id. Defaults to environment setting.
+            secretKey (str, optional): secret access key. Defaults to environment setting.
+
+        Returns:
+            (bool): True for success or False otherwise
+        """
+        ok = False
+        try:
+            bucketName, keyPrefix = self.parseUrl(url)
+            objectKey = self.makeObjectKey(keyPrefix, remoteDirPath, bundleFileName)
+            if self.connect(self.getEndPointUrl(), accessKey=accessKey, secretKey=secretKey):
+                ok = self.put(localFilePath, bucketName, objectKey)
+                self.close()
+        except Exception as e:
+            if self.__raiseExceptions:
+                raise e
+            logger.error("storeBundle failing for url %r dirPath %r with %s", url, remoteDirPath, str(e))
+        return ok
+
+    def fetchBundle(self, url, localFilePath, remoteDirPath, bundleFileName, accessKey=None, secretKey=None):
+        """Download a bundle file from the s3 URL, connecting and releasing the client in the process.
+
+        Args:
+            url (str): s3 style URL (e.g. s3://my-bucket or s3://my-bucket/some/prefix)
+            localFilePath (str): local destination bundle file path
+            remoteDirPath (str): remote directory path used as an object key prefix
+            bundleFileName (str): bundle file name
+            accessKey (str, optional): access key id. Defaults to environment setting.
+            secretKey (str, optional): secret access key. Defaults to environment setting.
+
+        Returns:
+            (bool): True for success or False otherwise
+        """
+        ok = False
+        try:
+            bucketName, keyPrefix = self.parseUrl(url)
+            objectKey = self.makeObjectKey(keyPrefix, remoteDirPath, bundleFileName)
+            if self.connect(self.getEndPointUrl(), accessKey=accessKey, secretKey=secretKey):
+                if self.exists(bucketName, objectKey):
+                    ok = self.get(bucketName, objectKey, localFilePath)
+                else:
+                    logger.warning("Missing bundle object %r in bucket %r", objectKey, bucketName)
+                self.close()
+        except Exception as e:
+            if self.__raiseExceptions:
+                raise e
+            logger.error("fetchBundle failing for url %r dirPath %r with %s", url, remoteDirPath, str(e))
+        return ok
+
+    @staticmethod
+    def getEndPointUrl():
+        """Return the service endpoint from the standard AWS environment variables (None if unset)."""
+        return os.environ.get("AWS_ENDPOINT_URL_S3", os.environ.get("AWS_ENDPOINT_URL"))
+
+    @staticmethod
+    def makeObjectKey(*args):
+        """Assemble an S3 object key from the input path segments.
+
+        S3 keys are '/' delimited and must not begin with '/'.
+
+        Returns:
+            (str): normalized object key
+        """
+        return "/".join([tS.strip("/") for tS in args if tS and tS.strip("/")])
+
     @staticmethod
     def parseUrl(url):
         """Split an s3:// URL into a bucket name and any leading key prefix.
