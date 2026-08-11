@@ -31,37 +31,30 @@ class S3Util(object):
 
     The target bucket is provided as an s3 style URL (e.g. s3://my-bucket or minio://my-bucket/some/prefix).
     Any URL scheme is accepted and ignored -- the endpoint determines the service that is actually contacted.
-    Endpoint and credentials default to the standard AWS environment variables:
+    Endpoint and credentials are always taken from the standard AWS environment variables:
 
         AWS_ACCESS_KEY_ID
         AWS_SECRET_ACCESS_KEY
-        AWS_SESSION_TOKEN      (optional)
-        AWS_DEFAULT_REGION     (optional)
         AWS_ENDPOINT_URL_S3 or AWS_ENDPOINT_URL  (required for MinIO and other non-AWS endpoints)
+        AWS_REGION or AWS_DEFAULT_REGION  (optional)
+
+    Any failure raises an exception.
     """
 
-    def __init__(self, url, endPointUrl=None, accessKey=None, secretKey=None, sessionToken=None, region=None, **kwargs):
+    def __init__(self, url):
         """Set the target bucket and connection details for this class instance.
 
         Args:
             url (str): s3 style URL (e.g. s3://my-bucket or minio://my-bucket/some/prefix)
-            endPointUrl (str, optional): service endpoint (e.g. https://minio.rcsb.org). Defaults to environment setting.
-            accessKey (str, optional): access key id. Defaults to environment setting.
-            secretKey (str, optional): secret access key. Defaults to environment setting.
-            sessionToken (str, optional): session token. Defaults to environment setting.
-            region (str, optional): region name. Defaults to environment setting.
         """
-        self.__raiseExceptions = kwargs.get("raiseExceptions", False)
-        #
         _, _, tS = url.rpartition("://")
         self.__bucketName, _, self.__keyPrefix = tS.strip("/").partition("/")
         #
         self.__clientArgs = {
-            "endpoint_url": endPointUrl if endPointUrl else os.environ.get("AWS_ENDPOINT_URL_S3", os.environ.get("AWS_ENDPOINT_URL")),
-            "aws_access_key_id": accessKey,
-            "aws_secret_access_key": secretKey,
-            "aws_session_token": sessionToken,
-            "region_name": region,
+            "endpoint_url": os.environ.get("AWS_ENDPOINT_URL"),
+            "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID"),
+            "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            "region_name": os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION"),
         }
 
     @property
@@ -78,7 +71,10 @@ class S3Util(object):
             bundleFileName (str): bundle file name
 
         Returns:
-            (bool): True for success or False otherwise
+            (bool): True for success
+
+        Raises:
+            Exception: on any upload failure
         """
         objectKey = self.__makeObjectKey(remoteDirPath, bundleFileName)
         try:
@@ -86,10 +82,8 @@ class S3Util(object):
             logger.info("Uploaded %s (%d bytes) to bucket %s key %s", localFilePath, os.path.getsize(localFilePath), self.__bucketName, objectKey)
             return True
         except Exception as e:
-            if self.__raiseExceptions:
-                raise e
             logger.error("storeBundle failing for localPath %s bucket %s key %s with %s", localFilePath, self.__bucketName, objectKey, str(e))
-            return False
+            raise
 
     def fetchBundle(self, localFilePath, remoteDirPath, bundleFileName):
         """Download a bundle file from the target bucket.
@@ -100,7 +94,10 @@ class S3Util(object):
             bundleFileName (str): bundle file name
 
         Returns:
-            (bool): True for success or False otherwise
+            (bool): True for success
+
+        Raises:
+            Exception: on any download failure
         """
         objectKey = self.__makeObjectKey(remoteDirPath, bundleFileName)
         try:
@@ -109,10 +106,8 @@ class S3Util(object):
             logger.info("Downloaded bucket %s key %s (%d bytes) to %s", self.__bucketName, objectKey, os.path.getsize(localFilePath), localFilePath)
             return True
         except Exception as e:
-            if self.__raiseExceptions:
-                raise e
             logger.error("fetchBundle failing for bucket %s key %s localPath %s with %s", self.__bucketName, objectKey, localFilePath, str(e))
-            return False
+            raise
 
     def __client(self):
         """(botocore client): a new S3 client for the endpoint and credentials of this class instance"""
