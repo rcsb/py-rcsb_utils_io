@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 class S3Util(object):
     """Class providing essential data transfer operations for S3 compatible object storage.
 
-    The target bucket is provided as an s3 style URL (e.g. s3://my-bucket or s3://my-bucket/some/prefix).
+    The target bucket is provided as an s3 style URL (e.g. s3://my-bucket or minio://my-bucket/some/prefix).
+    Any URL scheme is accepted and ignored -- the endpoint determines the service that is actually contacted.
     Endpoint and credentials default to the standard AWS environment variables:
 
         AWS_ACCESS_KEY_ID
@@ -43,7 +44,7 @@ class S3Util(object):
         """Set the target bucket and connection details for this class instance.
 
         Args:
-            url (str): s3 style URL (e.g. s3://my-bucket or s3://my-bucket/some/prefix)
+            url (str): s3 style URL (e.g. s3://my-bucket or minio://my-bucket/some/prefix)
             endPointUrl (str, optional): service endpoint (e.g. https://minio.rcsb.org). Defaults to environment setting.
             accessKey (str, optional): access key id. Defaults to environment setting.
             secretKey (str, optional): secret access key. Defaults to environment setting.
@@ -52,7 +53,7 @@ class S3Util(object):
         """
         self.__raiseExceptions = kwargs.get("raiseExceptions", False)
         #
-        tS = url[5:] if url.startswith("s3://") else url
+        _, _, tS = url.rpartition("://")
         self.__bucketName, _, self.__keyPrefix = tS.strip("/").partition("/")
         #
         self.__clientArgs = {

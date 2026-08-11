@@ -85,7 +85,7 @@ class StashUtil(object):
                 if ok:
                     remotePath = os.path.join("/", remoteDirPath, fn)
                     ok = sftpU.put(self.__localStashTarFilePath, remotePath)
-            elif url and (url.startswith("s3://") or url.startswith("minio://")):
+            elif url and url.startswith(("s3://", "minio://")):
                 # Credentials/endpoint are supplied via the standard AWS environment variables
                 ok = S3Util(url).storeBundle(self.__localStashTarFilePath, remoteDirPath, fn)
             elif not url:
@@ -145,7 +145,7 @@ class StashUtil(object):
                     remotePath = os.path.join(remoteDirPath, fn)
                     ok = sftpU.get(remotePath, self.__localStashTarFilePath)
 
-            elif url and (url.startswith("s3://") or url.startswith("minio://")):
+            elif url and url.startswith(("s3://", "minio://")):
                 # Credentials/endpoint are supplied via the standard AWS environment variables
                 ok = S3Util(url).fetchBundle(self.__localStashTarFilePath, remoteDirPath, fn)
             else:
