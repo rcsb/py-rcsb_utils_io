@@ -144,3 +144,4 @@
                      Switch to 'pyproject.toml' file and update test pipelines to python 3.13;
                      Remove support for Python 2
  2-Dec-2025  - V1.53 Switch from setuptools to hatch build system
+19-Aug-2026  - V1.54 Support s3 for stashing

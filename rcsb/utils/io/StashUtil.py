@@ -87,7 +87,8 @@ class StashUtil(object):
                     ok = sftpU.put(self.__localStashTarFilePath, remotePath)
             elif url and url.startswith(("s3://", "minio://")):
                 # Credentials/endpoint are supplied via the standard AWS environment variables
-                ok = S3Util(url).storeBundle(self.__localStashTarFilePath, remoteDirPath, fn)
+                s3U = S3Util(url)
+                ok = s3U.storeBundle(self.__localStashTarFilePath, remoteDirPath, fn)
             elif not url:
                 fileU = FileUtil()
                 remotePath = os.path.join(remoteDirPath, fn)
@@ -147,7 +148,8 @@ class StashUtil(object):
 
             elif url and url.startswith(("s3://", "minio://")):
                 # Credentials/endpoint are supplied via the standard AWS environment variables
-                ok = S3Util(url).fetchBundle(self.__localStashTarFilePath, remoteDirPath, fn)
+                s3U = S3Util(url)
+                ok = s3U.fetchBundle(self.__localStashTarFilePath, remoteDirPath, fn)
             else:
                 logger.error("Unsupported protocol %r", url)
             if ok:
