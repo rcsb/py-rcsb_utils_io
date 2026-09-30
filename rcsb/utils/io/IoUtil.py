@@ -31,6 +31,8 @@
 #  28-Mar-2022  dwp remove deprecated xml.etree.cElementTree module
 #   5-Dec-2023  dwp add support for BCIF serialization and deserialization
 #  12-Jun-2025  js  delete temp BCIF files during gzip compression
+#  21-Jul-2026  ha  forward useAutoDetect through __serializeBCif; skip DictionaryApi
+#                   construction entirely when useAutoDetect is in effect
 ##
 
 __docformat__ = "google en"
@@ -481,7 +483,8 @@ class IoUtil(object):
             workPath = kwargs.get("workPath", None)
             raiseExceptions = kwargs.get("raiseExceptions", True)
             applyTypes = kwargs.get("applyTypes", True)
-            useFloat64 = kwargs.get("useFloat64", True)
+            useAutoDetect = kwargs.get("useAutoDetect", True)
+            useFloat64 = kwargs.get("useFloat64", True)              # Note: This constraint is set to False as default in IoAdapterPy in the py-mmcif package.
             useStringTypes = kwargs.get("useStringTypes", False)
             copyInputData = kwargs.get("copyInputData", False)
             #
@@ -497,7 +500,9 @@ class IoUtil(object):
             dictFilePathL = kwargs.get("dictFilePathL", self.__dictFilePathL)
             #
             myIo = IoAdapter(raiseExceptions=raiseExceptions)
-            if applyTypes and not dictionaryApi:
+            # Only build a DictionaryApi when the legacy dictionary-driven path is actually going to be used.
+            # Under useAutoDetect (the default), no dictionary is needed at all, so skip the fetch/parse entirely.
+            if applyTypes and not useAutoDetect and not dictionaryApi:
                 logger.warning("No DictionaryApi object provided to arg 'dictionaryApi'. Will try to instantiate one with dictionary file(s) 'dictFilePathL': %r", dictFilePathL)
                 dApiContainerList = []
                 for dictFilePath in dictFilePathL:
@@ -512,6 +517,7 @@ class IoUtil(object):
                     containerList=containerList,
                     fmt="bcif",
                     applyTypes=applyTypes,
+                    useAutoDetect=useAutoDetect,
                     dictionaryApi=dictionaryApi,
                     useFloat64=useFloat64,
                     useStringTypes=useStringTypes,
@@ -526,6 +532,7 @@ class IoUtil(object):
                     containerList=containerList,
                     fmt="bcif",
                     applyTypes=applyTypes,
+                    useAutoDetect=useAutoDetect,
                     dictionaryApi=dictionaryApi,
                     useFloat64=useFloat64,
                     useStringTypes=useStringTypes,

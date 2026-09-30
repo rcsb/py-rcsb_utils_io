@@ -213,9 +213,42 @@ class IoUtilTests(unittest.TestCase):
             self.assertGreaterEqual(len(cL1), 1)
             #
             # Now write it out as a BCIF and BCIF.gz files
-            ok = self.__ioU.serialize(self.__pathSaveBcifFile, cL1, fmt="bcif")
+            ok = self.__ioU.serialize(self.__pathSaveBcifFile, cL1, fmt="bcif", useAutoDetect=False)
             self.assertTrue(ok)
-            ok = self.__ioU.serialize(self.__pathSaveBcifFileGz, cL1, fmt="bcif", workPath=self.__workPath)
+            ok = self.__ioU.serialize(self.__pathSaveBcifFileGz, cL1, fmt="bcif", useAutoDetect=False, workPath=self.__workPath)
+            self.assertTrue(ok)
+            #
+            # Now try reading them back in
+            cL2 = self.__ioU.deserialize(self.__pathSaveBcifFile, fmt="bcif")
+            cName2 = cL2[0].getName()
+            logger.info("Container list length %d and name %s", len(cL2), cName2)
+            cL3 = self.__ioU.deserialize(self.__pathSaveBcifFileGz, fmt="bcif")
+            cName3 = cL3[0].getName()
+            logger.info("Container list length %d and name %s", len(cL3), cName3)
+            self.assertGreaterEqual(len(cL3), 1)
+            #
+            # Confirm data all there and retained
+            ok = cName1 == cName2 == cName3
+            self.assertTrue(ok)
+            ok = cL1[0].getObjNameList() == cL2[0].getObjNameList() == cL3[0].getObjNameList()
+            self.assertTrue(ok)
+        except Exception as e:
+            logger.exception("Failing with %s", str(e))
+            self.fail()
+
+    def testReadWriteBcifFileAutoDetect(self):
+        """Test the case read and write binary PDBx/mmCIF (BCIF) file using the dictionary-free auto-detect path"""
+        try:
+            # First read in a normal mmCIF file
+            cL1 = self.__ioU.deserialize(self.__pathPdbxCifFile, fmt="mmcif")
+            cName1 = cL1[0].getName()
+            logger.info("Container list length %d and name %s", len(cL1), cName1)
+            self.assertGreaterEqual(len(cL1), 1)
+            #
+            # Now write it out as BCIF and BCIF.gz files using auto-detect
+            ok = self.__ioU.serialize(self.__pathSaveBcifFile, cL1, fmt="bcif", useAutoDetect=True)
+            self.assertTrue(ok)
+            ok = self.__ioU.serialize(self.__pathSaveBcifFileGz, cL1, fmt="bcif", useAutoDetect=True, workPath=self.__workPath)
             self.assertTrue(ok)
             #
             # Now try reading them back in
@@ -363,6 +396,7 @@ def utilReadWriteSuite():
     suiteSelect.addTest(IoUtilTests("testReadWriteDictionaryFiles"))
     suiteSelect.addTest(IoUtilTests("testReadWriteCifFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteBcifFile"))
+    suiteSelect.addTest(IoUtilTests("testReadWriteBcifFileAutoDetect"))
     suiteSelect.addTest(IoUtilTests("testReadWriteJsonFile"))
     suiteSelect.addTest(IoUtilTests("testReadWritePickleFile"))
     suiteSelect.addTest(IoUtilTests("testReadWriteListFile"))

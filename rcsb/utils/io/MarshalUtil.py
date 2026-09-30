@@ -35,10 +35,15 @@ class MarshalUtil(object):
 
         Args:
             workPath (str, optional): Directory to work in. Defaults to current working directory.
-            dictionaryApi (obj, optional): DictionaryApi instance to use for BCIF encoding (when trying to export BCIF files).
-                                           Defaults to None, in which case it will try to create one using 'dictFilePathL'.
-            dictFilePathL (str, optional): List of dictionary files to use for BCIF encoding. Not needed if 'dictionaryApi' object is provided.
-                                           Defaults to latest version of 'mmcif_pdbx_v5_next.dic'.
+            dictionaryApi (obj, optional): DictionaryApi instance for the legacy dictionary-driven BCIF
+                                        encoding path (only used when useAutoDetect=False is passed to
+                                        doExport()). Not needed for the default auto-detect path.
+                                        Defaults to None, in which case it will try to create one using
+                                        'dictFilePathL' if the dictionary-driven path is actually invoked.
+            dictFilePathL (str, optional): List of dictionary files to use for the legacy BCIF encoding path.
+                                        Not needed if 'dictionaryApi' is provided, or if using the default
+                                        auto-detect path (useAutoDetect=True). Defaults to latest version
+                                        of 'mmcif_pdbx_v5_next.dic'.
         """
         self.__workPath = workPath if workPath else "."
         self.__workDirSuffix = kwargs.get("workDirSuffix", "marshall_")

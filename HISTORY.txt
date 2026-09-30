@@ -145,3 +145,6 @@
                      Remove support for Python 2
  2-Dec-2025  - V1.53 Switch from setuptools to hatch build system
 19-Aug-2026  - V1.54 Support s3 and minio for stashing
+30-Sep-2026  - V1.55 Use mmcif automatic column type detection for BCIF export by default (useAutoDetect=True);
+                     only build a DictionaryApi for the legacy dictionary-driven path (useAutoDetect=False);
+                     require mmcif >= 1.2.0
