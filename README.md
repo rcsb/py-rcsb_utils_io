@@ -98,6 +98,14 @@ for catName in catNameList:
         cifDataD.setdefault(eName, {}).setdefault(catName, []).append(dD)
 ```
 
+To read in and parse an `BCIF` file, `"4hhb.bcif.gz"`:
+```python
+from rcsb.utils.io.MarshalUtil import MarshalUtil
+mU = MarshalUtil()
+
+# Read all data containers from the mmCIF file into `dataContainerList`
+dataContainerList = mU.doImport("https://files.rcsb.org/pub/pdb/data/structures/divided/mmCIF/hh/4hhb.bcif.gz", fmt="bcif")
+
 **_For more examples, see [testMarshallUtil.py](https://github.com/rcsb/py-rcsb_utils_io/blob/master/rcsb/utils/tests-io/testMarshallUtil.py)._**
 
 #### Writing files
@@ -111,7 +119,7 @@ You can use the `MarshalUtil` to write out the following data structures into th
  DataContainerList |  mmcif or bcif
 ```
 
-For example, if you have a dictionary, `dataD`, you can export it via:
+For example, if you have a dictionary object, `dataD`, you can export it via:
 ```python
 from rcsb.utils.io.MarshalUtil import MarshalUtil
 mU = MarshalUtil()
@@ -123,3 +131,14 @@ mU.doExport("data.json", dataD, fmt="json", indent=2)
 # Or, to export and compress as gzip:
 mU.doExport("data.json.gz", dataD, fmt="json", indent=2)
 ```
+
+Additionally, if you want to export a `BCIF` file, you can export in via:
+```python
+from rcsb.utils.io.MarshalUtil import MarshalUtil
+mU = MarshalUtil()
+
+# Use dataContainerList (created for reading a file) as reference
+mU.doExport("data.bcif", dataContainerList, fmt="bcif")
+
+# Or, to export and compress as gzip:
+mU.doExport("data.bcif.gz", dataContainerList, fmt="bcif")
