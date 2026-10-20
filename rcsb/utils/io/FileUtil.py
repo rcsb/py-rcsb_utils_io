@@ -12,6 +12,7 @@
 #                 Replace urlibx version of __fetchUrl with a version that depends on
 #                 requests module to better support redirection and authentication.
 # 14-Mar-2023 dwp make 'timeout' parameter a keyword argument for instantiating FileUtil object
+# 20-Oct-2026 dwp add optional 'headers' keyword argument to get() for HTTP(S) requests (e.g., to set a User-Agent)
 ##
 
 __docformat__ = "google en"
@@ -230,6 +231,8 @@ class FileUtil(object):
             **kwargs: Description
 
                 tarMember(str) : target member name in a remote tarfile
+                headers(dict) : optional HTTP request headers for remote HTTP(S) fetches (e.g., {"User-Agent": ...});
+                                not used for local or FTP sources. Defaults to None (requests' default headers).
 
         Returns:
             bool: True for success or false otherwise
@@ -549,6 +552,7 @@ class FileUtil(object):
             filePath (str): path to store the data from the remote url
             username (str): basic auth username
             password (str): dasic auth password
+            headers (dict): optional HTTP request headers (default None)
             kwargs (dict, optional): other options
 
         Raises:
@@ -560,6 +564,7 @@ class FileUtil(object):
         """
         user = kwargs.get("username", None)
         pw = kwargs.get("password", None)
+        headers = kwargs.get("headers", None)
         chunkSize = kwargs.get("chunkSize", 1024 * 1024 * 3)
         #
         try:
@@ -568,7 +573,7 @@ class FileUtil(object):
                 logger.error("Failing to create target directory for file %r", filePath)
                 return False
             if user and pw:
-                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True, timeout=self.__timeout) as rIn:
+                with requests.get(url, stream=True, auth=(user, pw), allow_redirects=True, timeout=self.__timeout, headers=headers) as rIn:
                     if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
                         with open(filePath, "wb") as fOut:
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
@@ -578,7 +583,7 @@ class FileUtil(object):
                         rIn.raise_for_status()
                         return False
             else:
-                with requests.get(url, stream=True, allow_redirects=True, timeout=self.__timeout) as rIn:
+                with requests.get(url, stream=True, allow_redirects=True, timeout=self.__timeout, headers=headers) as rIn:
                     if rIn.status_code == requests.codes.ok:  # pylint: disable=no-member
                         with open(filePath, "wb") as fOut:
                             for chunk in rIn.iter_content(chunk_size=chunkSize):
