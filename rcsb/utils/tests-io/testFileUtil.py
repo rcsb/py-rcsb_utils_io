@@ -4,6 +4,7 @@
 # Version: 0.001
 #
 # Update:
+#  20-Oct-2026 dwp Add test for the optional 'headers' argument of get()
 #
 #
 ##
@@ -22,6 +23,7 @@ import logging
 import os
 import time
 import unittest
+from unittest import mock
 
 from importlib.metadata import version as get_package_version
 from rcsb.utils.io.FileUtil import FileUtil
@@ -129,6 +131,27 @@ class FileUtilTests(unittest.TestCase):
         except Exception as e:
             logger.exception("Failing with %s", str(e))
             self.fail()
+
+    def testGetFileHeaders(self):
+        """Test that optional request headers are passed to remote HTTP(S) fetches, and that none are passed by default"""
+        with mock.patch("rcsb.utils.io.FileUtil.requests.get") as mockGet:
+            response = mockGet.return_value.__enter__.return_value
+            response.status_code = 200
+            response.iter_content.return_value = [b"test data"]
+            lPath = os.path.join(self.__workPath, "headers-test.txt")
+            remoteLocator = "https://example.org/headers-test.txt"
+            #
+            ok = self.__fileU.get(remoteLocator, lPath)
+            self.assertTrue(ok)
+            self.assertIsNone(mockGet.call_args.kwargs["headers"])
+            #
+            headerD = {"User-Agent": "RCSB-PDB-ETL"}
+            ok = self.__fileU.get(remoteLocator, lPath, headers=headerD)
+            self.assertTrue(ok)
+            self.assertEqual(mockGet.call_args.kwargs["headers"], headerD)
+            with open(lPath, "rb") as ifh:
+                self.assertEqual(ifh.read(), b"test data")
+            self.__fileU.remove(lPath)
 
     def testGetFileTimeout(self):
         """Test case for a local files and directories"""
@@ -304,6 +327,7 @@ def utilSuite():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(FileUtilTests("testGetFile"))
     suiteSelect.addTest(FileUtilTests("testGetFileTimeout"))
+    suiteSelect.addTest(FileUtilTests("testGetFileHeaders"))
     suiteSelect.addTest(FileUtilTests("testMoveAndCopyFile"))
     suiteSelect.addTest(FileUtilTests("testFtpUrl"))
     suiteSelect.addTest(FileUtilTests("testXzFile"))

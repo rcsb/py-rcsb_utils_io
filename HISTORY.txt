@@ -148,3 +148,5 @@
 30-Sep-2026  - V1.55 Use mmcif automatic column type detection for BCIF export by default (useAutoDetect=True);
                      only build a DictionaryApi for the legacy dictionary-driven path (useAutoDetect=False);
                      require mmcif >= 1.2.0
+20-Oct-2026  - V1.56 Add optional 'headers' keyword argument to FileUtil.get() for HTTP(S) fetches (e.g., to set a
+                     User-Agent); default behavior is unchanged
