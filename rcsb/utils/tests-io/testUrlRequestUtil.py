@@ -402,9 +402,9 @@ class UrlRequestUtilTests(unittest.TestCase):
         # baseUrl = ["http://128.6.159.86"]
         #
         # Production west instances
-        # baseUrlList = ["http://132.249.213.210", "http://132.249.213.110", "https://chemsearch-west.rcsb.org"]
-        # baseUrlList = ["http://128.6.158.85", "http://128.6.158.158", "https://chemsearch-east.rcsb.org"]
-        baseUrlList = ["https://chemsearch-west.rcsb.org", "https://chemsearch-east.rcsb.org"]
+        # baseUrlList = ["http://132.249.213.210", "http://132.249.213.110", "https://chemsearch.west.k8s.rcsb.org"]
+        # baseUrlList = ["http://128.6.158.85", "http://128.6.158.158", "https://chemsearch.east.k8s.rcsb.org"]
+        baseUrlList = ["https://chemsearch.west.k8s.rcsb.org", "https://chemsearch.east.k8s.rcsb.org"]
         #
         endPoint = "chem-match-v1/InChI"
         resultLen = 13
